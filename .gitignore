@@ -1,0 +1,12 @@
+# Dotenv files
+.env*
+
+# Node modules
+node_modules
+
+# Python virtual environment files
+env
+
+# Python cache files
+__pycache__
+.mypy_cache

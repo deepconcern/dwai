@@ -1,0 +1,125 @@
+- decoration:
+    examples:
+      - bejeweled
+      - tattoos
+      - unmarred
+    name: Decoration
+- body:
+    examples:
+      - built
+      - bulky
+      - creepy
+      - fit
+      - flabby
+      - knobby
+      - lithe
+      - long shanks
+      - mighty thews
+      - perfect skin
+      - pudgy
+      - ravaged
+      - ritual scars
+      - scrawny
+      - sharp
+      - strange brands
+      - supple
+      - thin
+      - well-fed
+      - wild
+    name: Body
+- clothes:
+    examples:
+      - camouflage
+      - cape
+      - ceremonial garb
+      - common
+      - dark
+      - fancy
+      - finery
+      - flowing robes
+      - habit
+      - poor
+      - practical leathers
+      - scavenger’s outfit
+      - scraps
+      - silks
+      - traveling
+      - traveling clothes
+      - weather-inappropriate
+      - weathered hides
+    name: Clothes
+- demeanour:
+    examples:
+      - barely-hidden rage
+      - imperious bearing
+      - manic attitude
+    name: Demeanour
+- eyes:
+    examples:
+      - animal
+      - crazy
+      - criminal
+      - dead
+      - eager
+      - fiery
+      - fiery 
+      - glowing
+      - hard
+      - haunted
+      - haunting
+      - joyous
+      - kind
+      - knowing
+      - sad
+      - searing
+      - sharp
+      - shifty
+      - shrouded
+      - smouldering
+      - tormented
+      - warm
+      - wild
+      - wise']
+    name: Eyes
+- hair:
+    examples:
+      - bald
+      - battered helm
+      - braided
+      - cropped
+      - fancy
+      - furry hood
+      - helmet
+      - hooded
+      - messy
+      - pointed hat
+      - shorn
+      - strange
+      - styled
+      - stylish cap
+      - tonsure
+      - wild
+    name: Hair
+- holy_symbol:
+    examples:
+      - fancy
+      - worn
+    name: Holy Symbol
+- robes:
+    examples:
+      - stylish
+      - strange
+      - worn
+    name: Robes
+- skin:
+    examples:
+      - calloused
+      - scarred
+      - tanned
+    name: Skin
+- voice:
+    examples:
+      - crackling
+      - roaring
+      - whispering
+    name: Voice

@@ -1,0 +1,170 @@
+- fighter:
+    alignment_moves:
+      - good: 
+          name: Good
+          text: |
+            Defend those weaker than you.
+      - neutral: 
+          name: Neutral
+          text: |
+            Defeat a worthy opponent.
+      - evil: 
+          name: Evil
+          text: |
+            Kill a defenseless or surrendered enemy.
+    bonds:
+      - X owes me their life, whether they admit it or not.
+      - I have sworn to protect X.
+      - I worry about the ability of X to survive in the dungeon.
+      - X is soft, but I will make them hard like me.
+    damage_die: 10
+    equipment:
+      base:
+        - 
+
+    hp_base: 10
+    load_base: 12
+    name: Fighter
+    race_moves:
+      - hafling:
+          name: Dwarf
+          text: |
+            When you share a drink with someone, you may parley with them using
+            CON instead of CHA.
+      - elf:
+          name: Elf
+          text: |
+            Choose one weapon—you can always treat weapons of that type as if
+            they had the precise tag.
+      - elf:
+          name: Halfling
+          text: |
+            When you Defy Danger and use your small size to your advantage, take
+            +1.
+      - human:
+          name: Human
+          text: |
+            Once per battle you may reroll a single damage roll (yours or
+            someone else’s).
+    starting_moves:
+      - armored:
+          name: Armored
+          text: |
+            You ignore the clumsy tag on any armor you wear.
+      - bend_bars_lift_gates:
+          name: Bend Bars, Lift Gates
+          text: |
+            When you use pure strength to destroy an inanimate obstacle, roll+STR. • On a 10+, choose 3. • On a 7-9 choose 2.
+            • It doesn’t take a very long time
+            • Nothing of value is damaged
+            • It doesn’t make an inordinate amount of noise
+            • You can fix the thing again without a lot
+            of effort
+      - signature_weapon:
+          name: Signature Weapon
+          text: |
+            This is your weapon. There are many like it, but this one is yours. Your weapon is your best friend. It is your life. You master it as you master your life. Your weapon, without you, is useless. Without your weapon, you are useless. You must wield your weapon true.
+            Choose a base description, all are 2 weight:
+            • Spear
+            • Flail
+            • Fists
+            • Sword
+            • Axe
+            • Hammer
+            Choose a range that best fits your weapon:
+            • CloseHand
+            • Reach
+            Choose two enhancements:
+            • Hooks and spikes. +1 damage, but +1 weight.
+            • Sharp. +2 piercing.
+            • Perfectly weighted. Add precise.
+            • Serrated edges. +1 damage.
+            • Glows in the presence of one type of creature, your choice.
+            • Huge. Add messy and forceful.
+            • Versatile. Choose an additional range.
+            • Well-crafted. -1 weight.
+            Choose a look:
+            • Blood-stained
+            • Sinister
+            • Ancient
+            • Unblemished
+            • Ornate
+- theif:
+    alignment_moves:
+      - chaotic:
+          name: Chaotic
+          text: |
+            Leap into danger without a plan.
+      - neutral:
+          name: Neutral
+          text: |
+            Avoid detection or infiltrate a location.
+      - evil:
+          name: Evil
+          text: |
+            Shift danger or blame from yourself to someone else.
+    bonds:
+      - I stole something from X.
+      - X has my back when things go wrong.
+      - X knows incriminating details about me.
+      - X and I have a con running.
+    damage_die: 8
+    hp_base: 6
+    name: Theif
+    race_moves:
+      - hafling:
+          name: Hafling
+          text: |
+            When you attack with a ranged weapon, deal +2 damage.
+      - human:
+          name: Human
+          text: |
+            You are a professional. When you Spout Lore or Discern Realities
+            about criminal activities, take +1.
+    starting_moves:
+      - backstab:
+          name: Backstab
+          text: |
+            When you attack a surprised or defenseless enemy with a melee
+            weapon, you can choose to deal your damage or roll+DEX. • On a 10+,
+            choose two. • On a 7–9, choose one:
+            • You don’t get into melee with them
+            • You deal your damage+1d6
+            • You create an advantage, +1 forward to you or an ally acting on it
+            • Reduce their armor by 1 until they repair it
+      - flexible_morals:
+          name: Flexible Morals
+          text: |
+            When someone tries to detect your alignment you can tell them any
+            alignment you like.
+      - trap_expert:
+          name: Trap Expert
+          text: |
+            When you spend a moment to survey a dangerous area, roll+DEX. • On a
+            10+, hold 3. • On a 7–9, hold 1. Spend your hold as you walk through
+            the area to ask these questions:
+            • Is there a trap here and if so, what activates it?
+            • What does the trap do when activated?
+            • What else is hidden here?
+      - tricks_of_the_trade:
+          name: Tricks Of The Trade
+          text: |
+            When you pick locks or pockets or disable traps, roll+DEX. • On a 10+, you do it, no problem. • On a 7–9, you still do it, but the GM will offer you two options between suspicion, danger, or cost.
+      - poisoner:
+          name: Poisoner
+          text: |
+            You’ve mastered the care and use of a poison. Choose a poison from
+            the list below; that poison is no longer dangerous for you to use.
+            You also start with three uses of the poison you choose. Whenever
+            you have time to gather materials and a safe place to brew you can
+            make three uses of the poison you choose for free. Note that some
+            poisons are applied, meaning you have to carefully apply it to the
+            target or something they eat or drink. Touch poisons just need to
+            touch the target, they can even be used on the blade of a weapon.
+            • Oil of Tagit: (applied) The target falls into a light sleep.
+            • Bloodweed: (touch) The target deals -1d4 damage ongoing until
+            cured.
+            • Goldenroot: (applied) The target treats the next creature they see
+            as a trusted ally, until proved otherwise.
+            • Serpent’s Tears: (touch) Anyone dealing damage to the target rolls
+            twice and takes the better result.

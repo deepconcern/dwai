@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { ButtonHTMLAttributes, FC } from "react";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "error" | "primary" | "success" | "warning";
+  variant?: "error" | "primary" | "success" | "warning" | null | false;
 };
 
 export const Button: FC<ButtonProps> = ({

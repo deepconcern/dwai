@@ -2,10 +2,11 @@ from sqlalchemy import Text, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from strawberry.dataloader import DataLoader
 from typing import Any, Dict, List, Type, TypeVar, Union
+from uuid import uuid4
 
 
 class Base(DeclarativeBase):
-    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    id: Mapped[str] = mapped_column(Text, default=lambda: str(uuid4()), primary_key=True)
 
 
 class DoesNotExistError(Exception):

@@ -19,12 +19,6 @@ const HOME_PAGE_QUERY = graphql(`
         name
       }
     }
-    characterClass {
-      all {
-        id
-        name
-      }
-    }
   }
 `);
 
@@ -61,19 +55,6 @@ export const HomePage: FC = () => {
           <ButtonLink to="/create-character" variant="primary">
             Create Character
           </ButtonLink>
-        </main>
-      </Container>
-      <Container title="Classes">
-        <main>
-          {data.characterClass.all.length > 0 && (
-            <ul>
-              {data.characterClass.all.map((c) => (
-                <li key={c.id}>
-                  <Link to={`/character-class/${c.id}`}>{c.name}</Link>
-                </li>
-              ))}
-            </ul>
-          )}
         </main>
       </Container>
     </Page>

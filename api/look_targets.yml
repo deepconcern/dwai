@@ -1,0 +1,125 @@
+decoration:
+  look_templates:
+    - bejeweled
+    - tattoos
+    - unmarred
+  name: Decoration
+body:
+  look_templates:
+    - built
+    - bulky
+    - creepy
+    - fit
+    - flabby
+    - knobby
+    - lithe
+    - long shanks
+    - mighty thews
+    - perfect skin
+    - pudgy
+    - ravaged
+    - ritual scars
+    - scrawny
+    - sharp
+    - strange brands
+    - supple
+    - thin
+    - well-fed
+    - wild
+  name: Body
+clothes:
+  look_templates:
+    - camouflage
+    - cape
+    - ceremonial garb
+    - common
+    - dark
+    - fancy
+    - finery
+    - flowing robes
+    - habit
+    - poor
+    - practical leathers
+    - scavenger’s outfit
+    - scraps
+    - silks
+    - traveling
+    - traveling clothes
+    - weather-inappropriate
+    - weathered hides
+  name: Clothes
+demeanour:
+  look_templates:
+    - barely-hidden rage
+    - imperious bearing
+    - manic attitude
+  name: Demeanour
+eyes:
+  look_templates:
+    - animal
+    - crazy
+    - criminal
+    - dead
+    - eager
+    - fiery
+    - fiery
+    - glowing
+    - hard
+    - haunted
+    - haunting
+    - joyous
+    - kind
+    - knowing
+    - sad
+    - searing
+    - sharp
+    - shifty
+    - shrouded
+    - smouldering
+    - tormented
+    - warm
+    - wild
+    - wise']
+  name: Eyes
+hair:
+  look_templates:
+    - bald
+    - battered helm
+    - braided
+    - cropped
+    - fancy
+    - furry hood
+    - helmet
+    - hooded
+    - messy
+    - pointed hat
+    - shorn
+    - strange
+    - styled
+    - stylish cap
+    - tonsure
+    - wild
+  name: Hair
+holy_symbol:
+  look_templates:
+    - fancy
+    - worn
+  name: Holy Symbol
+robes:
+  look_templates:
+    - stylish
+    - strange
+    - worn
+  name: Robes
+skin:
+  look_templates:
+    - calloused
+    - scarred
+    - tanned
+  name: Skin
+voice:
+  look_templates:
+    - crackling
+    - roaring
+    - whispering
+  name: Voice

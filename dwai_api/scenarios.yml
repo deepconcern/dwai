@@ -1,3 +1,0 @@
-- echo:
-    description: Debug scenario. Echoes everything back to user.
-    name: Echo

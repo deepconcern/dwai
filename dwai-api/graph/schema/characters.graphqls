@@ -1,0 +1,49 @@
+"A player character in the game."
+type Character {
+  "Unique identifier for the character."
+  id: ID!
+  "The character's name."
+  name: String!
+  "The character's appearance choices, one per look type."
+  looks: [Look!]!
+}
+
+"A single appearance choice made for a character."
+type Look {
+  "Unique identifier for this look entry."
+  id: ID!
+  "The chosen appearance value (e.g. 'Wild Eyes')."
+  value: String!
+  "The look type this value belongs to (e.g. Eyes, Hair). Null if the look type no longer exists."
+  lookType: LookType
+}
+
+"Input for creating a new character."
+input CreateCharacterInput {
+  "The character's name."
+  name: String!
+  "One look selection per look type."
+  looks: [NewLookInput!]!
+}
+
+"A single look selection when creating a character."
+input NewLookInput {
+  "The key of the look type being set."
+  lookTypeKey: String!
+  "The chosen appearance value."
+  value: String!
+}
+
+"Namespace for character queries."
+type CharacterQuery {
+  "Returns all characters."
+  all: [Character!]!
+  "Returns a single character by ID, or null if not found."
+  byId(id: ID!): Character
+}
+
+"Namespace for character mutations."
+type CharacterMutation {
+  "Creates a new character and returns it."
+  create(input: CreateCharacterInput!): Character!
+}

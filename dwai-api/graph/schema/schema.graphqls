@@ -1,0 +1,33 @@
+"ISO 8601 datetime string."
+scalar DateTime
+
+"UUID string identifier."
+scalar UUID
+
+type Query {
+  "Current API version string."
+  apiVersion: String!
+  "Queries for character classes (e.g. Fighter, Wizard)."
+  characterClasses: CharacterClassQuery!
+  "Queries for player characters."
+  characters: CharacterQuery!
+  "Queries for active games."
+  games: GameQuery!
+  "Queries for look types used when building a character's appearance."
+  lookTypes: LookTypeQuery!
+  "Queries for in-game messages."
+  messages: MessageQuery!
+  "Queries for moves available to characters."
+  moves: MoveQuery!
+  "Queries for playable scenarios."
+  scenarios: ScenarioQuery!
+}
+
+type Mutation {
+  "Mutations for player characters."
+  characters: CharacterMutation!
+  "Mutations for active games."
+  games: GameMutation!
+  "Mutations for in-game messages."
+  messages: MessageMutation!
+}

@@ -5,4 +5,4 @@ A combined "Dungeons & Dragons Beyond" for Dungeon World and playground for AI r
 ## Stack
 
 - FE: Vite, TypeScript (migrating to Next.js)
-- BE: Python, MongoDB (migrating to Rust, PostgreSQL)
+- BE: Go, PostgreSQL

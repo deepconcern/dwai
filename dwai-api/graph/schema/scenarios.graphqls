@@ -1,0 +1,17 @@
+"A pre-written adventure scenario that can be played."
+type Scenario {
+  "Unique key for this scenario."
+  key: ID!
+  "Human-readable scenario title."
+  name: String!
+  "A short summary of the scenario's premise."
+  description: String!
+}
+
+"Namespace for scenario queries."
+type ScenarioQuery {
+  "Returns all available scenarios."
+  all: [Scenario!]!
+  "Returns a single scenario by key, or null if not found."
+  byKey(key: ID!): Scenario
+}

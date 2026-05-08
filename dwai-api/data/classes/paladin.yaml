@@ -1,0 +1,146 @@
+name: Paladin
+description: Hell awaits. An eternity of torment in fire or ice or whatever best suits
+  the sins of the damned throngs of Dungeon World. All that stands between the pits
+  of that grim torture and salvation is you. Holy man, armored war machine, templar
+  of the Good and the Light, right? The cleric may say his prayers at night to the
+  gods, dwelling in their heavens. The fighter may wield his sharp sword in the name
+  of "good" but you know. Only you. Eyes, hands, and sweet killing blow of the gods,
+  you are. Yours is the gift of righteousness and virtue. Of justice. Vision, too.
+  A purity of intent that your companions do not have. So guide these fools, paladin.
+  Take up your holy cause and bring salvation to the wastrel world. Vae victis, right?
+hp_base: 10
+damage_die: 10
+names: [Thaddeus, Augustine, Lux, Cassius, Hadrian, Lucia, Octavia, Regulus, Valeria, Sanguinus, Titanius]
+looks:
+  eyes: [Kind Eyes, Fiery Eyes, Glowing Eyes]
+  hair: [Helmet, Styled Hair, Bald]
+  symbol: [Worn Holy Symbol, Fancy Holy Symbol]
+  body: [Fit Body, Bulky Body, Thin Body]
+race_moves:
+- name: Human
+  description: When you pray for guidance, even for a moment, and ask, "What here
+    is evil?" the GM will tell you, honestly.
+starting_moves:
+- name: Lay on Hands (Cha)
+  description: When you touch someone, skin to skin, and pray for their well-being,
+    roll+CHA. ✴On a 10+ you heal 1d8 damage or remove one disease. ✴On a 7–9, they
+    are healed, but the damage or disease is transferred to you.
+- name: Armored
+  description: You ignore the clumsy tag on armor you wear.
+- name: I Am the Law
+  description: 'When you give an NPC an order based on your divine authority, roll+Cha.
+    ✴On a 7+, they choose one: ✴On a 10+, you also take +1 forward against them. ✴On
+    a miss, they do as they please and you take -1 forward against them.'
+  options:
+  - Do what you say
+  - Back away cautiously, then flee
+  - Attack you
+- name: Quest
+  description: 'When you dedicate yourself to a mission through prayer and ritual
+    cleansing, state what you set out to do: Then choose up to two boons: The GM will
+    then tell you what vow or vows is required of you to maintain your blessing:'
+  options:
+  - Slay _______, a great blight on the land
+  - Defend _______ from the iniquities that beset them
+  - Discover the truth of _______
+  - An unwavering sense of direction to _______.
+  - Invulnerability to _______ (e.g., edged weapons, fire, enchantment, etc.)
+  - A mark of divine authority
+  - Senses that pierce lies
+  - A voice that transcends language
+  - A freedom from hunger, thirst, and sleep
+  - 'Honor (forbidden: cowardly tactics and tricks)'
+  - 'Temperance (forbidden: gluttony in food, drink, and pleasure of the flesh)'
+  - 'Piety (required: observance of daily holy services)'
+  - 'Valor (forbidden: suffering an evil creature to live)'
+  - 'Truth (forbidden: lies)'
+  - 'Hospitality (required: comfort to those in need, no matter who they are)'
+alignments:
+- alignment: Lawful
+  description: Deny mercy to a criminal or unbeliever.
+- alignment: Good
+  description: Endanger yourself to protect someone weaker than you.
+starting_gear:
+  load_base: 12
+  default:
+    - Dungeon rations (5 uses, 1 weight)
+    - Scale armor (2 armor, 3 weight)
+    - Mark of faith (describe it, 0 weight)
+  options:
+  - Halberd (reach, +1 damage, two-handed, 2 weight)
+  - Long sword (close, +1 damage, 1 weight) and shield (+1 armor, 2 weight)
+  - Adventuring gear (1 weight)
+  - Dungeon rations (1 weight) and healing potion (0 weight)
+bonds:
+- _______________'s misguided behavior endangers their very soul!
+- _______________ has stood by me in battle and can be trusted completely.
+- I respect the beliefs of _______________ but hope they will someday see the true way.
+- _______________ is a brave soul, I have much to learn from them.
+advanced_moves_2_5:
+- name: Divine Favor
+  description: Dedicate yourself to a deity (name a new one or choose one that's already
+    been established). You gain the commune and cast a spell cleric moves. When you
+    select this move, treat yourself as a cleric of level 1 for using spells. Every
+    time you gain a level thereafter, increase your effective cleric level by 1.
+- name: Bloody Aegis
+  description: When you take damage you can grit your teeth and accept the blow. If
+    you do you take no damage but instead suffer a debility of your choice. If you
+    already have all six debilities you can't use this move.
+- name: Smite
+  description: While on a quest you deal +1d4 damage.
+- name: Exterminatus
+  description: When you speak aloud your promise to defeat an enemy, you deal +2d4
+    damage against that enemy and -4 damage against anyone else. This effect lasts
+    until the enemy is defeated. If you fail to defeat the enemy or give up the fight,
+    you can admit your failure, but the effect continues until you find a way to redeem
+    yourself.
+- name: Charge!
+  description: When you lead the charge into combat, those you lead take +1 forward.
+- name: Staunch Defender
+  description: When you defend you always get +1 hold, even on a 6-.
+- name: Setup Strike
+  description: When you hack and slash, choose an ally. Their next attack against
+    your target does +1d4 damage.
+- name: Holy Protection
+  description: You get +1 armor while on a quest.
+- name: Voice of Authority
+  description: Take +1 to order hirelings.
+- name: Hospitaller
+  description: When you heal an ally, you heal +1d8 damage.
+advanced_moves_6_10:
+- name: Evidence of Faith
+  description: When you see divine magic as it happens, you can ask the GM which deity
+    granted the spell and its effects. Take +1 when acting on the answers.
+  requirement: 'Requires: Divine Favor'
+- name: Holy Smite
+  description: While on a quest you deal +1d8 damage.
+  requirement: 'Replaces: Smite'
+- name: Ever Onward
+  description: When you lead the charge into combat, those you lead take +1 forward
+    and +2 armor forward.
+  requirement: 'Replaces: Charge!'
+- name: Impervious Defender
+  description: When you defend you always get +1 hold, even on a 6-. When you get
+    a 12+ to defend instead of getting hold the nearest attacking creature is stymied
+    giving you a clear advantage, the GM will describe it.
+  requirement: 'Replaces: Staunch Defender'
+- name: Tandem Strike
+  description: When you hack and slash, choose an ally. Their next attack against
+    your target does +1d4 damage and they take +1 forward against them.
+  requirement: 'Replaces: Setup Strike'
+- name: Divine Protection
+  description: You get +2 armor while on a quest.
+  requirement: 'Replaces: Holy Protection'
+- name: Divine Authority
+  description: Take +1 to order hirelings. When you roll a 12+ the hireling transcends
+    their moment of fear and doubt and carries out your order with particular effectiveness
+    or efficiency.
+  requirement: 'Replaces: Voice of Authority'
+- name: Perfect Hospitaller
+  description: When you heal an ally, you heal +2d8 damage.
+  requirement: 'Replaces: Hospitaller'
+- name: Indomitable
+  description: When you suffer a debility (even through Bloody Aegis) take +1 forward
+    against whatever caused it.
+- name: Perfect Knight
+  description: When you quest you choose three boons instead of two.

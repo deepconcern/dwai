@@ -1,0 +1,23 @@
+"A message in the game's conversation history."
+type Message {
+  "Unique identifier for the message."
+  id: UUID!
+  "Who sent the message (e.g. the player's character name or 'assistant')."
+  author: String!
+  "The message text."
+  content: String!
+  "When the message was sent."
+  datetime: DateTime!
+}
+
+"Namespace for message queries."
+type MessageQuery {
+  "Returns all messages in the current game's conversation."
+  all: [Message!]!
+}
+
+"Namespace for message mutations."
+type MessageMutation {
+  "Sends a player message and returns the resulting assistant reply."
+  send(content: String!): Message!
+}

@@ -33,7 +33,7 @@ import { useErrorLogging } from "../hooks/useErrorLogging";
 import { CharacterClass, Move, NewLookInput } from "../gql/graphql";
 
 type AlignmentType =
-    | "chaotic"    
+    | "chaotic"
     | "evil"
     | "good"
     | "lawful"
@@ -41,7 +41,7 @@ type AlignmentType =
 
 const ATTRIBUTE_SCORES = [16, 15, 13, 12, 9, 8];
 
-const CREATE_CHARACTER_MUTATION = graphql(`mutation CreateCharacter($input: NewCharacterInput!) {
+const CREATE_CHARACTER_MUTATION = graphql(`mutation CreateCharacter($input: CreateCharacterInput!) {
     characters {
         create(input: $input) {
             id
@@ -53,26 +53,29 @@ const CREATE_CHARACTER_MUTATION = graphql(`mutation CreateCharacter($input: NewC
 const GET_CHARACTER_CLASSES_QUERY = graphql(`query GetCharacterClasses {
     characterClasses {
         all {
-            alignmentMoves {
-                key
-                name
-                text
-                type
+            alignmentTemplates {
+                alignment
+                description
             }
+            bonds
             damageDie
             hpBase
             key
+            lookExamples {
+                examples
+                type
+            }
             name
             raceMoves {
                 key
                 name
-                text
+                trigger
                 type
             }
             startingMoves {
                 key
                 name
-                text
+                trigger
                 type
             }
         }
@@ -94,7 +97,7 @@ const GET_MOVES_QUERY = graphql(`query GetMoves {
         all {
             key
             name
-            text
+            trigger
             type
         }
     }
@@ -125,7 +128,7 @@ const MoveCard: FC<{
         }} variant="outlined">
             <CardContent>
                 <Typography component="div" variant="h5">{move.name}</Typography>
-                {move.text.split("\n").map((line, i) => (
+                {move.trigger.split("\n").map((line, i) => (
                     <Typography key={i}>{line}</Typography>
                 ))}
             </CardContent>
@@ -158,22 +161,22 @@ const Alignment: FC<{
         <>
             <Typography variant="h5">Alignment</Typography>
             <List>
-                {characterClass.alignmentMoves.map((move) => (
-                    <ListItemButton key={move.key} onClick={handleAlignmentSelect(move.key)} selected={move.key === alignmentKey}>
-                        {move.key === alignmentKey && (
+                {characterClass.alignmentTemplates.map((template) => (
+                    <ListItemButton key={template.alignment} onClick={handleAlignmentSelect(template.alignment)} selected={template.alignment === alignmentKey}>
+                        {template.alignment === alignmentKey && (
                             <ListItemIcon>
-                                <CheckCircleIcon/>
+                                <CheckCircleIcon />
                             </ListItemIcon>
                         )}
-                        <ListItemText primary={move.name} secondary={move.text}/>
+                        <ListItemText primary={template.alignment} secondary={template.description} />
                     </ListItemButton>
                 ))}
                 <ListItemButton onClick={handleAlignmentSelect("custom")} selected={alignmentKey === "custom"}>
                     {alignmentKey === "custom" && (
-                            <ListItemIcon>
-                                <CheckCircleIcon/>
-                            </ListItemIcon>
-                        )}
+                        <ListItemIcon>
+                            <CheckCircleIcon />
+                        </ListItemIcon>
+                    )}
                     <FormControl fullWidth sx={{ flex: 1 }}>
                         <InputLabel>Alignment Type</InputLabel>
                         <Select label="Alignment Type" onChange={handleAlignmentTypeChange} value={alignmentType}>
@@ -182,7 +185,7 @@ const Alignment: FC<{
                             ))}
                         </Select>
                     </FormControl>
-                    <TextField label="Description" onChange={handleAlignmentTextChange} sx={{ flex: 2 }} value={alignmentText}/>
+                    <TextField label="Description" onChange={handleAlignmentTextChange} sx={{ flex: 2 }} value={alignmentText} />
                 </ListItemButton>
             </List>
         </>
@@ -192,7 +195,7 @@ const Alignment: FC<{
 const Attributes: FC<{
     onScoreChange: (scoreIndex: number) => (ev: any, newValue: string) => void,
     scores: (number | null)[],
-}> = ({ onScoreChange, scores}) => (
+}> = ({ onScoreChange, scores }) => (
     <>
         <Typography variant="h5">Attributes</Typography>
         <Box>
@@ -217,8 +220,8 @@ const Attributes: FC<{
                         if (modifier > -1) return `${option} (+${modifier})`;
                         return `${option} (${modifier})`;
                     }} key={i} onInputChange={onScoreChange(i)} options={["", ...ATTRIBUTE_SCORES]} renderInput={params => (
-                        <TextField {...params} label={scoreLabel}/>
-                    )} value={score}/>
+                        <TextField {...params} label={scoreLabel} />
+                    )} value={score} />
                 );
             })}
         </Box>
@@ -260,10 +263,10 @@ const RaceSelect: FC<{
                     <ListItemButton key={move.key} onClick={handleRaceSelect(move.key)} selected={raceKey === move.key}>
                         {raceKey === move.key && (
                             <ListItemIcon>
-                                <CheckCircleIcon/>
+                                <CheckCircleIcon />
                             </ListItemIcon>
                         )}
-                        <ListItemText primary={move.name} secondary={move.text}/>
+                        <ListItemText primary={move.name} secondary={move.trigger} />
                     </ListItemButton>
                 ))}
             </List>
@@ -388,7 +391,7 @@ export const CreateCharacterPage: FC = () => {
             <FormControl fullWidth>
                 <InputLabel>Character Class</InputLabel>
                 <Select fullWidth label="Character Class" onChange={handleCharacterClassChange} value={characterClassKey}>
-                    {getCharacterClassesData?.characterClasses.all.map(({ key, name}) => (
+                    {getCharacterClassesData?.characterClasses.all.map(({ key, name }) => (
                         <MenuItem key={key} value={key}>{name}</MenuItem>
                     ))}
                 </Select>
@@ -400,9 +403,9 @@ export const CreateCharacterPage: FC = () => {
     const looksContent = useMemo(() => {
         if (getLookTypesLoading) return (
             <>
-                <Skeleton/>
-                <Skeleton/>
-                <Skeleton/>
+                <Skeleton />
+                <Skeleton />
+                <Skeleton />
             </>
         );
 
@@ -415,7 +418,7 @@ export const CreateCharacterPage: FC = () => {
                 {looks.map(({ lookTypeKey, value }, i) => (
                     <ListItem key={i} secondaryAction={
                         <IconButton onClick={handleLookDelete(i)}>
-                            <DeleteIcon/>
+                            <DeleteIcon />
                         </IconButton>
                     }>
                         <Box sx={{ display: "flex", gap: 3, mr: 3, width: "100%" }}>
@@ -426,12 +429,12 @@ export const CreateCharacterPage: FC = () => {
                             </Select>
                             <Autocomplete freeSolo onInputChange={handleLookValueChange(i)} options={lookTypes.find(l => l.key === lookTypeKey)?.examples || []} renderInput={params => (
                                 <TextField {...params} fullWidth />
-                            )} sx={{ flex: 1 }} value={value}/>
+                            )} sx={{ flex: 1 }} value={value} />
                         </Box>
                     </ListItem>
                 ))}
                 <ListItemButton onClick={handleLookAdd}>
-                    <ListItemIcon><AddIcon/></ListItemIcon>
+                    <ListItemIcon><AddIcon /></ListItemIcon>
                     <ListItemText>Add look</ListItemText>
                 </ListItemButton>
             </List>
@@ -440,29 +443,29 @@ export const CreateCharacterPage: FC = () => {
     }, [getLookTypesData, getLookTypesError, getLookTypesLoading, looks]);
 
     const movesContent = useMemo(() => {
-        if (getCharacterClassesLoading || getMovesLoading) return <Skeleton/>;
+        if (getCharacterClassesLoading || getMovesLoading) return <Skeleton />;
         if (getCharacterClassesError || !characterClass || getMovesError || !getMovesData) return "ERROR";
 
         return (
             <>
                 <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
                     <Tabs onChange={handleMoveTabChange} value={moveTab}>
-                        <Tab label="Class Moves" value="class"/>
-                        <Tab label="Basic Moves" value="basic"/>
-                        <Tab label="Special Moves" value="special"/>
+                        <Tab label="Class Moves" value="class" />
+                        <Tab label="Basic Moves" value="basic" />
+                        <Tab label="Special Moves" value="special" />
                     </Tabs>
                 </Box>
                 <Grid container spacing={3}>
                     {moveTab === "class" && (
                         characterClass?.startingMoves.map((move) => (
                             <Grid key={move.key} xs={6}>
-                                <MoveCard move={move}/>
+                                <MoveCard move={move} />
                             </Grid>
                         ))
                     )}
                     {getMovesData.moves.all.filter(m => m.type === moveTab).map((move) => (
                         <Grid key={move.key} xs={6}>
-                            <MoveCard move={move}/>
+                            <MoveCard move={move} />
                         </Grid>
                     ))}
                 </Grid>
@@ -475,7 +478,7 @@ export const CreateCharacterPage: FC = () => {
             <Paper component="form" sx={{ p: 3 }}>
                 <Grid container spacing={3}>
                     <Grid xs={8}>
-                        <TextField fullWidth label="Name" onChange={handleNameChange} sx={{ mb: 3 }} value={name} variant="outlined"/>
+                        <TextField fullWidth label="Name" onChange={handleNameChange} sx={{ mb: 3 }} value={name} variant="outlined" />
                     </Grid>
                     <Grid xs={4}>
                         {characterClassContent}
@@ -484,20 +487,20 @@ export const CreateCharacterPage: FC = () => {
                     {characterClass && (
                         <>
                             <Grid xs={6}>
-                                <RaceSelect characterClass={characterClass} onRaceKeyChange={handleRaceChange} raceKey={raceKey}/>
+                                <RaceSelect characterClass={characterClass} onRaceKeyChange={handleRaceChange} raceKey={raceKey} />
                             </Grid>
                             <Grid xs={6}>
                                 <Alignment alignmentKey={alignmentKey} alignmentText={alignmentText} alignmentType={alignmentType} characterClass={characterClass} onAlignmentKeyChange={setAlignmentKey} onAlignmentTextChange={setAlignmentText} onAlignmentTypeChange={setAlignmentType} />
                             </Grid>
                             <Grid xs={12}>
-                                <BasicInfo characterClass={characterClass} scores={scores}/>
+                                <BasicInfo characterClass={characterClass} scores={scores} />
                             </Grid>
                             <Grid xs={6}>
                                 <Typography variant="h5">Looks</Typography>
                                 {looksContent}
                             </Grid>
                             <Grid xs={6}>
-                                <Attributes onScoreChange={handleScoreChange} scores={scores}/>
+                                <Attributes onScoreChange={handleScoreChange} scores={scores} />
                             </Grid>
                             <Grid xs={12}>
                                 {movesContent}

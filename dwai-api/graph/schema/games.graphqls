@@ -1,0 +1,25 @@
+"An active game session linking a character to a scenario."
+type Game {
+  "Unique identifier for the game."
+  id: ID!
+  "Human-readable name for this game session."
+  name: String!
+  "ID of the character playing in this game."
+  characterId: String!
+  "Key of the scenario being played."
+  scenarioKey: String!
+}
+
+"Namespace for game queries."
+type GameQuery {
+  "Returns all games."
+  all: [Game!]!
+  "Returns a single game by ID, or null if not found."
+  byId(id: ID!): Game
+}
+
+"Namespace for game mutations."
+type GameMutation {
+  "Creates a new game session and returns it."
+  create(characterId: String!, name: String!, scenarioKey: String!): Game!
+}

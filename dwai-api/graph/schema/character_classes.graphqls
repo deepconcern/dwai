@@ -1,0 +1,44 @@
+"An example of an alignment a player may use"
+type AlignmentTemplate {
+  "The alignment type"
+  alignment: String!
+  "A description of what their goals are"
+  description: String!
+}
+
+type LookExample {
+  "The type of look (e.g. clothing, hair, etc.)"
+  type: String!
+  "Examples of looks for this type."
+  examples: [String!]!
+}
+
+"A playable character class as defined by the Dungeon World ruleset (e.g. Fighter, Wizard)."
+type CharacterClass {
+  "Moves available when choosing an alignment for this class."
+  alignmentTemplates: [AlignmentTemplate!]!
+  "Example bonds templates."
+  bonds: [String!]!
+  "The die used for damage rolls (e.g. 8 for d8)."
+  damageDie: Int!
+  "Base hit points before adding Constitution modifier."
+  hpBase: Int!
+  "Unique key for this class."
+  key: ID!
+  "Examples of looks commonly associated with this class."
+  lookExamples: [LookExample!]!
+  "Human-readable class name."
+  name: String!
+  "Moves available when choosing a race for this class."
+  raceMoves: [Move!]!
+  "Moves every character of this class begins with."
+  startingMoves: [Move!]!
+}
+
+"Namespace for character class queries."
+type CharacterClassQuery {
+  "Returns all character classes."
+  all: [CharacterClass!]!
+  "Returns a single character class by key, or null if not found."
+  byKey(key: ID!): CharacterClass!
+}

@@ -1,0 +1,195 @@
+name: Fighter
+description:
+  It's a thankless job—living day to day by your armor and the skill of
+  your arm. To dive heedlessly into danger. They won't be playing golden horns for
+  the time you took that knife to the ribs for them in the bar in Bucksberg. No flock
+  of angels to sing of the time you dragged them, still screaming, from the edge of
+  the Pits of Madness, no. Forget them. You do this for the guts and the glory. The
+  scream of battle and the hot, hot blood of it. You are a beast of iron. Your friends
+  may carry blades of forged steel but, fighter, you are steel. While your traveling
+  companions might moan about their wounds over a campfire in the wilderness, you
+  bear your scars with pride. You are the wall—let every danger smash itself to nothing
+  on you. In the end, you'll be the last one standing.
+hp_base: 10
+damage_die: 10
+names:
+  dwarf:
+    [Ozruk, Surtur, Brunhilda, Annika, Janos, Greta, Dim, Rundrig, Jarl, Xotoq]
+  elf:
+    [Elohiir, Sharaseth, Hasrith, Shevaral, Cadeus, Eldar, Kithracet, Thelian]
+  halfling: [Finnegan, Olive, Randolph, Bartleby, Aubrey, Baldwin, Becca]
+  human: [Hawke, Rudiger, Gregor, Brianne, Walton, Castor, Shanna, Ajax, Hob]
+looks:
+  eyes: [Hard Eyes, Dead Eyes, Eager Eyes]
+  hair: [Wild Hair, Shorn Hair, Battered Helm]
+  skin: [Calloused Skin, Tanned Skin, Scarred Skin]
+  body: [Built Body, Lithe Body, Ravaged Body]
+race_moves:
+  - name: Dwarf
+    description:
+      When you share a drink with someone, you may parley with them using
+      CON instead of CHA.
+  - name: Elf
+    description:
+      Choose one weapon—you can always treat weapons of that type as if they
+      had the precise tag.
+  - name: Halfling
+    description:
+      When you defy danger and use your small size to your advantage, take
+      +1.
+  - name: Human
+    description:
+      Once per battle you may reroll a single damage roll (yours or someone
+      else's).
+starting_moves:
+  - name: Bend Bars, Lift Gates
+    description:
+      When you use pure strength to destroy an inanimate obstacle, roll+Str.
+      ✴On a 10+, choose 3. ✴On a 7-9 choose 2.
+    options:
+      - It doesn't take a very long time
+      - Nothing of value is damaged
+      - It doesn't make an inordinate amount of noise
+      - You can fix the thing again without a lot of effort
+  - name: Armored
+    description: You ignore the clumsy tag on armor you wear.
+  - name: Signature Weapon
+    description:
+      "This is your weapon. There are many like it, but this one is yours.
+      Your weapon is your best friend. It is your life. You master it as you master
+      your life. Your weapon, without you, is useless. Without your weapon, you are
+      useless. You must wield your weapon true. Choose a base description, all are 2
+      weight: Choose the range that best fits your weapon: Choose two enhancements:
+      Choose a look:"
+    options:
+      - Sword
+      - Axe
+      - Hammer
+      - Spear
+      - Flail
+      - Fists
+      - Hand
+      - Close
+      - Reach
+      - Hooks and spikes. +1 damage, but +1 weight.
+      - Sharp. +2 piercing.
+      - Perfectly weighted. Add precise.
+      - Serrated edges. +1 damage.
+      - Glows in the presence of one type of creature, your choice.
+      - Huge. Add messy and forceful.
+      - Versatile. Choose an additional range.
+      - Well-crafted. -1 weight.
+      - Ancient
+      - Unblemished
+      - Ornate
+      - Blood-stained
+      - Sinister
+alignments:
+  - alignment: Good
+    description: Defend those weaker than you.
+  - alignment: Neutral
+    description: Defeat a worthy opponent.
+  - alignment: Evil
+    description: Kill a defenseless or surrendered enemy.
+starting_gear:
+  load_base: 12
+  default:
+    - Signature weapon
+    - Dungeon rations (5 uses, 1 weight)
+  options:
+    - Chainmail (1 armor, 1 weight) and adventuring gear (1 weight)
+    - Scale armor (2 armor, 3 weight)
+    - 2 Healing potions (0 weight)
+    - Shield (+1 armor, 2 weight)
+    - Antitoxin (0 weight), dungeon rations (1 weight), and poultices and herbs (1 weight)
+    - 22 coins
+bonds:
+  - _______________ owes me their life, whether they admit it or not.
+  - I have sworn to protect _______________.
+  - I worry about the ability of _______________ to survive in the dungeon.
+  - _______________ is soft, but I will make them hard like me.
+advanced_moves_2_5:
+  - name: Merciless
+    description: When you deal damage, deal +1d4 damage.
+  - name: Heirloom
+    description:
+      When you consult the spirits that reside within your signature weapon,
+      they will give you an insight relating to the current situation, and might ask
+      you some questions in return, roll+CHA. ✴On a 10+, the GM will give you good detail.
+      ✴On a 7-9, the GM will give you an impression.
+  - name: Armor Mastery
+    description:
+      When you make your armor take the brunt of damage dealt to you, the
+      damage is negated but you must reduce the armor value of your armor or shield
+      (your choice) by 1. The value is reduced each time you make this choice. If the
+      reduction leaves the item with 0 armor it is destroyed.
+  - name: Improved Weapon
+    description: Choose one extra enhancement for your signature weapon.
+  - name: Seeing Red
+    description: When you discern realities during combat, you take +1.
+  - name: Interrogator
+    description:
+      When you parley using threats of impending violence as leverage, you
+      may use STR instead of CHA.
+  - name: Scent of Blood
+    description:
+      When you hack and slash an enemy, your next attack against that same
+      foe deals +1d4 damage.
+  - name: Multiclass Dabbler
+    description:
+      Get one move from another class. Treat your level as one lower for
+      choosing the move.
+  - name: Iron Hide
+    description: You gain +1 armor.
+  - name: Blacksmith
+    description:
+      When you have access to a forge you can graft the magical powers of
+      a weapon onto your signature weapon. This process destroys the magical weapon.
+      Your signature weapon gains the magical powers of the destroyed weapon.
+advanced_moves_6_10:
+  - name: Bloodthirsty
+    description: When you deal damage, deal +1d8 damage.
+    requirement: "Replaces: Merciless"
+  - name: Armored Perfection
+    description:
+      When you choose to let your armor take the brunt of damage dealt to
+      you, the damage is negated and you take +1 forward against the attacker, but you
+      must reduce the armor value of your armor or shield (your choice) by 1. The value
+      is reduced each time you make this choice. If the reduction leaves the item with
+      0 armor it is destroyed.
+    requirement: "Replaces: Armor Mastery"
+  - name: Evil Eye
+    description:
+      When you enter combat, roll+CHA. ✴On a 10+, hold 2. ✴On a 7-9, hold
+      1. Spend your hold to make eye contact with an NPC present, who freezes or flinches
+      and can't act until you break it off. ✴On a 6-, your enemies immediately identify
+      you as their biggest threat.
+    requirement: "Requires: Seeing Red"
+  - name: Taste of Blood
+    description:
+      When you hack and slash an enemy, your next attack against that same
+      foe deals +1d8 damage.
+    requirement: "Replaces: Scent of Blood"
+  - name: Multiclass Initiate
+    description:
+      Get one move from another class. Treat your level as one lower for
+      choosing the move.
+    requirement: "Requires: Multiclass Dabbler"
+  - name: Steel Hide
+    description: You gain +2 armor.
+    requirement: "Replaces: Iron Hide"
+  - name: Through Death's Eyes
+    description:
+      When you go into battle, roll+WIS. ✴On a 10+, name someone who will
+      live and someone who will die. ✴On a 7-9, name someone who will live or someone
+      who will die. Name NPCs, not player characters. The GM will make your vision come
+      true, if it's even remotely possible. ✴On a 6- you see your own death and consequently
+      take -1 ongoing throughout the battle.
+  - name: Eye for Weaponry
+    description:
+      When you look over an enemy's weaponry, ask the GM how much damage
+      they do.
+  - name: Superior Warrior
+    description:
+      When you hack and slash on a 12+ you deal your damage, avoid their
+      attack, and impress, dismay, or frighten your enemy.

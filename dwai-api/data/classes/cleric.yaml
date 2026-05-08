@@ -1,0 +1,180 @@
+name: Cleric
+description: The lands of Dungeon World are a gods-forsaken mess. They're lousy with
+  the walking dead, beasts of all sorts, and the vast unnatural spaces between safe
+  and temple-blessed civilizations. It is a godless world out there. That's why it
+  needs you. Bringing the glory of your god to the heathens isn't just in your nature—it's
+  your calling. It falls to you to proselytize with sword and mace and spell. To cleave
+  deep into the witless heart of the wilds and plant the seed of divinity there. Some
+  say that it is best to keep god close to your heart. You know that's rubbish. God
+  lives at the edge of a blade. Show the world who is lord.
+hp_base: 8
+damage_die: 6
+names:
+  dwarf: [Durga, Aelfar, Gerda, Rurgosh, Bjorn, Drummond, Helga, Siggrun, Freya]
+  human: [Wesley, Brinton, Jon, Sara, Hawthorn, Elise, Clarke, Lenore, Piotr, Dahlia, Carmine]
+looks:
+  eyes: [Kind Eyes, Sharp Eyes, Sad Eyes]
+  hair: [Tonsure, Strange Hair, Bald]
+  clothing: [Flowing Robes, Habit, Common Garb]
+  body: [Thin Body, Knobby Body, Flabby Body]
+race_moves:
+- name: Dwarf
+  description: You are one with stone. When you commune you are also granted a special
+    version of Words of the Unspeaking as a rote which only works on stone.
+- name: Human
+  description: Your faith is diverse. Choose one wizard spell. You can cast and be
+    granted that spell as if it was a cleric spell.
+starting_moves:
+- name: Deity
+  description: 'You serve and worship some deity or power which grants you spells.
+    Give your god a name (maybe Helferth, Sucellus, Zorica or Krugon the Bleak) and
+    choose your deity''s domain: Choose one precept of your religion:'
+  options:
+  - Healing and Restoration
+  - Bloody Conquest
+  - Civilization
+  - Knowledge and Hidden Things
+  - The Downtrodden and Forgotten
+  - What Lies Beneath
+  - 'Your religion preaches the sanctity of suffering, add Petition: Suffering'
+  - 'Your religion is cultish and insular, add Petition: Gaining Secrets'
+  - 'Your religion has important sacrificial rites, add Petition: Offering'
+  - 'Your religion believes in trial by combat, add Petition: Personal Victory'
+- name: Divine Guidance
+  description: When you petition your deity according to the precept of your religion,
+    you are granted some useful knowledge or boon related to your deity's domain.
+    The GM will tell you what.
+- name: Turn Undead
+  description: When you hold your holy symbol aloft and call on your deity for protection,
+    roll+Wis. ✴On a 7+, so long as you continue to pray and brandish your holy symbol,
+    no undead may come within reach of you. ✴On a 10+, you also momentarily daze intelligent
+    undead and cause mindless undead to flee. Aggression breaks the effects and they
+    are able to act as normal. Intelligent undead may still find ways to harry you
+    from afar. They're clever like that.
+- name: Commune
+  description: 'When you spend uninterrupted time (an hour or so) in quiet communion
+    with your deity, you:'
+  options:
+  - Lose any spells already granted to you.
+  - Are granted new spells of your choice whose total levels don't exceed your own
+    level+1, and none of which is a higher level than your own level.
+  - Prepare all of your rotes, which never count against your limit.
+- name: Cast a Spell
+  description: 'When you unleash a spell granted to you by your deity, roll+Wis. ✴On
+    a 10+, the spell is successfully cast and your deity does not revoke the spell,
+    so you may cast it again. ✴On a 7–9, the spell is cast, but choose one: Note that
+    maintaining spells with ongoing effects will sometimes cause a penalty to your
+    roll to cast a spell.'
+  options:
+  - You draw unwelcome attention or put yourself in a spot. The GM will tell you how.
+  - Your casting distances you from your deity—take -1 ongoing to cast a spell until
+    the next time you commune.
+  - After you cast it, the spell is revoked by your deity. You cannot cast the spell
+    again until you commune and have it granted to you.
+alignments:
+- alignment: Good
+  description: Endanger yourself to heal another.
+- alignment: Lawful
+  description: Endanger yourself following the precepts of your church or god.
+- alignment: Evil
+  description: Harm another to prove the superiority of your church or god.
+starting_gear:
+  load_base: 10
+  default:
+    - Dungeon rations (5 uses, 1 weight)
+    - Symbol of the divine (describe it, 0 weight)
+  options:
+  - Chainmail (1 armor, 1 weight)
+  - Shield (+1 armor, 2 weight)
+  - Warhammer (close, 1 weight)
+  - Mace (close, 1 weight)
+  - Staff (close, two-handed, 1 weight) and bandages (0 weight)
+  - Adventuring gear (1 weight) and dungeon rations (5 uses, 1 weight)
+  - Healing potion (0 weight)
+bonds:
+- _______________ has insulted my deity; I do not trust them.
+- _______________ is a good and faithful person; I trust them implicitly.
+- _______________ is in constant danger, I will keep them safe.
+- I am working on converting _______________ to my faith.
+advanced_moves_2_5:
+- name: Chosen One
+  description: Choose one spell. You are granted that spell as if it was one level
+    lower.
+- name: Invigorate
+  description: When you heal someone they take +2 forward to their damage.
+- name: The Scales of Life and Death
+  description: When someone takes their last breath in your presence, they take +1
+    to the roll.
+- name: Serenity
+  description: When you cast a spell you ignore the first -1 penalty from ongoing
+    spells.
+- name: First Aid
+  description: Cure Light Wounds is a rote for you, and therefore doesn't count against
+    your limit of granted spells.
+- name: Divine Intervention
+  description: When you commune you get 1 hold and lose any hold you already had.
+    Spend that hold when you or an ally takes damage to call on your deity, they intervene
+    with an appropriate manifestation (a sudden gust of wind, a lucky slip, a burst
+    of light) and negate the damage.
+- name: Penitent
+  description: When you take damage and embrace the pain, you may take +1d4 damage
+    (ignoring armor). If you do, take +1 forward to cast a spell.
+- name: Empower
+  description: 'When you cast a spell, on a 10+ you have the option of choosing from
+    the 7–9 list. If you do, you may choose one of these effects as well:'
+  options:
+  - The spell's effects are doubled
+  - The spell's targets are doubled
+- name: Orison for Guidance
+  description: When you sacrifice something of value to your deity and pray for guidance,
+    your deity tells you what it would have you do. If you do it, mark experience.
+- name: Divine Protection
+  description: When you wear no armor or shield you get 2 armor.
+- name: Devoted Healer
+  description: When you heal someone else of damage, add your level to the amount
+    of damage healed.
+advanced_moves_6_10:
+- name: Anointed
+  description: Choose one spell in addition to the one you picked for chosen one.
+    You are granted that spell as if it was one level lower.
+  requirement: 'Requires: Chosen One'
+- name: Apotheosis
+  description: The first time you spend time in prayer as appropriate to your god
+    after taking this move, choose a feature associated with your deity (rending claws,
+    wings of sapphire feathers, an all-seeing third eye, etc.). When you emerge from
+    prayer, you permanently gain that physical feature.
+- name: Reaper
+  description: When you take time after a conflict to dedicate your victory to your
+    deity and deal with the dead, take +1 forward.
+- name: Providence
+  description: You ignore the -1 penalty from two spells you maintain.
+  requirement: 'Replaces: Serenity'
+- name: Greater First Aid
+  description: Cure Moderate Wounds is a rote for you, and therefore doesn't count
+    against your limit of granted spells.
+  requirement: 'Requires: First Aid'
+- name: Divine Invincibility
+  description: When you commune you gain 2 hold and lose any hold you already had.
+    Spend that hold when you or an ally takes damage to call on your deity, who intervenes
+    with an appropriate manifestation (a sudden gust of wind, a lucky slip, a burst
+    of light) and negates the damage.
+  requirement: 'Replaces: Divine Intervention'
+- name: Martyr
+  description: When you take damage and embrace the pain, you may take +1d4 damage
+    (ignoring armor). If you do, take +1 forward to cast a spell and add your level
+    to any damage done or healed by the spell.
+  requirement: 'Replaces: Penitent'
+- name: Divine Armor
+  description: When you wear no armor or shield you get 3 armor.
+  requirement: 'Replaces: Divine Protection'
+- name: Greater Empower
+  description: When you cast a spell, on a 10–11 you have the option of choosing from
+    the 7–9 list. If you do, you may choose one of these effects as well. On a 12+
+    you get to choose one of these effects for free.
+  requirement: 'Replaces: Empower'
+  options:
+  - The spell's effects are doubled
+  - The spell's targets are doubled
+- name: Multiclass Dabbler
+  description: Get one move from another class. Treat your level as one lower for
+    choosing the move.

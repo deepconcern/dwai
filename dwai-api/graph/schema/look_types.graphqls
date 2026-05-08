@@ -1,0 +1,15 @@
+"A category of appearance choice available when creating a character (e.g. Eyes, Hair, Body)."
+type LookType {
+  "Unique key for this look type."
+  key: ID!
+  "Human-readable name (e.g. 'Eyes')."
+  name: String!
+  "Example values players can choose from (e.g. 'Wild Eyes', 'Sunken Eyes')."
+  examples: [String!]!
+}
+
+"Namespace for look type queries."
+type LookTypeQuery {
+  "Returns all look types."
+  all: [LookType!]!
+}

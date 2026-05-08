@@ -1,0 +1,19 @@
+"An action or ability a character can perform, as defined by the Dungeon World ruleset."
+type Move {
+  "Unique key for this move."
+  key: ID!
+  "Human-readable name of the move."
+  name: String!
+  "The trigger for when a move is used."
+  trigger: String!
+  "Category of the move (e.g. 'starting', 'alignment', 'race')."
+  type: String!
+}
+
+"Namespace for move queries."
+type MoveQuery {
+  "Returns all moves."
+  all: [Move!]!
+  "Returns a single move by key, or null if not found."
+  byKey(key: ID!): Move!
+}

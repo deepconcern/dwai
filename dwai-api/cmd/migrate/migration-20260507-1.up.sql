@@ -1,6 +1,12 @@
 CREATE TABLE characters (
+    charisma INT NOT NULL,
+    constitution INT NOT NULL,
+    dexterity INT NOT NULL,
     id UUID PRIMARY KEY DEFAULT uuidv7(),
-    name TEXT NOT NULL
+    intelligence INT NOT NULL,
+    name TEXT NOT NULL,
+    strength INT NOT NULL,
+    wisdom INT NOT NULL
 );
 
 CREATE TABLE looks(

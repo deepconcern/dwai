@@ -30,6 +30,7 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
+	AbilityScore() AbilityScoreResolver
 	CharacterClassQuery() CharacterClassQueryResolver
 	CharacterMutation() CharacterMutationResolver
 	CharacterQuery() CharacterQueryResolver
@@ -43,15 +44,22 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AbilityScore struct {
+		Ability  func(childComplexity int) int
+		Modifier func(childComplexity int) int
+		Score    func(childComplexity int) int
+	}
+
 	AlignmentTemplate struct {
 		Alignment   func(childComplexity int) int
 		Description func(childComplexity int) int
 	}
 
 	Character struct {
-		ID    func(childComplexity int) int
-		Looks func(childComplexity int) int
-		Name  func(childComplexity int) int
+		Abilities func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Looks     func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	CharacterClass struct {
@@ -173,6 +181,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type AbilityScoreResolver interface {
+	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
+}
 type CharacterClassQueryResolver interface {
 	All(ctx context.Context, obj *model.CharacterClassQuery) ([]*model.CharacterClass, error)
 	ByKey(ctx context.Context, obj *model.CharacterClassQuery, key string) (*model.CharacterClass, error)
@@ -221,6 +232,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "AbilityScore.ability":
+		if e.ComplexityRoot.AbilityScore.Ability == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AbilityScore.Ability(childComplexity), true
+	case "AbilityScore.modifier":
+		if e.ComplexityRoot.AbilityScore.Modifier == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AbilityScore.Modifier(childComplexity), true
+	case "AbilityScore.score":
+		if e.ComplexityRoot.AbilityScore.Score == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AbilityScore.Score(childComplexity), true
+
 	case "AlignmentTemplate.alignment":
 		if e.ComplexityRoot.AlignmentTemplate.Alignment == nil {
 			break
@@ -234,6 +264,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.AlignmentTemplate.Description(childComplexity), true
 
+	case "Character.abilities":
+		if e.ComplexityRoot.Character.Abilities == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Abilities(childComplexity), true
 	case "Character.id":
 		if e.ComplexityRoot.Character.ID == nil {
 			break
@@ -670,6 +706,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAbilityScoreInput,
 		ec.unmarshalInputCreateCharacterInput,
 		ec.unmarshalInputNewLookInput,
 	)
@@ -773,6 +810,18 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // Each function is generated once per unique object type, deduplicating the
 // switch statements that were previously inlined in every fieldContext_* function.
 
+func (ec *executionContext) childFields_AbilityScore(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "ability":
+		return ec.fieldContext_AbilityScore_ability(ctx, field)
+	case "modifier":
+		return ec.fieldContext_AbilityScore_modifier(ctx, field)
+	case "score":
+		return ec.fieldContext_AbilityScore_score(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AbilityScore", field.Name)
+}
+
 func (ec *executionContext) childFields_AlignmentTemplate(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "alignment":
@@ -785,6 +834,8 @@ func (ec *executionContext) childFields_AlignmentTemplate(ctx context.Context, f
 
 func (ec *executionContext) childFields_Character(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "abilities":
+		return ec.fieldContext_Character_abilities(ctx, field)
 	case "id":
 		return ec.fieldContext_Character_id(ctx, field)
 	case "name":
@@ -1319,6 +1370,75 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _AbilityScore_ability(ctx context.Context, field graphql.CollectedField, obj *model.AbilityScore) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AbilityScore_ability(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Ability, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.Ability) graphql.Marshaler {
+			return ec.marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AbilityScore_ability(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AbilityScore", field, false, false, errors.New("field of type Ability does not have child fields"))
+}
+
+func (ec *executionContext) _AbilityScore_modifier(ctx context.Context, field graphql.CollectedField, obj *model.AbilityScore) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AbilityScore_modifier(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.AbilityScore().Modifier(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AbilityScore_modifier(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AbilityScore", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _AbilityScore_score(ctx context.Context, field graphql.CollectedField, obj *model.AbilityScore) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AbilityScore_score(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Score, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AbilityScore_score(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AbilityScore", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _AlignmentTemplate_alignment(ctx context.Context, field graphql.CollectedField, obj *model.AlignmentTemplate) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1363,6 +1483,38 @@ func (ec *executionContext) _AlignmentTemplate_description(ctx context.Context, 
 }
 func (ec *executionContext) fieldContext_AlignmentTemplate_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("AlignmentTemplate", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Character_abilities(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_abilities(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Abilities, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.AbilityScore) graphql.Marshaler {
+			return ec.marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_abilities(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AbilityScore(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Character_id(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -1852,10 +2004,10 @@ func (ec *executionContext) _CharacterQuery_byId(ctx context.Context, field grap
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
-			return ec.marshalOCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
 		},
 		true,
-		false,
+		true,
 	)
 }
 func (ec *executionContext) fieldContext_CharacterQuery_byId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4274,6 +4426,43 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAbilityScoreInput(ctx context.Context, obj any) (model.AbilityScoreInput, error) {
+	var it model.AbilityScoreInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ability", "score"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ability":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ability"))
+			data, err := ec.unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ability = data
+		case "score":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("score"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Score = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Context, obj any) (model.CreateCharacterInput, error) {
 	var it model.CreateCharacterInput
 	if obj == nil {
@@ -4285,13 +4474,20 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "looks"}
+	fieldsInOrder := [...]string{"abilities", "name", "looks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "abilities":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("abilities"))
+			data, err := ec.unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Abilities = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -4356,6 +4552,86 @@ func (ec *executionContext) unmarshalInputNewLookInput(ctx context.Context, obj 
 
 // region    **************************** object.gotpl ****************************
 
+var abilityScoreImplementors = []string{"AbilityScore"}
+
+func (ec *executionContext) _AbilityScore(ctx context.Context, sel ast.SelectionSet, obj *model.AbilityScore) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, abilityScoreImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AbilityScore")
+		case "ability":
+			out.Values[i] = ec._AbilityScore_ability(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "modifier":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AbilityScore_modifier(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "score":
+			out.Values[i] = ec._AbilityScore_score(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var alignmentTemplateImplementors = []string{"AlignmentTemplate"}
 
 func (ec *executionContext) _AlignmentTemplate(ctx context.Context, sel ast.SelectionSet, obj *model.AlignmentTemplate) graphql.Marshaler {
@@ -4411,6 +4687,11 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Character")
+		case "abilities":
+			out.Values[i] = ec._Character_abilities(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "id":
 			out.Values[i] = ec._Character_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4754,13 +5035,16 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 		case "byId":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._CharacterQuery_byId(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -6156,6 +6440,62 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx context.Context, v any) (model.Ability, error) {
+	var res model.Ability
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx context.Context, sel ast.SelectionSet, v model.Ability) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AbilityScore) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScore(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScore(ctx context.Context, sel ast.SelectionSet, v *model.AbilityScore) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AbilityScore(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx context.Context, v any) ([]*model.AbilityScoreInput, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.AbilityScoreInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInput(ctx context.Context, v any) (*model.AbilityScoreInput, error) {
+	res, err := ec.unmarshalInputAbilityScoreInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -6888,13 +7228,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v *model.Character) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Character(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx context.Context, sel ast.SelectionSet, v *model.Game) graphql.Marshaler {

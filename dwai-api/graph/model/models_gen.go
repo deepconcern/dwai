@@ -3,8 +3,31 @@
 package model
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/google/uuid"
 )
+
+// A type representing a character's ability score, including the base score and the derived modifier.
+type AbilityScore struct {
+	// The ability this score belongs to.
+	Ability Ability `json:"ability"`
+	// The numeric modifier to use when rolling.
+	Modifier int32 `json:"modifier"`
+	// The numeric score for this ability.
+	Score int32 `json:"score"`
+}
+
+// Input for setting an ability score when creating a character.
+type AbilityScoreInput struct {
+	// The ability this score belongs to.
+	Ability Ability `json:"ability"`
+	// The numeric score for this ability.
+	Score int32 `json:"score"`
+}
 
 // An example of an alignment a player may use
 type AlignmentTemplate struct {
@@ -16,6 +39,8 @@ type AlignmentTemplate struct {
 
 // A player character in the game.
 type Character struct {
+	// The character's six core ability scores, one for each ability.
+	Abilities []*AbilityScore `json:"abilities"`
 	// Unique identifier for the character.
 	ID string `json:"id"`
 	// The character's name.
@@ -57,11 +82,12 @@ type CharacterQuery struct {
 	// Returns all characters.
 	All []*Character `json:"all"`
 	// Returns a single character by ID, or null if not found.
-	ByID *Character `json:"byId,omitempty"`
+	ByID *Character `json:"byId"`
 }
 
 // Input for creating a new character.
 type CreateCharacterInput struct {
+	Abilities []*AbilityScoreInput `json:"abilities"`
 	// The character's name.
 	Name string `json:"name"`
 	// One look selection per look type.
@@ -195,4 +221,74 @@ type ScenarioQuery struct {
 	All []*Scenario `json:"all"`
 	// Returns a single scenario by key, or null if not found.
 	ByKey *Scenario `json:"byKey,omitempty"`
+}
+
+// The six core ability scores used for all rolls and derived stats in Dungeon World.
+type Ability string
+
+const (
+	// Charisma (CHA) — used for social manipulation, bard magic, and paladin healing.
+	AbilityCharisma Ability = "CHARISMA"
+	// Constitution (CON) — used for HP calculation and endurance rolls.
+	AbilityConstitution Ability = "CONSTITUTION"
+	// Dexterity (DEX) — used for ranged attacks, agility, and traps.
+	AbilityDexterity Ability = "DEXTERITY"
+	// Intelligence (INT) — used for knowledge checks and arcane magic (Wizard).
+	AbilityIntelligence Ability = "INTELLIGENCE"
+	// Strength (STR) — used for melee attacks and feats of force.
+	AbilityStrength Ability = "STRENGTH"
+	// Wisdom (WIS) — used for perception, divine magic (Cleric), and nature magic (Druid/Ranger).
+	AbilityWisdom Ability = "WISDOM"
+)
+
+var AllAbility = []Ability{
+	AbilityCharisma,
+	AbilityConstitution,
+	AbilityDexterity,
+	AbilityIntelligence,
+	AbilityStrength,
+	AbilityWisdom,
+}
+
+func (e Ability) IsValid() bool {
+	switch e {
+	case AbilityCharisma, AbilityConstitution, AbilityDexterity, AbilityIntelligence, AbilityStrength, AbilityWisdom:
+		return true
+	}
+	return false
+}
+
+func (e Ability) String() string {
+	return string(e)
+}
+
+func (e *Ability) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Ability(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Ability", str)
+	}
+	return nil
+}
+
+func (e Ability) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *Ability) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e Ability) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

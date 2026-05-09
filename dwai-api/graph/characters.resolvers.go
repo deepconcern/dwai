@@ -13,6 +13,35 @@ import (
 	"github.com/deepconcern/dwai/dwai-api/models"
 )
 
+// Modifier is the resolver for the modifier field.
+func (r *abilityScoreResolver) Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error) {
+	if obj.Score < 4 {
+		return -3, nil
+	}
+
+	if obj.Score < 6 {
+		return -2, nil
+	}
+
+	if obj.Score < 9 {
+		return -1, nil
+	}
+
+	if obj.Score < 13 {
+		return 0, nil
+	}
+
+	if obj.Score < 16 {
+		return 1, nil
+	}
+
+	if obj.Score < 18 {
+		return 2, nil
+	}
+
+	return 3, nil
+}
+
 // Create is the resolver for the create field.
 func (r *characterMutationResolver) Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error) {
 	// Create character in database
@@ -77,6 +106,9 @@ func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQ
 	return m.ToObject(), nil
 }
 
+// AbilityScore returns AbilityScoreResolver implementation.
+func (r *Resolver) AbilityScore() AbilityScoreResolver { return &abilityScoreResolver{r} }
+
 // CharacterMutation returns CharacterMutationResolver implementation.
 func (r *Resolver) CharacterMutation() CharacterMutationResolver {
 	return &characterMutationResolver{r}
@@ -85,5 +117,6 @@ func (r *Resolver) CharacterMutation() CharacterMutationResolver {
 // CharacterQuery returns CharacterQueryResolver implementation.
 func (r *Resolver) CharacterQuery() CharacterQueryResolver { return &characterQueryResolver{r} }
 
+type abilityScoreResolver struct{ *Resolver }
 type characterMutationResolver struct{ *Resolver }
 type characterQueryResolver struct{ *Resolver }

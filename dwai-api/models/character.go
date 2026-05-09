@@ -8,14 +8,30 @@ import (
 )
 
 type CharacterModel struct {
-	ID   string
-	Name string
+	Charisma     int32
+	Constitution int32
+	Dexterity    int32
+	ID           string
+	Intelligence int32
+	Name         string
+	Strength     int32
+	Wisdom       int32
 }
 
 func (c *CharacterModel) ToObject() *model.Character {
+	abilities := []*model.AbilityScore{
+		{Ability: model.AbilityCharisma, Score: c.Charisma},
+		{Ability: model.AbilityConstitution, Score: c.Constitution},
+		{Ability: model.AbilityDexterity, Score: c.Dexterity},
+		{Ability: model.AbilityIntelligence, Score: c.Intelligence},
+		{Ability: model.AbilityStrength, Score: c.Strength},
+		{Ability: model.AbilityWisdom, Score: c.Wisdom},
+	}
+
 	return &model.Character{
-		ID:   c.ID,
-		Name: c.Name,
+		Abilities: abilities,
+		ID:        c.ID,
+		Name:      c.Name,
 	}
 }
 
@@ -26,7 +42,10 @@ type characterLoader struct {
 func (c *characterLoader) loadCharacters(ctx context.Context, keys []string) ([]*CharacterModel, []error) {
 	// Database query for all keys
 
-	rows, err := c.dbPool.Query(context.Background(), "SELECT id, name FROM characters WHERE id = ANY($1)", keys)
+	rows, err := c.dbPool.Query(context.Background(), `
+		SELECT charisma, constitution, dexterity, id, intelligence, name, strength, wisdom
+		FROM characters WHERE id = ANY($1)
+	`, keys)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -37,7 +56,8 @@ func (c *characterLoader) loadCharacters(ctx context.Context, keys []string) ([]
 	characters := make([]*CharacterModel, 0)
 	for rows.Next() {
 		var character CharacterModel
-		if err := rows.Scan(&character.ID, &character.Name); err != nil {
+
+		if err := rows.Scan(&character.Charisma, &character.Constitution, &character.Dexterity, &character.ID, &character.Intelligence, &character.Name, &character.Strength, &character.Wisdom); err != nil {
 			return nil, []error{err}
 		}
 		characters = append(characters, &character)

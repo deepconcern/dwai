@@ -1,5 +1,41 @@
+"The six core ability scores used for all rolls and derived stats in Dungeon World."
+enum Ability {
+  "Charisma (CHA) — used for social manipulation, bard magic, and paladin healing."
+  CHARISMA
+  "Constitution (CON) — used for HP calculation and endurance rolls."
+  CONSTITUTION
+  "Dexterity (DEX) — used for ranged attacks, agility, and traps."
+  DEXTERITY
+  "Intelligence (INT) — used for knowledge checks and arcane magic (Wizard)."
+  INTELLIGENCE
+  "Strength (STR) — used for melee attacks and feats of force."
+  STRENGTH
+  "Wisdom (WIS) — used for perception, divine magic (Cleric), and nature magic (Druid/Ranger)."
+  WISDOM
+}
+
+"A type representing a character's ability score, including the base score and the derived modifier."
+type AbilityScore {
+  "The ability this score belongs to."
+  ability: Ability!
+  "The numeric modifier to use when rolling."
+  modifier: Int!
+  "The numeric score for this ability."
+  score: Int!
+}
+
+"Input for setting an ability score when creating a character."
+input AbilityScoreInput {
+  "The ability this score belongs to."
+  ability: Ability!
+  "The numeric score for this ability."
+  score: Int!
+}
+
 "A player character in the game."
 type Character {
+  "The character's six core ability scores, one for each ability."
+  abilities: [AbilityScore!]!
   "Unique identifier for the character."
   id: ID!
   "The character's name."
@@ -20,6 +56,7 @@ type Look {
 
 "Input for creating a new character."
 input CreateCharacterInput {
+  abilities: [AbilityScoreInput!]!
   "The character's name."
   name: String!
   "One look selection per look type."
@@ -39,7 +76,7 @@ type CharacterQuery {
   "Returns all characters."
   all: [Character!]!
   "Returns a single character by ID, or null if not found."
-  byId(id: ID!): Character
+  byId(id: ID!): Character!
 }
 
 "Namespace for character mutations."

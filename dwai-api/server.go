@@ -23,7 +23,7 @@ import (
 )
 
 const defaultHost = "0.0.0.0"
-const defaultPort = "3000"
+const defaultPort = "5000"
 
 func main() {
 	// Load the environment

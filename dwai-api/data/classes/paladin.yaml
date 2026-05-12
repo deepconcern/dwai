@@ -17,130 +17,227 @@ looks:
   symbol: [Worn Holy Symbol, Fancy Holy Symbol]
   body: [Fit Body, Bulky Body, Thin Body]
 race_moves:
-- name: Human
-  description: When you pray for guidance, even for a moment, and ask, "What here
-    is evil?" the GM will tell you, honestly.
+  - key: human_paladin
+    name: Human
+    type: class
+    trigger: When you pray for guidance, even for a moment, and ask "What here is evil?"
+    description: The GM will tell you, honestly.
 starting_moves:
-- name: Lay on Hands (Cha)
-  description: When you touch someone, skin to skin, and pray for their well-being,
-    roll+CHA. ✴On a 10+ you heal 1d8 damage or remove one disease. ✴On a 7–9, they
-    are healed, but the damage or disease is transferred to you.
-- name: Armored
-  description: You ignore the clumsy tag on armor you wear.
-- name: I Am the Law
-  description: 'When you give an NPC an order based on your divine authority, roll+Cha.
-    ✴On a 7+, they choose one: ✴On a 10+, you also take +1 forward against them. ✴On
-    a miss, they do as they please and you take -1 forward against them.'
-  options:
-  - Do what you say
-  - Back away cautiously, then flee
-  - Attack you
-- name: Quest
-  description: 'When you dedicate yourself to a mission through prayer and ritual
-    cleansing, state what you set out to do: Then choose up to two boons: The GM will
-    then tell you what vow or vows is required of you to maintain your blessing:'
-  options:
-  - Slay _______, a great blight on the land
-  - Defend _______ from the iniquities that beset them
-  - Discover the truth of _______
-  - An unwavering sense of direction to _______.
-  - Invulnerability to _______ (e.g., edged weapons, fire, enchantment, etc.)
-  - A mark of divine authority
-  - Senses that pierce lies
-  - A voice that transcends language
-  - A freedom from hunger, thirst, and sleep
-  - 'Honor (forbidden: cowardly tactics and tricks)'
-  - 'Temperance (forbidden: gluttony in food, drink, and pleasure of the flesh)'
-  - 'Piety (required: observance of daily holy services)'
-  - 'Valor (forbidden: suffering an evil creature to live)'
-  - 'Truth (forbidden: lies)'
-  - 'Hospitality (required: comfort to those in need, no matter who they are)'
+  - key: lay_on_hands
+    name: Lay on Hands
+    type: class
+    trigger: When you touch someone, skin to skin, and pray for their well-being
+    roll: CHA
+    on_10: You heal 1d8 damage or remove one disease.
+    on_7_9: They are healed, but the damage or disease is transferred to you.
+  - key: armored_paladin
+    name: Armored
+    type: class
+    description: You ignore the clumsy tag on armor you wear.
+  - key: i_am_the_law
+    name: I Am the Law
+    type: class
+    trigger: When you give an NPC an order based on your divine authority
+    roll: CHA
+    on_10: They choose one of the options below, and you also take +1 forward against them.
+    on_7_9: They choose one of the options below.
+    on_miss: They do as they please and you take -1 forward against them.
+    options:
+      - Do what you say
+      - Back away cautiously, then flee
+      - Attack you
+  - key: quest
+    name: Quest
+    type: class
+    trigger: When you dedicate yourself to a mission through prayer and ritual cleansing
+    description:
+      State what you set out to do, then choose up to two boons. The GM will
+      then tell you what vow or vows is required of you to maintain your blessing.
+    creation_options:
+      - group: Mission
+        pick: 1
+        choices:
+          - key: slay_enemy
+            label: Slay a great blight on the land
+            description: "Slay _______, a great blight on the land"
+          - key: defend_person
+            label: Defend someone from iniquity
+            description: "Defend _______ from the iniquities that beset them"
+          - key: discover_truth
+            label: Discover the truth of something
+            description: "Discover the truth of _______"
+      - group: Boons
+        pick: 2
+        choices:
+          - key: boon_direction
+            label: Unwavering Direction
+            description: An unwavering sense of direction to _______.
+          - key: boon_invulnerability
+            label: Invulnerability
+            description: "Invulnerability to _______ (e.g., edged weapons, fire, enchantment, etc.)"
+          - key: boon_divine_authority
+            label: Mark of Divine Authority
+            description: A mark of divine authority
+          - key: boon_pierce_lies
+            label: Senses that Pierce Lies
+            description: Senses that pierce lies
+          - key: boon_language
+            label: Voice Beyond Language
+            description: A voice that transcends language
+          - key: boon_sustenance
+            label: Freedom from Bodily Need
+            description: A freedom from hunger, thirst, and sleep
 alignments:
-- alignment: Lawful
-  description: Deny mercy to a criminal or unbeliever.
-- alignment: Good
-  description: Endanger yourself to protect someone weaker than you.
+  - alignment: Lawful
+    description: Deny mercy to a criminal or unbeliever.
+  - alignment: Good
+    description: Endanger yourself to protect someone weaker than you.
 starting_gear:
   load_base: 12
   default:
-    - Dungeon rations (5 uses, 1 weight)
-    - Scale armor (2 armor, 3 weight)
-    - Mark of faith (describe it, 0 weight)
+    - dungeon_rations
+    - scale_armor
+    - Mark of faith (describe it)
   options:
-  - Halberd (reach, +1 damage, two-handed, 2 weight)
-  - Long sword (close, +1 damage, 1 weight) and shield (+1 armor, 2 weight)
-  - Adventuring gear (1 weight)
-  - Dungeon rations (1 weight) and healing potion (0 weight)
+    - pick: 1
+      choices:
+        - items:
+            - halberd
+        - items:
+            - long_sword
+            - shield
+        - items:
+            - adventuring_gear
+        - items:
+            - dungeon_rations
+            - healing_potion
 bonds:
-- _______________'s misguided behavior endangers their very soul!
-- _______________ has stood by me in battle and can be trusted completely.
-- I respect the beliefs of _______________ but hope they will someday see the true way.
-- _______________ is a brave soul, I have much to learn from them.
+  - _______________'s misguided behavior endangers their very soul!
+  - _______________ has stood by me in battle and can be trusted completely.
+  - I respect the beliefs of _______________ but hope they will someday see the true way.
+  - _______________ is a brave soul, I have much to learn from them.
 advanced_moves_2_5:
-- name: Divine Favor
-  description: Dedicate yourself to a deity (name a new one or choose one that's already
-    been established). You gain the commune and cast a spell cleric moves. When you
-    select this move, treat yourself as a cleric of level 1 for using spells. Every
-    time you gain a level thereafter, increase your effective cleric level by 1.
-- name: Bloody Aegis
-  description: When you take damage you can grit your teeth and accept the blow. If
-    you do you take no damage but instead suffer a debility of your choice. If you
-    already have all six debilities you can't use this move.
-- name: Smite
-  description: While on a quest you deal +1d4 damage.
-- name: Exterminatus
-  description: When you speak aloud your promise to defeat an enemy, you deal +2d4
-    damage against that enemy and -4 damage against anyone else. This effect lasts
-    until the enemy is defeated. If you fail to defeat the enemy or give up the fight,
-    you can admit your failure, but the effect continues until you find a way to redeem
-    yourself.
-- name: Charge!
-  description: When you lead the charge into combat, those you lead take +1 forward.
-- name: Staunch Defender
-  description: When you defend you always get +1 hold, even on a 6-.
-- name: Setup Strike
-  description: When you hack and slash, choose an ally. Their next attack against
-    your target does +1d4 damage.
-- name: Holy Protection
-  description: You get +1 armor while on a quest.
-- name: Voice of Authority
-  description: Take +1 to order hirelings.
-- name: Hospitaller
-  description: When you heal an ally, you heal +1d8 damage.
+  - key: divine_favor
+    name: Divine Favor
+    type: class
+    description:
+      Dedicate yourself to a deity (name a new one or choose one that's already
+      been established). You gain the commune and cast a spell cleric moves. When you
+      select this move, treat yourself as a cleric of level 1 for using spells. Every
+      time you gain a level thereafter, increase your effective cleric level by 1.
+  - key: bloody_aegis
+    name: Bloody Aegis
+    type: class
+    trigger: When you take damage
+    description:
+      You can grit your teeth and accept the blow. If you do you take no
+      damage but instead suffer a debility of your choice. If you already have all
+      six debilities you can't use this move.
+  - key: smite
+    name: Smite
+    type: class
+    trigger: While on a quest
+    description: You deal +1d4 damage.
+  - key: exterminatus
+    name: Exterminatus
+    type: class
+    trigger: When you speak aloud your promise to defeat an enemy
+    description:
+      You deal +2d4 damage against that enemy and -4 damage against anyone
+      else. This effect lasts until the enemy is defeated. If you fail to defeat the
+      enemy or give up the fight, you can admit your failure, but the effect continues
+      until you find a way to redeem yourself.
+  - key: charge
+    name: Charge!
+    type: class
+    trigger: When you lead the charge into combat
+    description: Those you lead take +1 forward.
+  - key: staunch_defender
+    name: Staunch Defender
+    type: class
+    trigger: When you defend
+    description: You always get +1 hold, even on a 6-.
+  - key: setup_strike
+    name: Setup Strike
+    type: class
+    trigger: When you hack and slash
+    description: Choose an ally. Their next attack against your target does +1d4 damage.
+  - key: holy_protection
+    name: Holy Protection
+    type: class
+    trigger: While on a quest
+    description: You get +1 armor.
+  - key: voice_of_authority
+    name: Voice of Authority
+    type: class
+    description: Take +1 to order hirelings.
+  - key: hospitaller
+    name: Hospitaller
+    type: class
+    trigger: When you heal an ally
+    description: You heal +1d8 damage.
 advanced_moves_6_10:
-- name: Evidence of Faith
-  description: When you see divine magic as it happens, you can ask the GM which deity
-    granted the spell and its effects. Take +1 when acting on the answers.
-  requirement: 'Requires: Divine Favor'
-- name: Holy Smite
-  description: While on a quest you deal +1d8 damage.
-  requirement: 'Replaces: Smite'
-- name: Ever Onward
-  description: When you lead the charge into combat, those you lead take +1 forward
-    and +2 armor forward.
-  requirement: 'Replaces: Charge!'
-- name: Impervious Defender
-  description: When you defend you always get +1 hold, even on a 6-. When you get
-    a 12+ to defend instead of getting hold the nearest attacking creature is stymied
-    giving you a clear advantage, the GM will describe it.
-  requirement: 'Replaces: Staunch Defender'
-- name: Tandem Strike
-  description: When you hack and slash, choose an ally. Their next attack against
-    your target does +1d4 damage and they take +1 forward against them.
-  requirement: 'Replaces: Setup Strike'
-- name: Divine Protection
-  description: You get +2 armor while on a quest.
-  requirement: 'Replaces: Holy Protection'
-- name: Divine Authority
-  description: Take +1 to order hirelings. When you roll a 12+ the hireling transcends
-    their moment of fear and doubt and carries out your order with particular effectiveness
-    or efficiency.
-  requirement: 'Replaces: Voice of Authority'
-- name: Perfect Hospitaller
-  description: When you heal an ally, you heal +2d8 damage.
-  requirement: 'Replaces: Hospitaller'
-- name: Indomitable
-  description: When you suffer a debility (even through Bloody Aegis) take +1 forward
-    against whatever caused it.
-- name: Perfect Knight
-  description: When you quest you choose three boons instead of two.
+  - key: evidence_of_faith
+    name: Evidence of Faith
+    type: class
+    trigger: When you see divine magic as it happens
+    description: You can ask the GM which deity granted the spell and its effects. Take +1 when acting on the answers.
+    requires: divine_favor
+  - key: holy_smite
+    name: Holy Smite
+    type: class
+    trigger: While on a quest
+    description: You deal +1d8 damage.
+    replaces: smite
+  - key: ever_onward
+    name: Ever Onward
+    type: class
+    trigger: When you lead the charge into combat
+    description: Those you lead take +1 forward and +2 armor forward.
+    replaces: charge
+  - key: impervious_defender
+    name: Impervious Defender
+    type: class
+    trigger: When you defend
+    description:
+      You always get +1 hold, even on a 6-. When you get a 12+ to defend
+      instead of getting hold the nearest attacking creature is stymied giving you
+      a clear advantage, the GM will describe it.
+    replaces: staunch_defender
+  - key: tandem_strike
+    name: Tandem Strike
+    type: class
+    trigger: When you hack and slash
+    description: Choose an ally. Their next attack against your target does +1d4 damage and they take +1 forward against them.
+    replaces: setup_strike
+  - key: divine_protection_paladin
+    name: Divine Protection
+    type: class
+    trigger: While on a quest
+    description: You get +2 armor.
+    replaces: holy_protection
+  - key: divine_authority
+    name: Divine Authority
+    type: class
+    trigger: When you roll a 12+ ordering hirelings
+    description:
+      Take +1 to order hirelings. The hireling transcends their moment of
+      fear and doubt and carries out your order with particular effectiveness or
+      efficiency.
+    replaces: voice_of_authority
+  - key: perfect_hospitaller
+    name: Perfect Hospitaller
+    type: class
+    trigger: When you heal an ally
+    description: You heal +2d8 damage.
+    replaces: hospitaller
+  - key: indomitable
+    name: Indomitable
+    type: class
+    trigger: When you suffer a debility (even through Bloody Aegis)
+    description: Take +1 forward against whatever caused it.
+  - key: perfect_knight
+    name: Perfect Knight
+    type: class
+    trigger: When you quest
+    description: You choose three boons instead of two.

@@ -15,17 +15,17 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 type Documents = {
     "\n  query GetCharacter($id: ID!) {\n    characters {\n      byId(id: $id) {\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetCharacterDocument,
-    "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          name\n          trigger\n          type\n        }\n        startingMoves {\n          key\n          name\n          trigger\n          type\n        }\n      }\n    }\n  }\n": typeof types.GetCharacterClassesForCreateDocument,
-    "\n  query GetMovesForCreate {\n    moves {\n      all {\n        key\n        name\n        trigger\n        type\n      }\n    }\n  }\n": typeof types.GetMovesForCreateDocument,
+    "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n  }\n": typeof types.GetCharacterClassesForCreateDocument,
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": typeof types.CreateCharacterDocument,
     "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetCharactersDocument,
+    "\n  fragment MoveFragment on Move {\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": typeof types.MoveFragmentFragmentDoc,
 };
 const documents: Documents = {
     "\n  query GetCharacter($id: ID!) {\n    characters {\n      byId(id: $id) {\n        id\n        name\n      }\n    }\n  }\n": types.GetCharacterDocument,
-    "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          name\n          trigger\n          type\n        }\n        startingMoves {\n          key\n          name\n          trigger\n          type\n        }\n      }\n    }\n  }\n": types.GetCharacterClassesForCreateDocument,
-    "\n  query GetMovesForCreate {\n    moves {\n      all {\n        key\n        name\n        trigger\n        type\n      }\n    }\n  }\n": types.GetMovesForCreateDocument,
+    "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n  }\n": types.GetCharacterClassesForCreateDocument,
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": types.CreateCharacterDocument,
     "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n": types.GetCharactersDocument,
+    "\n  fragment MoveFragment on Move {\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": types.MoveFragmentFragmentDoc,
 };
 
 /**
@@ -49,11 +49,7 @@ export function graphql(source: "\n  query GetCharacter($id: ID!) {\n    charact
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          name\n          trigger\n          type\n        }\n        startingMoves {\n          key\n          name\n          trigger\n          type\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          name\n          trigger\n          type\n        }\n        startingMoves {\n          key\n          name\n          trigger\n          type\n        }\n      }\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query GetMovesForCreate {\n    moves {\n      all {\n        key\n        name\n        trigger\n        type\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMovesForCreate {\n    moves {\n      all {\n        key\n        name\n        trigger\n        type\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -62,6 +58,10 @@ export function graphql(source: "\n  mutation CreateCharacter($input: CreateChar
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment MoveFragment on Move {\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n"): (typeof documents)["\n  fragment MoveFragment on Move {\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

@@ -177,10 +177,26 @@ type Move struct {
 	Key string `json:"key"`
 	// Human-readable name of the move.
 	Name string `json:"name"`
-	// The trigger for when a move is used.
-	Trigger string `json:"trigger"`
-	// Category of the move (e.g. 'starting', 'alignment', 'race').
+	// Category of the move: basic, special, or class.
 	Type string `json:"type"`
+	// The fictional trigger condition ('When you...'). Null for passive/procedural moves.
+	Trigger *string `json:"trigger,omitempty"`
+	// Which stat to roll, or a description of the roll (e.g. 'STR', 'CON', 'Bond with them'). Null if no roll.
+	Roll *string `json:"roll,omitempty"`
+	// Full success outcome text (10+).
+	On10 *string `json:"on10,omitempty"`
+	// Partial success outcome text (7–9).
+	On7to9 *string `json:"on7to9,omitempty"`
+	// Explicit miss effect (6−). Omitted when the GM simply makes a move.
+	OnMiss *string `json:"onMiss,omitempty"`
+	// Options the player may choose from on a roll result, or a list of choices when taking the move.
+	Options []string `json:"options"`
+	// Supplemental rules text: hold-spend rules, passive effects, procedural instructions.
+	Description *string `json:"description,omitempty"`
+	// Advanced move prerequisite: the key of a move the player must already have.
+	RequiresKey *string `json:"requiresKey,omitempty"`
+	// Advanced move replacement: the key of the move this one supersedes.
+	ReplacesKey *string `json:"replacesKey,omitempty"`
 }
 
 // Namespace for move queries.

@@ -102,7 +102,7 @@ Monster stat blocks in `data/monsters/` are reference material (not currently se
 | File(s)                          | Seeds                              | GraphQL type                   |
 | -------------------------------- | ---------------------------------- | ------------------------------ |
 | `data/classes/*.yaml`            | Character classes with all moves   | `CharacterClass`, `Move`       |
-| `data/basic_moves.yaml`          | Shared player moves                | `Move` (type: `"basic"`)       |
+| `data/player_moves.yaml`         | Shared player moves                | `Move` (type: `"basic"`)       |
 | `data/spells/wizard_spells.yaml` | Wizard spell list                  | _(future `Spell` type)_        |
 | `data/spells/cleric_spells.yaml` | Cleric spell list                  | _(future `Spell` type)_        |
 | `data/monsters/*.yaml`           | Monster compendium                 | _(reference only, not seeded)_ |

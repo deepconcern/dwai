@@ -18,153 +18,229 @@ looks:
   clothing: [Dark Clothes, Fancy Clothes, Common Clothes]
   body: [Lithe Body, Knobby Body, Flabby Body]
 race_moves:
-- name: Halfling
-  description: When you attack with a ranged weapon, deal +2 damage.
-- name: Human
-  description: You are a professional. When you spout lore or discern realities about
-    criminal activities, take +1.
+  - key: halfling_thief
+    name: Halfling
+    type: class
+    trigger: When you attack with a ranged weapon
+    description: Deal +2 damage.
+  - key: human_thief
+    name: Human
+    type: class
+    trigger: When you spout lore or discern realities about criminal activities
+    description: You are a professional. Take +1.
 starting_moves:
-- name: Trap Expert
-  description: 'When you spend a moment to survey a dangerous area, roll+DEX. ✴On
-    a 10+, hold 3. ✴On a 7–9, hold 1. Spend your hold as you walk through the area
-    to ask these questions:'
-  options:
-  - Is there a trap here and if so, what activates it?
-  - What does the trap do when activated?
-  - What else is hidden here?
-- name: Tricks of the Trade
-  description: When you pick locks or pockets or disable traps, roll+DEX. ✴On a 10+,
-    you do it, no problem. ✴On a 7–9, you still do it, but the GM will offer you two
-    options between suspicion, danger, or cost.
-- name: Backstab
-  description: When you attack a surprised or defenseless enemy with a melee weapon,
-    you can choose to deal your damage or roll+DEX. ✴On a 10+ choose two. ✴On a 7–9
-    choose one.
-  options:
-  - You don't get into melee with them
-  - You deal your damage+1d6
-  - You create an advantage, +1 forward to you or an ally acting on it
-  - Reduce their armor by 1 until they repair it
-- name: Flexible Morals
-  description: When someone tries to detect your alignment you can tell them any alignment
-    you like.
-- name: Poisoner
-  description: You've mastered the care and use of a poison. Choose a poison from
-    the list below; that poison is no longer dangerous for you to use. You also start
-    with three uses of the poison you choose. Whenever you have time to gather materials
-    and a safe place to brew you can make three uses of the poison you choose for
-    free. Note that some poisons are applied, meaning you have to carefully apply
-    it to the target or something they eat or drink. Touch poisons just need to touch
-    the target, they can even be used on the blade of a weapon.
-  options:
-  - 'Oil of Tagit (applied): The target falls into a light sleep'
-  - 'Bloodweed (touch): The target deals -1d4 damage ongoing until cured'
-  - 'Goldenroot (applied): The target treats the next creature they see as a trusted
-    ally, until proved otherwise'
-  - 'Serpent''s Tears (touch): Anyone dealing damage to the target rolls twice and
-    takes the better result.'
+  - key: trap_expert
+    name: Trap Expert
+    type: class
+    trigger: When you spend a moment to survey a dangerous area
+    roll: DEX
+    on_10: Hold 3.
+    on_7_9: Hold 1.
+    description: Spend your hold as you walk through the area to ask these questions.
+    options:
+      - Is there a trap here and if so, what activates it?
+      - What does the trap do when activated?
+      - What else is hidden here?
+  - key: tricks_of_the_trade
+    name: Tricks of the Trade
+    type: class
+    trigger: When you pick locks or pockets or disable traps
+    roll: DEX
+    on_10: You do it, no problem.
+    on_7_9: You still do it, but the GM will offer you two options between suspicion, danger, or cost.
+  - key: backstab
+    name: Backstab
+    type: class
+    trigger: When you attack a surprised or defenseless enemy with a melee weapon
+    roll: DEX
+    on_10: Choose two.
+    on_7_9: Choose one.
+    description: You can choose to deal your damage instead of rolling.
+    options:
+      - You don't get into melee with them
+      - You deal your damage+1d6
+      - You create an advantage, +1 forward to you or an ally acting on it
+      - Reduce their armor by 1 until they repair it
+  - key: flexible_morals
+    name: Flexible Morals
+    type: class
+    trigger: When someone tries to detect your alignment
+    description: You can tell them any alignment you like.
+  - key: poisoner
+    name: Poisoner
+    type: class
+    description:
+      You've mastered the care and use of a poison. Choose a poison from the
+      list below; that poison is no longer dangerous for you to use. You also start
+      with three uses of the poison you choose. Whenever you have time to gather
+      materials and a safe place to brew you can make three uses of the poison you
+      choose for free. Note that some poisons are applied, meaning you have to carefully
+      apply it to the target or something they eat or drink. Touch poisons just need
+      to touch the target, they can even be used on the blade of a weapon.
+    options:
+      - "Oil of Tagit (applied): The target falls into a light sleep"
+      - "Bloodweed (touch): The target deals -1d4 damage ongoing until cured"
+      - "Goldenroot (applied): The target treats the next creature they see as a trusted ally, until proved otherwise"
+      - "Serpent's Tears (touch): Anyone dealing damage to the target rolls twice and takes the better result."
 alignments:
-- alignment: Chaotic
-  description: Leap into danger without a plan.
-- alignment: Neutral
-  description: Avoid detection or infiltrate a location.
-- alignment: Evil
-  description: Shift danger or blame from yourself to someone else.
+  - alignment: Chaotic
+    description: Leap into danger without a plan.
+  - alignment: Neutral
+    description: Avoid detection or infiltrate a location.
+  - alignment: Evil
+    description: Shift danger or blame from yourself to someone else.
 starting_gear:
   load_base: 9
   default:
-    - Dungeon rations (5 uses, 1 weight)
-    - Leather armor (1 armor, 1 weight)
+    - dungeon_rations
+    - leather_armor
     - 3 uses of chosen poison
     - 10 coins
   options:
-  - Dagger (hand, 1 weight) and short sword (close, 1 weight)
-  - Rapier (close, precise, 1 weight)
-  - 3 throwing daggers (thrown, near, 0 weight)
-  - Ragged Bow (near, 2 weight) and bundle of arrows (3 ammo, 1 weight)
-  - Adventuring gear (1 weight)
-  - Healing potion (0 weight)
+    - pick: 1
+      choices:
+        - items:
+            - dagger
+            - short_sword
+        - items:
+            - rapier
+        - items:
+            - throwing_dagger
+            - throwing_dagger
+            - throwing_dagger
+        - items:
+            - ragged_bow
+            - bundle_of_arrows
+        - items:
+            - adventuring_gear
+        - items:
+            - healing_potion
 bonds:
-- I stole something from _______________.
-- _______________ has my back when things go wrong.
-- _______________ knows incriminating details about me.
-- _______________ and I have a con running.
+  - I stole something from _______________.
+  - _______________ has my back when things go wrong.
+  - _______________ knows incriminating details about me.
+  - _______________ and I have a con running.
 advanced_moves_2_5:
-- name: Cheap Shot
-  description: When using a precise or hand weapon, your backstab deals an extra +1d6
-    damage.
-- name: Cautious
-  description: When you use trap expert you always get +1 hold, even on a 6-.
-- name: Wealth and Taste
-  description: When you make a show of flashing around your most valuable possession,
-    choose someone present. They will do anything they can to obtain your item or
-    one like it.
-- name: Shoot First
-  description: You're never caught by surprise. When an enemy would get the drop on
-    you, you get to act first instead.
-- name: Poison Master
-  description: After you've used a poison once it's no longer dangerous for you to
-    use.
-- name: Envenom
-  description: You can apply even complex poisons with a pinprick. When you apply
-    a poison that's not dangerous for you to use to your weapon it's touch instead
-    of applied.
-- name: Brewer
-  description: When you have time to gather materials and a safe place to brew you
-    can create three doses of any one poison you've used before.
-- name: Underdog
-  description: When you're outnumbered, you have +1 armor.
-- name: Connections
-  description: When you put out word to the criminal underbelly about something you
-    want or need, roll+CHA. ✴On a 10+, someone has it, just for you. ✴On a 7–9, you'll
-    have to settle for something close or it comes with strings attached, your call.
+  - key: cheap_shot
+    name: Cheap Shot
+    type: class
+    description: When using a precise or hand weapon, your backstab deals an extra +1d6 damage.
+  - key: cautious
+    name: Cautious
+    type: class
+    trigger: When you use trap expert
+    description: You always get +1 hold, even on a 6-.
+  - key: wealth_and_taste
+    name: Wealth and Taste
+    type: class
+    trigger: When you make a show of flashing around your most valuable possession
+    description:
+      Choose someone present. They will do anything they can to obtain your
+      item or one like it.
+  - key: shoot_first
+    name: Shoot First
+    type: class
+    trigger: When an enemy would get the drop on you
+    description: You're never caught by surprise. You get to act first instead.
+  - key: poison_master
+    name: Poison Master
+    type: class
+    trigger: After you've used a poison once
+    description: It's no longer dangerous for you to use.
+  - key: envenom
+    name: Envenom
+    type: class
+    trigger: When you apply a poison that's not dangerous for you to use to your weapon
+    description: You can apply even complex poisons with a pinprick. It becomes touch instead of applied.
+  - key: brewer
+    name: Brewer
+    type: class
+    trigger: When you have time to gather materials and a safe place to brew
+    description: You can create three doses of any one poison you've used before.
+  - key: underdog
+    name: Underdog
+    type: class
+    trigger: When you're outnumbered
+    description: You have +1 armor.
+  - key: connections
+    name: Connections
+    type: class
+    trigger: When you put out word to the criminal underbelly about something you want or need
+    roll: CHA
+    on_10: Someone has it, just for you.
+    on_7_9: You'll have to settle for something close or it comes with strings attached, your call.
 advanced_moves_6_10:
-- name: Dirty Fighter
-  description: When using a precise or hand weapon, your backstab deals an extra +1d8
-    damage and all other attacks deal +1d4 damage.
-  requirement: 'Replaces: Cheap Shot'
-- name: Extremely Cautious
-  description: When you use trap expert you always get +1 hold, even on a 6-. On a
-    12+ you get 3 hold and the next time you come near a trap the GM will immediately
-    tell you what it does, what triggers it, who set it, and how you can use it to
-    your advantage.
-  requirement: 'Replaces: Cautious'
-- name: Alchemist
-  description: 'When you have you have time to gather materials and a safe place to
-    brew you can create three doses of any poison you''ve used before. Alternately
-    you can describe the effects of a poison you''d like to create. The GM will tell
-    you that you can create it, but with one or more caveats:'
-  requirement: 'Replaces: Brewer'
-  options:
-  - It will only work under specific circumstances
-  - The best you can manage is a weaker version
-  - It'll take a while to take effect
-  - It'll have obvious side effects
-- name: Serious Underdog
-  description: You have +1 armor. When you're outnumbered, you have +2 armor instead.
-  requirement: 'Replaces: Underdog'
-- name: Evasion
-  description: When you defy danger on a 12+, you transcend the danger. You not only
-    do what you set out to, but the GM will offer you a better outcome, true beauty,
-    or a moment of grace.
-- name: Strong Arm, True Aim
-  description: You can throw any melee weapon, using it to volley. A thrown melee
-    weapon is gone; you can never choose to reduce ammo on a 7–9.
-- name: Escape Route
-  description: 'When you''re in too deep and need a way out, name your escape route
-    and roll+DEX. ✴On a 10+ you''re gone. ✴On a 7–9 you can stay or go, but if you
-    go it costs you: leave something behind or take something with you, the GM will
-    tell you what.'
-- name: Disguise
-  description: When you have time and materials you can create a disguise that will
-    fool anyone into thinking you're another creature of about the same size and shape.
-    Your actions can give you away but your appearance won't.
-- name: Heist
-  description: When you take time to make a plan to steal something, name the thing
-    you want to steal and ask the GM these questions. When acting on the answers you
-    and your allies take +1 forward.
-  options:
-  - Who will notice it's missing?
-  - What's its most powerful defense?
-  - Who will come after it?
-  - Who else wants it?
+  - key: dirty_fighter
+    name: Dirty Fighter
+    type: class
+    description: When using a precise or hand weapon, your backstab deals an extra +1d8 damage and all other attacks deal +1d4 damage.
+    replaces: cheap_shot
+  - key: extremely_cautious
+    name: Extremely Cautious
+    type: class
+    trigger: When you use trap expert
+    description:
+      You always get +1 hold, even on a 6-. On a 12+ you get 3 hold and the
+      next time you come near a trap the GM will immediately tell you what it does,
+      what triggers it, who set it, and how you can use it to your advantage.
+    replaces: cautious
+  - key: alchemist
+    name: Alchemist
+    type: class
+    trigger: When you have time to gather materials and a safe place to brew
+    description:
+      You can create three doses of any poison you've used before. Alternately
+      you can describe the effects of a poison you'd like to create. The GM will tell
+      you that you can create it, but with one or more caveats.
+    replaces: brewer
+    options:
+      - It will only work under specific circumstances
+      - The best you can manage is a weaker version
+      - It'll take a while to take effect
+      - It'll have obvious side effects
+  - key: serious_underdog
+    name: Serious Underdog
+    type: class
+    description: You have +1 armor. When you're outnumbered, you have +2 armor instead.
+    replaces: underdog
+  - key: evasion
+    name: Evasion
+    type: class
+    trigger: When you defy danger on a 12+
+    description:
+      You transcend the danger. You not only do what you set out to, but the
+      GM will offer you a better outcome, true beauty, or a moment of grace.
+  - key: strong_arm_true_aim
+    name: Strong Arm, True Aim
+    type: class
+    description:
+      You can throw any melee weapon, using it to volley. A thrown melee weapon
+      is gone; you can never choose to reduce ammo on a 7–9.
+  - key: escape_route
+    name: Escape Route
+    type: class
+    trigger: When you're in too deep and need a way out
+    roll: DEX
+    on_10: You're gone.
+    on_7_9: You can stay or go, but if you go it costs you—leave something behind or take something with you, the GM will tell you what.
+    description: Name your escape route.
+  - key: disguise
+    name: Disguise
+    type: class
+    trigger: When you have time and materials
+    description:
+      You can create a disguise that will fool anyone into thinking you're
+      another creature of about the same size and shape. Your actions can give you
+      away but your appearance won't.
+  - key: heist
+    name: Heist
+    type: class
+    trigger: When you take time to make a plan to steal something
+    description:
+      Name the thing you want to steal and ask the GM these questions. When
+      acting on the answers you and your allies take +1 forward.
+    options:
+      - Who will notice it's missing?
+      - What's its most powerful defense?
+      - Who will come after it?
+      - Who else wants it?

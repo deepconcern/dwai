@@ -22,163 +22,263 @@ looks:
   hair: [Furry Hood, Messy Hair, Braided Hair]
   clothing: [Ceremonial Garb, Practical Leathers, Weathered Hides]
 race_moves:
-- name: Elf
-  description: The sap of the elder trees flows within you. In addition to any other
-    attunements, the Great Forest is always considered your land.
-- name: Human
-  description: As your people learned to bind animals to field and farm, so too are
-    you bound to them. You may always take the shape of any domesticated animal, in
-    addition to your normal options.
-- name: Halfling
-  description: You sing the healing songs of spring and brook. When you make camp,
-    you and your allies heal +1d6.
+  - key: elf_druid
+    name: Elf
+    type: class
+    description:
+      The sap of the elder trees flows within you. In addition to any other
+      attunements, the Great Forest is always considered your land.
+  - key: human_druid
+    name: Human
+    type: class
+    description:
+      As your people learned to bind animals to field and farm, so too are
+      you bound to them. You may always take the shape of any domesticated animal,
+      in addition to your normal options.
+  - key: halfling_druid
+    name: Halfling
+    type: class
+    trigger: When you make camp
+    description: You sing the healing songs of spring and brook. You and your allies heal +1d6.
 starting_moves:
-- name: Born of the Soil
-  description: 'You learned your magic in a place whose spirits are strong and ancient
-    and they''ve marked you as one of their own. No matter where you go, they live
-    within you and allow you to take their shape. Choose one of the following. It
-    is the land to which you are attuned—when shapeshifting you may take the shape
-    of any animal who might live in your Land. Chose a tell—a physical attribute that
-    marks you as born of the soil—that reflects the spirit of your land. It may be
-    an animal feature like antlers or leopard''s spots or something more general: hair
-    like leaves or eyes of glittering crystal. Your tell remains no matter what shape
-    you take.'
-  options:
-  - The Great Forests
-  - The Whispering Plains
-  - The Vast Desert
-  - The Stinking Mire
-  - The River Delta
-  - The Depths of the Earth
-  - The Sapphire Islands
-  - The Open Sea
-  - The Towering Mountains
-  - The Frozen North
-  - The Blasted Wasteland
-- name: By Nature Sustained
-  description: You don't need to eat or drink. If a move tells you to mark off a ration
-    just ignore it.
-- name: Spirit Tongue
-  description: The grunts, barks, chirps, and calls of the creatures of the wild are
-    as language to you. You can understand any animal native to your land or akin
-    to one whose essence you have studied.
-- name: Shapeshifter
-  description: 'When you call upon the spirits to change your shape, roll+Wis. ✴On
-    a 10+ hold 3. ✴On a 7–9 hold 2. ✴On a miss hold 1 in addition to whatever the
-    GM says. You may take on the physical form of any species whose essence you have
-    studied or who lives in your land: you and your possessions meld into a perfect
-    copy of the species'' form. You have any innate abilities and weaknesses of the
-    form: claws, wings, gills, breathing water instead of air. You still use your
-    normal stats but some moves may be harder to trigger—a housecat will find it hard
-    to do battle with an ogre. The GM will also tell you one or more moves associated
-    with your new form. Spend 1 hold to make that move. Once you''re out of hold, you
-    return to your natural form. At any time, you may spend all your hold and revert
-    to your natural form.'
-- name: Studied Essence
-  description: When you spend time in contemplation of an animal spirit, you may add
-    its species to those you can assume using shapeshifting.
+  - key: born_of_the_soil
+    name: Born of the Soil
+    type: class
+    description:
+      You learned your magic in a place whose spirits are strong and ancient
+      and they've marked you as one of their own. No matter where you go, they live
+      within you and allow you to take their shape. Choose your land—when shapeshifting
+      you may take the shape of any animal who might live there. Also choose a tell—a
+      physical attribute that marks you as born of the soil—that reflects the spirit
+      of your land. Your tell remains no matter what shape you take.
+    creation_options:
+      - group: Land
+        pick: 1
+        choices:
+          - key: great_forests
+            label: The Great Forests
+          - key: whispering_plains
+            label: The Whispering Plains
+          - key: vast_desert
+            label: The Vast Desert
+          - key: stinking_mire
+            label: The Stinking Mire
+          - key: river_delta
+            label: The River Delta
+          - key: depths_of_the_earth
+            label: The Depths of the Earth
+          - key: sapphire_islands
+            label: The Sapphire Islands
+          - key: open_sea
+            label: The Open Sea
+          - key: towering_mountains
+            label: The Towering Mountains
+          - key: frozen_north
+            label: The Frozen North
+          - key: blasted_wasteland
+            label: The Blasted Wasteland
+  - key: by_nature_sustained
+    name: By Nature Sustained
+    type: class
+    trigger: When a move tells you to mark off a ration
+    description: You don't need to eat or drink. Just ignore it.
+  - key: spirit_tongue
+    name: Spirit Tongue
+    type: class
+    description:
+      The grunts, barks, chirps, and calls of the creatures of the wild are
+      as language to you. You can understand any animal native to your land or akin
+      to one whose essence you have studied.
+  - key: shapeshifter
+    name: Shapeshifter
+    type: class
+    trigger: When you call upon the spirits to change your shape
+    roll: WIS
+    on_10: Hold 3.
+    on_7_9: Hold 2.
+    on_miss: Hold 1 in addition to whatever the GM says.
+    description:
+      You may take on the physical form of any species whose essence you have
+      studied or who lives in your land—you and your possessions meld into a perfect
+      copy of the species' form. You have any innate abilities and weaknesses of the
+      form. You still use your normal stats but some moves may be harder to trigger.
+      The GM will also tell you one or more moves associated with your new form. Spend
+      1 hold to make that move. Once you're out of hold, you return to your natural
+      form. At any time, you may spend all your hold and revert to your natural form.
+  - key: studied_essence
+    name: Studied Essence
+    type: class
+    trigger: When you spend time in contemplation of an animal spirit
+    description: You may add its species to those you can assume using shapeshifting.
 alignments:
-- alignment: Chaotic
-  description: Destroy a symbol of civilization.
-- alignment: Good
-  description: Help something or someone grow.
-- alignment: Neutral
-  description: Eliminate an unnatural menace.
+  - alignment: Chaotic
+    description: Destroy a symbol of civilization.
+  - alignment: Good
+    description: Help something or someone grow.
+  - alignment: Neutral
+    description: Eliminate an unnatural menace.
 starting_gear:
   load_base: 6
   default:
     - Token of your land (describe it)
   options:
-  - Hide armor (1 armor, 1 weight)
-  - Wooden shield (+1 armor, 1 weight)
-  - Shillelagh (close, 2 weight)
-  - Staff (close, two-handed, 1 weight)
-  - Spear (close, thrown, near, 1 weight)
-  - Adventuring gear (1 weight)
-  - Poultices and herbs (2 uses, 1 weight)
-  - Halfling pipeleaf (0 weight)
-  - 3 antitoxin (0 weight)
+    - pick: 1
+      choices:
+        - items:
+            - hide_armor
+        - items:
+            - wooden_shield
+        - items:
+            - shillelagh
+        - items:
+            - staff
+        - items:
+            - spear
+        - items:
+            - adventuring_gear
+        - items:
+            - poultices_and_herbs
+        - items:
+            - halfling_pipeleaf
+        - items:
+            - antitoxin
+            - antitoxin
+            - antitoxin
 bonds:
-- ____________________ smells more like prey than a hunter.
-- The spirits spoke to me of a great danger that follows ______________.
-- I have showed ________________ a secret rite of the Land.
-- ___________ has tasted my blood and I theirs. We are bound by it.
+  - ____________________ smells more like prey than a hunter.
+  - The spirits spoke to me of a great danger that follows ______________.
+  - I have showed ________________ a secret rite of the Land.
+  - ___________ has tasted my blood and I theirs. We are bound by it.
 advanced_moves_2_5:
-- name: Hunter's Brother
-  description: Choose one move from the ranger class list.
-- name: Red of Tooth and Claw
-  description: When you are in an appropriate animal form (something dangerous) increase
-    your damage to d8.
-- name: Communion of Whispers
-  description: When you spend time in a place, making note of its resident spirits
-    and calling on the spirits of the land, roll+Wis. You will be granted a vision
-    of significance to you, your allies, and the spirits around you. ✴On a 10+ the
-    vision will be clear and helpful to you. ✴On a 7–9 the vision is unclear, its
-    meaning murky. ✴On a miss, the vision is upsetting, frightening, or traumatizing.
-    The GM will describe it. Take -1 forward.
-- name: Barkskin
-  description: So long as your feet touch the ground you have +1 armor.
-- name: Eyes of the Tiger
-  description: When you mark an animal (with mud, dirt, or blood) you can see through
-    that animal's eyes as if they were your own, no matter what distance separates
-    you. Only one animal at a time may be marked in this way.
-- name: Shed
-  description: When you take damage while shapeshifted you may choose to revert to
-    your natural form to negate the damage.
-- name: Thing-Talker
-  description: You see the spirits in the sand, the sea and the stone. You may now
-    apply your spirit tongue, shapeshifting and studied essence to inanimate natural
-    objects (plants and rocks) or creatures made thereof, as well as animals. Thing-talker
-    forms can be exact copies or can be mobile vaguely humanoid-shaped entities.
-- name: Formcrafter
-  description: 'When you shapeshift choose a stat: you take +1 ongoing to rolls using
-    that stat while shifted. The GM will choose a stat, too: you take -1 ongoing to
-    rolls using that stat while shifted.'
-- name: Elemental Mastery
-  description: When you call on the primal spirits of fire, water, earth or air to
-    perform a task for you roll+Wis. ✴On a 10+ choose two. ✴On a 7–9 choose one. ✴On
-    a miss, some catastrophe occurs as a result of your calling.
-  options:
-  - The effect you desire comes to pass
-  - You avoid paying nature's price
-  - You retain control
-- name: Balance
-  description: When you deal damage, take 1 balance. When you touch someone and channel
-    the spirits of life you may spend balance. For each balance spent, heal 1d4 HP.
+  - key: hunters_brother
+    name: Hunter's Brother
+    type: class
+    description: Choose one move from the ranger class list.
+  - key: red_of_tooth_and_claw
+    name: Red of Tooth and Claw
+    type: class
+    trigger: When you are in an appropriate animal form (something dangerous)
+    description: Increase your damage to d8.
+  - key: communion_of_whispers
+    name: Communion of Whispers
+    type: class
+    trigger: When you spend time in a place, making note of its resident spirits and calling on the spirits of the land
+    roll: WIS
+    on_10: The vision will be clear and helpful to you.
+    on_7_9: The vision is unclear, its meaning murky.
+    on_miss: The vision is upsetting, frightening, or traumatizing. The GM will describe it. Take -1 forward.
+    description: You will be granted a vision of significance to you, your allies, and the spirits around you.
+  - key: barkskin
+    name: Barkskin
+    type: class
+    trigger: So long as your feet touch the ground
+    description: You have +1 armor.
+  - key: eyes_of_the_tiger
+    name: Eyes of the Tiger
+    type: class
+    trigger: When you mark an animal (with mud, dirt, or blood)
+    description:
+      You can see through that animal's eyes as if they were your own, no
+      matter what distance separates you. Only one animal at a time may be marked
+      in this way.
+  - key: shed
+    name: Shed
+    type: class
+    trigger: When you take damage while shapeshifted
+    description: You may choose to revert to your natural form to negate the damage.
+  - key: thing_talker
+    name: Thing-Talker
+    type: class
+    description:
+      You see the spirits in the sand, the sea and the stone. You may now
+      apply your spirit tongue, shapeshifting and studied essence to inanimate natural
+      objects (plants and rocks) or creatures made thereof, as well as animals.
+      Thing-talker forms can be exact copies or can be mobile vaguely humanoid-shaped
+      entities.
+  - key: formcrafter
+    name: Formcrafter
+    type: class
+    trigger: When you shapeshift
+    description:
+      Choose a stat—you take +1 ongoing to rolls using that stat while shifted.
+      The GM will choose a stat too—you take -1 ongoing to rolls using that stat
+      while shifted.
+  - key: elemental_mastery
+    name: Elemental Mastery
+    type: class
+    trigger: When you call on the primal spirits of fire, water, earth or air to perform a task for you
+    roll: WIS
+    on_10: Choose two.
+    on_7_9: Choose one.
+    on_miss: Some catastrophe occurs as a result of your calling.
+    options:
+      - The effect you desire comes to pass
+      - You avoid paying nature's price
+      - You retain control
+  - key: balance
+    name: Balance
+    type: class
+    trigger: When you deal damage
+    description:
+      Take 1 balance. When you touch someone and channel the spirits of life
+      you may spend balance. For each balance spent, heal 1d4 HP.
 advanced_moves_6_10:
-- name: Embracing No Form
-  description: When you shapeshift, roll 1d4 and add that total to your hold.
-- name: Doppelgänger's Dance
-  description: You are able to study the essence of specific individuals to take their
-    exact form, including men, elves, or the like. Suppressing your tell is possible,
-    but if you do, take -1 ongoing until you return to your own form.
-- name: Blood and Thunder
-  description: When you are in an appropriate animal form (something dangerous) increase
-    your damage to d10.
-  requirement: 'Replaces: Red of Tooth and Claw'
-- name: The Druid Sleep
-  description: When you take this move, the next opportunity that you have safety
-    and time to spend in an appropriate location, you may attune yourself to a new
-    land. This effect occurs only once and the GM will tell you how long it will take
-    and what cost you must pay. From then on, you are considered to be born of the
-    soil in both lands.
-- name: World-Talker
-  description: You see the patterns that make up the fabric of the world. You may
-    now apply your spirit tongue, shapeshifter and studied essence moves to pure elements—fire,
-    water, air and earth.
-  requirement: 'Requires: Thing-Talker'
-- name: Stalker's Sister
-  description: Choose one move from the ranger class list.
-  requirement: 'Requires: Hunter''s Brother'
-- name: Formshaper
-  description: You may increase your armor by 1 or deal an additional +1d4 damage
-    while in an animal form. Choose which when you shapeshift.
-  requirement: 'Requires: Formcrafter'
-- name: Chimera
-  description: When you shapeshift, you may create a merged form of up to three different
-    shapes. You may be a bear with the wings of an eagle and the head of a ram, for
-    example. Each feature will grant you a different move to make. Your chimera form
-    follows the same rules as shapeshifter otherwise.
-- name: Weather Weaver
-  description: When you are under open skies when the sun rises the GM will ask you
-    what the weather will be that day. Tell them whatever you like, it comes to pass.
+  - key: embracing_no_form
+    name: Embracing No Form
+    type: class
+    trigger: When you shapeshift
+    description: Roll 1d4 and add that total to your hold.
+  - key: doppelgangers_dance
+    name: Doppelgänger's Dance
+    type: class
+    description:
+      You are able to study the essence of specific individuals to take their
+      exact form, including men, elves, or the like. Suppressing your tell is possible,
+      but if you do, take -1 ongoing until you return to your own form.
+  - key: blood_and_thunder
+    name: Blood and Thunder
+    type: class
+    trigger: When you are in an appropriate animal form (something dangerous)
+    description: Increase your damage to d10.
+    replaces: red_of_tooth_and_claw
+  - key: the_druid_sleep
+    name: The Druid Sleep
+    type: class
+    trigger: When you take this move and next have safety and time in an appropriate location
+    description:
+      You may attune yourself to a new land. This effect occurs only once
+      and the GM will tell you how long it will take and what cost you must pay.
+      From then on, you are considered to be born of the soil in both lands.
+  - key: world_talker
+    name: World-Talker
+    type: class
+    description:
+      You see the patterns that make up the fabric of the world. You may now
+      apply your spirit tongue, shapeshifter and studied essence moves to pure
+      elements—fire, water, air and earth.
+    requires: thing_talker
+  - key: stalkers_sister
+    name: Stalker's Sister
+    type: class
+    description: Choose one move from the ranger class list.
+    requires: hunters_brother
+  - key: formshaper
+    name: Formshaper
+    type: class
+    trigger: When you shapeshift
+    description: You may increase your armor by 1 or deal an additional +1d4 damage while in an animal form. Choose which when you shapeshift.
+    requires: formcrafter
+  - key: chimera
+    name: Chimera
+    type: class
+    trigger: When you shapeshift
+    description:
+      You may create a merged form of up to three different shapes. You may
+      be a bear with the wings of an eagle and the head of a ram, for example. Each
+      feature will grant you a different move to make. Your chimera form follows the
+      same rules as shapeshifter otherwise.
+  - key: weather_weaver
+    name: Weather Weaver
+    type: class
+    trigger: When you are under open skies when the sun rises
+    description: The GM will ask you what the weather will be that day. Tell them whatever you like, it comes to pass.

@@ -2,11 +2,18 @@
 
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, ChangeEvent } from "react";
 
 import { graphql } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { PageTitle } from "@/components/PageTitle";
+import { Dropdown } from "@/components/Dropdown";
+import { capitalize } from "@/lib/capitalize";
+import { Button } from "@/components/Button";
+import { SectionTitle } from "@/components/SectionTitle";
+import { MoveCard } from "@/components/MoveCard";
+import { SelectableArea } from "@/components/SelectableArea";
+import clsx from "clsx";
 
 const ABILITY_LABELS: { ability: Ability; label: string }[] = [
   { ability: "STRENGTH", label: "Strength" },
@@ -53,29 +60,12 @@ const GET_CHARACTER_CLASSES_QUERY = graphql(`
         name
         raceMoves {
           key
-          name
-          trigger
-          type
+          ...MoveFragment
         }
         startingMoves {
           key
-          name
-          trigger
-          type
+          ...MoveFragment
         }
-      }
-    }
-  }
-`);
-
-const GET_MOVES_QUERY = graphql(`
-  query GetMovesForCreate {
-    moves {
-      all {
-        key
-        name
-        trigger
-        type
       }
     }
   }
@@ -92,33 +82,29 @@ const CREATE_CHARACTER_MUTATION = graphql(`
   }
 `);
 
-type LookEntry = { lookTypeKey: string; value: string };
 type AbilityScoreEntry = { ability: Ability; score: number | null };
-type MoveTab = "class" | "basic" | "special";
+type LookEntry = { lookTypeKey: string; value: string };
 
 export default function CreateCharacterPage() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [classKey, setClassKey] = useState("");
-  const [raceKey, setRaceKey] = useState("");
-  const [alignmentKey, setAlignmentKey] = useState("");
-  const [customAlignmentType, setCustomAlignmentType] = useState("good");
-  const [customAlignmentText, setCustomAlignmentText] = useState("");
-  const [looks, setLooks] = useState<LookEntry[]>([]);
   const [abilityScores, setAbilityScores] = useState<AbilityScoreEntry[]>(
     ABILITY_LABELS.map(({ ability }) => ({ ability, score: null })),
   );
-  const [moveTab, setMoveTab] = useState<MoveTab>("class");
+  const [alignmentType, setAlignmentType] = useState("");
+  const [alignmentDescription, setAlignmentDescription] = useState("");
+  const [characterClassKey, setCharacterClassKey] = useState("");
+  const [looks, setLooks] = useState<LookEntry[]>([]);
+  const [name, setName] = useState("");
+  const [raceKey, setRaceKey] = useState("");
 
-  const { data: classesData, loading: classesLoading } = useQuery(
+  const { data: characterClassesData, loading: classesLoading } = useQuery(
     GET_CHARACTER_CLASSES_QUERY,
   );
-  const { data: movesData, loading: movesLoading } = useQuery(GET_MOVES_QUERY);
   const [createCharacter] = useMutation(CREATE_CHARACTER_MUTATION);
 
-  const characterClass = classesData?.characterClasses.all.find(
-    (c) => c.key === classKey,
+  const characterClass = characterClassesData?.characterClasses.all.find(
+    (c) => c.key === characterClassKey,
   );
 
   const conScore = abilityScores.find(
@@ -128,6 +114,39 @@ export default function CreateCharacterPage() {
     characterClass && typeof conScore === "number"
       ? conScore + characterClass.hpBase
       : null;
+
+  const handleAddLook = useCallback(() => {
+    const firstType = characterClass?.lookExamples[0]?.type ?? "";
+    setLooks((prev) => [...prev, { lookTypeKey: firstType, value: "" }]);
+  }, [characterClass]);
+
+  const handleAlignmentDescriptionChange = useCallback(
+    (ev: ChangeEvent<HTMLInputElement>) =>
+      setAlignmentDescription(ev.target.value),
+    [setAlignmentDescription],
+  );
+
+  const handleAlignmentTemplateClick = useCallback(
+    (i: number) => () => {
+      const template = characterClass?.alignmentTemplates[i];
+      if (template) {
+        setAlignmentDescription(template.description);
+        setAlignmentType(template.alignment.toLocaleLowerCase());
+      }
+    },
+    [characterClass, setAlignmentDescription, setAlignmentType],
+  );
+
+  const handleAlignmentTypeChange = useCallback(
+    (ev: ChangeEvent<HTMLSelectElement>) => setAlignmentType(ev.target.value),
+    [setAlignmentType],
+  );
+
+  const handleCharacterClassChange = useCallback(
+    (ev: ChangeEvent<HTMLSelectElement>) =>
+      setCharacterClassKey(ev.target.value),
+    [setCharacterClassKey],
+  );
 
   const handleCreate = useCallback(async () => {
     const abilities = abilityScores
@@ -143,11 +162,6 @@ export default function CreateCharacterPage() {
     }
   }, [abilityScores, createCharacter, looks, name, router]);
 
-  const handleAddLook = useCallback(() => {
-    const firstType = characterClass?.lookExamples[0]?.type ?? "";
-    setLooks((prev) => [...prev, { lookTypeKey: firstType, value: "" }]);
-  }, [characterClass]);
-
   const handleRemoveLook = useCallback((i: number) => {
     setLooks((prev) => prev.filter((_, idx) => idx !== i));
   }, []);
@@ -162,13 +176,19 @@ export default function CreateCharacterPage() {
     setLooks((prev) => prev.map((l, idx) => (idx === i ? { ...l, value } : l)));
   }, []);
 
-  const handleScoreChange = useCallback((ability: Ability, raw: string) => {
-    const parsed = raw === "" ? null : parseInt(raw, 10);
-    const score = parsed === null || isNaN(parsed) ? null : parsed;
-    setAbilityScores((prev) =>
-      prev.map((a) => (a.ability === ability ? { ...a, score } : a)),
-    );
-  }, []);
+  const handleScoreChange = useCallback(
+    (ev: ChangeEvent<HTMLSelectElement>) => {
+      const { ability } = ev.target.dataset;
+      if (!ability) return;
+
+      const score = ev.target.value ? parseInt(ev.target.value, 10) : null;
+
+      setAbilityScores((prev) =>
+        prev.map((a) => (a.ability === ability ? { ...a, score } : a)),
+      );
+    },
+    [],
+  );
 
   if (classesLoading) {
     return <div className="p-4">Loading...</div>;
@@ -197,31 +217,24 @@ export default function CreateCharacterPage() {
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium mb-1">Class</label>
-            <select
-              className="w-full border rounded px-3 py-2"
-              value={classKey}
-              onChange={(e) => setClassKey(e.target.value)}
-            >
-              <option className="appearance-none bg-black" value="">
-                Select a class...
-              </option>
-              {classesData?.characterClasses.all.map((c) => (
-                <option
-                  className="appearance-none bg-black"
-                  key={c.key}
-                  value={c.key}
-                >
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <Dropdown
+              items={
+                characterClassesData?.characterClasses.all.map((c) => ({
+                  label: c.name,
+                  value: c.key,
+                })) || []
+              }
+              onChange={handleCharacterClassChange}
+              placeholder="Select a class..."
+              value={characterClassKey}
+            />
           </div>
         </div>
 
         {characterClass && (
           <>
             {/* Stats summary */}
-            <div className="flex gap-6 text-sm text-gray-600 border rounded px-4 py-3 bg-gray-50">
+            <div className="bg-gray-900 border flex gap-6 px-4 py-3 rounded text-sm">
               <span>
                 Hit Points: {hitPoints ?? "—"} (CON + {characterClass.hpBase})
               </span>
@@ -229,92 +242,11 @@ export default function CreateCharacterPage() {
               <span>Armor: 0</span>
             </div>
 
-            {/* Race + Alignment */}
-            <div className="grid grid-cols-2 gap-8">
-              <section>
-                <h2 className="text-lg font-semibold mb-2">Race</h2>
-                <div className="space-y-2">
-                  {characterClass.raceMoves.map((move) => (
-                    <button
-                      key={move.key}
-                      type="button"
-                      onClick={() => setRaceKey(move.key)}
-                      className={`w-full text-left px-4 py-3 rounded border transition-colors ${
-                        raceKey === move.key
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-400"
-                      }`}
-                    >
-                      <div className="font-medium">{move.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {move.trigger}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-semibold mb-2">Alignment</h2>
-                <div className="space-y-2">
-                  {characterClass.alignmentTemplates.map((template) => (
-                    <button
-                      key={template.alignment}
-                      type="button"
-                      onClick={() => setAlignmentKey(template.alignment)}
-                      className={`w-full text-left px-4 py-3 rounded border transition-colors ${
-                        alignmentKey === template.alignment
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-400"
-                      }`}
-                    >
-                      <div className="font-medium capitalize">
-                        {template.alignment}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {template.description}
-                      </div>
-                    </button>
-                  ))}
-                  {/* Custom alignment */}
-                  <div
-                    onClick={() => setAlignmentKey("custom")}
-                    className={`flex gap-3 px-4 py-3 rounded border cursor-pointer transition-colors ${
-                      alignmentKey === "custom"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                  >
-                    <select
-                      className="border rounded px-2 py-1 text-sm"
-                      value={customAlignmentType}
-                      onChange={(e) => setCustomAlignmentType(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {["chaotic", "evil", "good", "lawful", "neutral"].map(
-                        (a) => (
-                          <option key={a} value={a}>
-                            {a.charAt(0).toUpperCase() + a.slice(1)}
-                          </option>
-                        ),
-                      )}
-                    </select>
-                    <input
-                      className="flex-1 border rounded px-2 py-1 text-sm"
-                      placeholder="Custom alignment description..."
-                      value={customAlignmentText}
-                      onChange={(e) => setCustomAlignmentText(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                </div>
-              </section>
-            </div>
-
             {/* Looks + Ability Scores */}
             <div className="grid grid-cols-2 gap-8">
               <section>
-                <h2 className="text-lg font-semibold mb-2">Looks</h2>
+                <SectionTitle title="Looks" />
+                <p>Pick as many looks as you like:</p>
                 <div className="space-y-2">
                   {looks.map((look, i) => {
                     const examples =
@@ -323,19 +255,17 @@ export default function CreateCharacterPage() {
                       )?.examples ?? [];
                     return (
                       <div key={i} className="flex gap-2 items-center">
-                        <select
-                          className="border rounded px-2 py-1 text-sm"
-                          value={look.lookTypeKey}
+                        <Dropdown
+                          items={characterClass.lookExamples.map((l) => ({
+                            label: capitalize(l.type),
+                            value: l.type,
+                          }))}
                           onChange={(e) =>
                             handleLookTypeChange(i, e.target.value)
                           }
-                        >
-                          {characterClass.lookExamples.map((e) => (
-                            <option key={e.type} value={e.type}>
-                              {e.type.charAt(0).toUpperCase() + e.type.slice(1)}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="-"
+                          value={look.lookTypeKey}
+                        />
                         <input
                           className="flex-1 border rounded px-2 py-1 text-sm"
                           list={`look-examples-${i}`}
@@ -371,7 +301,7 @@ export default function CreateCharacterPage() {
               </section>
 
               <section>
-                <h2 className="text-lg font-semibold mb-2">Ability Scores</h2>
+                <SectionTitle title="Ability Scores" />
                 <p className="text-xs text-gray-500 mb-3">
                   Assign each value once: {ATTRIBUTE_SCORES.join(", ")}
                 </p>
@@ -379,82 +309,93 @@ export default function CreateCharacterPage() {
                   {abilityScores.map(({ ability, score }) => (
                     <div key={ability} className="flex items-center gap-3">
                       <label className="w-28 text-sm">{ability}</label>
-                      <select
-                        className="border rounded px-2 py-1 text-sm flex-1"
+                      <Dropdown
+                        className="flex-1"
+                        data-ability={ability}
+                        items={ATTRIBUTE_SCORES.map((s) => ({
+                          disabled: abilityScores.some(
+                            (a) => a.ability !== ability && a.score === s,
+                          ),
+                          label: formatScore(s),
+                          value: s,
+                        }))}
+                        onChange={handleScoreChange}
+                        placeholder="-"
                         value={score ?? ""}
-                        onChange={(e) =>
-                          handleScoreChange(ability, e.target.value)
-                        }
-                      >
-                        <option value="">—</option>
-                        {ATTRIBUTE_SCORES.map((s) => (
-                          <option
-                            key={s}
-                            value={s}
-                            disabled={abilityScores.some(
-                              (a) => a.ability !== ability && a.score === s,
-                            )}
-                          >
-                            {formatScore(s)}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </div>
                   ))}
                 </div>
               </section>
             </div>
 
-            {/* Moves */}
+            {/* Alignment */}
             <section>
-              <h2 className="text-lg font-semibold mb-2">Moves</h2>
-              <div className="flex gap-0 mb-4 border-b">
-                {(
-                  [
-                    ["class", "Class Moves"],
-                    ["basic", "Basic Moves"],
-                    ["special", "Special Moves"],
-                  ] as const
-                ).map(([tab, label]) => (
+              <SectionTitle title="Alignment" />
+              <p>Select an alignment, or fill in with your own:</p>
+              <div className="space-y-2">
+                {characterClass.alignmentTemplates.map((template, i) => (
                   <button
-                    key={tab}
+                    className="bg-gray-900 cursor-pointer rounded p-4 text-left w-full"
+                    key={i}
                     type="button"
-                    onClick={() => setMoveTab(tab)}
-                    className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
-                      moveTab === tab
-                        ? "border-blue-500 text-blue-600"
-                        : "border-transparent text-gray-600 hover:text-gray-800"
-                    }`}
+                    onClick={handleAlignmentTemplateClick(i)}
                   >
-                    {label}
+                    <div className="font-medium capitalize">
+                      {template.alignment}
+                    </div>
+                    <div className="text-sm text-gray-300">
+                      {template.description}
+                    </div>
                   </button>
                 ))}
-              </div>
-              {movesLoading ? (
-                <div className="text-sm text-gray-500">Loading moves...</div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {moveTab === "class"
-                    ? characterClass.startingMoves.map((move) => (
-                        <div key={move.key} className="border rounded p-3">
-                          <div className="font-medium">{move.name}</div>
-                          <div className="text-sm text-gray-600">
-                            {move.trigger}
-                          </div>
-                        </div>
-                      ))
-                    : movesData?.moves.all
-                        .filter((m) => m.type === moveTab)
-                        .map((move) => (
-                          <div key={move.key} className="border rounded p-3">
-                            <div className="font-medium">{move.name}</div>
-                            <div className="text-sm text-gray-600">
-                              {move.trigger}
-                            </div>
-                          </div>
-                        ))}
+                <div className="flex gap-3 px-4 py-3 rounded border cursor-pointer transition-colors">
+                  <Dropdown
+                    items={["chaotic", "evil", "good", "lawful", "neutral"].map(
+                      (a) => ({
+                        label: capitalize(a),
+                        value: a,
+                      }),
+                    )}
+                    onChange={handleAlignmentTypeChange}
+                    placeholder="-"
+                    value={alignmentType}
+                  />
+                  <input
+                    className="flex-1 border rounded px-2 py-1 text-sm"
+                    placeholder="Alignment description..."
+                    value={alignmentDescription}
+                    onChange={handleAlignmentDescriptionChange}
+                  />
                 </div>
-              )}
+              </div>
+            </section>
+
+            {/* Race Moves */}
+            <section>
+              <SectionTitle title="Race" />
+              <p>Pick one:</p>
+              <div className="space-y-2">
+                {characterClass.raceMoves.map((move) => (
+                  <SelectableArea
+                    key={move.key}
+                    onClick={() => setRaceKey(move.key)}
+                    selected={raceKey === move.key}
+                  >
+                    <MoveCard move={move} />
+                  </SelectableArea>
+                ))}
+              </div>
+            </section>
+
+            {/* Class Moves */}
+            <section>
+              <SectionTitle title="Class Moves" />
+              <div className="grid grid-cols-2 gap-4">
+                {characterClass.startingMoves.map((move) => (
+                  <MoveCard key={move.key} move={move} />
+                ))}
+              </div>
             </section>
 
             <div className="flex justify-center pt-4">

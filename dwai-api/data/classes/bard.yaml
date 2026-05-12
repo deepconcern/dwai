@@ -20,149 +20,236 @@ looks:
   clothing: [Finery, Traveling Clothes, Poor Clothes]
   body: [Fit Body, Well-fed Body, Thin Body]
 race_moves:
-- name: Elf
-  description: When you enter an important location (your call) you can ask the GM
-    for one fact from the history of that location.
-- name: Human
-  description: When you first enter a civilized settlement someone who respects the
-    custom of hospitality to minstrels will take you in as their guest.
+  - key: elf_bard
+    name: Elf
+    type: class
+    trigger: When you enter an important location (your call)
+    description: You can ask the GM for one fact from the history of that location.
+  - key: human_bard
+    name: Human
+    type: class
+    trigger: When you first enter a civilized settlement
+    description: Someone who respects the custom of hospitality to minstrels will take you in as their guest.
 starting_moves:
-- name: Arcane Art
-  description: 'When you weave a performance into a basic spell, choose an ally and
-    an effect: Then roll+Cha. ✴On a 10+, the ally gets the selected effect. ✴On a
-    7-9, your spell still works, but you draw unwanted attention or your magic reverberates
-    to other targets affecting them as well, GM''s choice.'
-  options:
-  - Heal 1d8 damage
-  - +1d4 forward to damage
-  - Their mind is shaken clear of one enchantment
-  - The next time someone successfully assists the target with aid, they get +2 instead
-    of +1
-- name: Bardic Lore
-  description: 'Choose an area of expertise: When you first encounter an important
-    creature, location, or item (your call) covered by your bardic lore you can ask
-    the GM any one question about it; the GM will answer truthfully. The GM may then
-    ask you what tale, song, or legend you heard that information in.'
-  options:
-  - Spells and Magicks
-  - The Dead and Undead
-  - Grand Histories of the Known World
-  - A Bestiary of Creatures Unusual
-  - The Planar Spheres
-  - Legends of Heroes Past
-  - Gods and Their Servants
-- name: Charming and Open
-  description: When you speak frankly with someone, you can ask their player a question
-    from the list below. They must answer it truthfully, then they may ask you a question
-    from the list (which you must answer truthfully).
-  options:
-  - Whom do you serve?
-  - What do you wish I would do?
-  - How can I get you to ______?
-  - What are you really feeling right now?
-  - What do you most desire?
-- name: A Port in the Storm
-  description: When you return to a civilized settlement you've visited before, tell
-    the GM when you were last here. They'll tell you how it's changed since then.
+  - key: arcane_art
+    name: Arcane Art
+    type: class
+    trigger: When you weave a performance into a basic spell
+    roll: CHA
+    on_10: The ally gets the selected effect.
+    on_7_9: Your spell still works, but you draw unwanted attention or your magic reverberates to other targets affecting them as well, GM's choice.
+    description: Choose an ally and an effect.
+    options:
+      - Heal 1d8 damage
+      - +1d4 forward to damage
+      - Their mind is shaken clear of one enchantment
+      - The next time someone successfully assists the target with aid, they get +2 instead of +1
+  - key: bardic_lore
+    name: Bardic Lore
+    type: class
+    trigger: When you first encounter an important creature, location, or item (your call) covered by your bardic lore
+    description:
+      Choose an area of expertise. You can ask the GM any one question about
+      it; the GM will answer truthfully. The GM may then ask you what tale, song,
+      or legend you heard that information in.
+    creation_options:
+      - group: Area of Expertise
+        pick: 1
+        choices:
+          - key: spells_and_magicks
+            label: Spells and Magicks
+          - key: the_dead_and_undead
+            label: The Dead and Undead
+          - key: grand_histories
+            label: Grand Histories of the Known World
+          - key: bestiary
+            label: A Bestiary of Creatures Unusual
+          - key: planar_spheres
+            label: The Planar Spheres
+          - key: legends_of_heroes
+            label: Legends of Heroes Past
+          - key: gods_and_servants
+            label: Gods and Their Servants
+  - key: charming_and_open
+    name: Charming and Open
+    type: class
+    trigger: When you speak frankly with someone
+    description:
+      You can ask their player a question from the list below. They must
+      answer it truthfully, then they may ask you a question from the list (which
+      you must answer truthfully).
+    options:
+      - Whom do you serve?
+      - What do you wish I would do?
+      - How can I get you to ______?
+      - What are you really feeling right now?
+      - What do you most desire?
+  - key: a_port_in_the_storm
+    name: A Port in the Storm
+    type: class
+    trigger: When you return to a civilized settlement you've visited before
+    description: Tell the GM when you were last here. They'll tell you how it's changed since then.
 alignments:
-- alignment: Good
-  description: Perform your art to aid someone else.
-- alignment: Neutral
-  description: Avoid a conflict or defuse a tense situation.
-- alignment: Chaotic
-  description: Spur others to significant and unplanned decisive action.
+  - alignment: Good
+    description: Perform your art to aid someone else.
+  - alignment: Neutral
+    description: Avoid a conflict or defuse a tense situation.
+  - alignment: Chaotic
+    description: Spur others to significant and unplanned decisive action.
 starting_gear:
   load_base: 9
   default:
-    - Dungeon rations (5 uses, 1 weight)
+    - dungeon_rations
   options:
-  - Your father's mandolin, repaired (0 weight)
-  - A fine lute, a gift from a noble (0 weight)
-  - The pipes with which you courted your first love (0 weight)
-  - A stolen horn (0 weight)
-  - A fiddle, never before played (0 weight)
-  - A songbook in a forgotten tongue (0 weight)
-  - Leather armor (1 armor, 1 weight)
-  - Ostentatious clothes (0 weight)
-  - Dueling rapier (close, precise, 2 weight)
-  - Worn bow (near, 2 weight), bundle of arrows (3 ammo, 1 weight), and short sword (close, 1 weight)
-  - Adventuring gear (1 weight)
-  - Bandages (0 weight)
-  - Halfling pipeleaf (0 weight)
-  - 3 coins
+    - pick: 1
+      choices:
+        - items:
+            - Your father's mandolin, repaired
+        - items:
+            - A fine lute, a gift from a noble
+        - items:
+            - The pipes with which you courted your first love
+        - items:
+            - A stolen horn
+        - items:
+            - A fiddle, never before played
+        - items:
+            - A songbook in a forgotten tongue
+        - items:
+            - leather_armor
+        - items:
+            - Ostentatious clothes
+        - items:
+            - dueling_rapier
+        - items:
+            - ragged_bow
+            - bundle_of_arrows
+            - short_sword
+        - items:
+            - adventuring_gear
+        - items:
+            - bandages
+        - items:
+            - halfling_pipeleaf
+        - items:
+            - 3 coins
 bonds:
-- This is not my first adventure with _______________.
-- I sang stories of _______________ long before I ever met them in person.
-- _______________ is often the butt of my jokes.
-- I am writing a ballad about the adventures of _______________.
-- _______________ trusted me with a secret.
-- _______________ does not trust me, and for good reason.
+  - This is not my first adventure with _______________.
+  - I sang stories of _______________ long before I ever met them in person.
+  - _______________ is often the butt of my jokes.
+  - I am writing a ballad about the adventures of _______________.
+  - _______________ trusted me with a secret.
+  - _______________ does not trust me, and for good reason.
 advanced_moves_2_5:
-- name: Healing Song
-  description: When you heal with arcane art, you heal +1d8 damage.
-- name: Vicious Cacophony
-  description: When you grant bonus damage with arcane art, you grant an extra +1d4
-    damage.
-- name: It Goes To Eleven
-  description: When you unleash a crazed performance (a righteous lute solo or mighty
-    brass blast, maybe) choose a target who can hear you and roll+Cha. ✴On a 10+ the
-    target attacks their nearest ally in range. ✴On a 7–9 they attack their nearest
-    ally, but you also draw their attention and ire.
-- name: Metal Hurlant
-  description: 'When you shout with great force or play a shattering note choose a
-    target and roll+Con. ✴On a 10+ the target takes 1d10 damage and is deafened for
-    a few minutes. ✴On a 7–9 you still damage your target, but it''s out of control:
-    the GM will choose an additional target nearby.'
-- name: A Little Help From My Friends
-  description: When you successfully aid someone you take +1 forward as well.
-- name: Eldritch Tones
-  description: Your arcane art is strong, allowing you to choose two effects instead
-    of one.
-- name: Duelist's Parry
-  description: When you hack and slash, you take +1 armor forward.
-- name: Bamboozle
-  description: When you parley with someone, on a 7+ you also take +1 forward with
-    them.
-- name: Multiclass Dabbler
-  description: Get one move from another class. Treat your level as one lower for
-    choosing the move.
-- name: Multiclass Initiate
-  description: Get one move from another class. Treat your level as one lower for
-    choosing the move.
-  requirement: 'Requires: Multiclass Dabbler'
+  - key: healing_song
+    name: Healing Song
+    type: class
+    trigger: When you heal with arcane art
+    description: You heal +1d8 damage.
+  - key: vicious_cacophony
+    name: Vicious Cacophony
+    type: class
+    trigger: When you grant bonus damage with arcane art
+    description: You grant an extra +1d4 damage.
+  - key: it_goes_to_eleven
+    name: It Goes To Eleven
+    type: class
+    trigger: When you unleash a crazed performance (a righteous lute solo or mighty brass blast, maybe)
+    roll: CHA
+    on_10: The target attacks their nearest ally in range.
+    on_7_9: They attack their nearest ally, but you also draw their attention and ire.
+    description: Choose a target who can hear you.
+  - key: metal_hurlant
+    name: Metal Hurlant
+    type: class
+    trigger: When you shout with great force or play a shattering note
+    roll: CON
+    on_10: The target takes 1d10 damage and is deafened for a few minutes.
+    on_7_9: You still damage your target, but it's out of control—the GM will choose an additional target nearby.
+    description: Choose a target.
+  - key: a_little_help_from_my_friends
+    name: A Little Help From My Friends
+    type: class
+    trigger: When you successfully aid someone
+    description: You take +1 forward as well.
+  - key: eldritch_tones
+    name: Eldritch Tones
+    type: class
+    description: Your arcane art is strong, allowing you to choose two effects instead of one.
+  - key: duelist_parry
+    name: Duelist's Parry
+    type: class
+    trigger: When you hack and slash
+    description: You take +1 armor forward.
+  - key: bamboozle
+    name: Bamboozle
+    type: class
+    trigger: When you parley with someone on a 7+
+    description: You also take +1 forward with them.
+  - key: multiclass_dabbler_bard
+    name: Multiclass Dabbler
+    type: class
+    description: Get one move from another class. Treat your level as one lower for choosing the move.
+  - key: multiclass_initiate_bard
+    name: Multiclass Initiate
+    type: class
+    description: Get one move from another class. Treat your level as one lower for choosing the move.
+    requires: multiclass_dabbler_bard
 advanced_moves_6_10:
-- name: Healing Chorus
-  description: When you heal with arcane art, you heal +2d8 damage.
-  requirement: 'Replaces: Healing Song'
-- name: Vicious Blast
-  description: When you grant bonus damage with arcane art, you grant an extra +2d4
-    damage.
-  requirement: 'Replaces: Vicious Cacophony'
-- name: Unforgettable Face
-  description: When you meet someone you've met before (your call) after some time
-    apart you take +1 forward against them.
-- name: Reputation
-  description: When you first meet someone who's heard songs about you, roll+Cha.
-    ✴On a 10+, tell the GM two things they've heard about you. ✴On a 7-9, tell the
-    GM one thing they've heard, and the GM tells you one thing.
-- name: Eldritch Chord
-  description: When you use arcane art, you choose two effects. You also get to choose
-    one of those effects to double.
-  requirement: 'Replaces: Eldritch Tones'
-- name: An Ear For Magic
-  description: When you hear an enemy cast a spell the GM will tell you the name of
-    the spell and its effects. Take +1 forward when acting on the answers.
-- name: Devious
-  description: When you use charming and open you may also ask "How are you vulnerable
-    to me?" Your subject may not ask this question of you.
-- name: Duelist's Block
-  description: When you hack and slash, you take +2 armor forward.
-  requirement: 'Replaces: Duelist''s Parry'
-- name: Con
-  description: When you parley with someone, on a 7+ you also take +1 forward with
-    them and get to ask their player one question which they must answer truthfully.
-  requirement: 'Replaces: Bamboozle'
-- name: Multiclass Master
-  description: Get one move from another class. Treat your level as one lower for
-    choosing the move.
-  requirement: 'Requires: Multiclass Initiate'
+  - key: healing_chorus
+    name: Healing Chorus
+    type: class
+    trigger: When you heal with arcane art
+    description: You heal +2d8 damage.
+    replaces: healing_song
+  - key: vicious_blast
+    name: Vicious Blast
+    type: class
+    trigger: When you grant bonus damage with arcane art
+    description: You grant an extra +2d4 damage.
+    replaces: vicious_cacophony
+  - key: unforgettable_face
+    name: Unforgettable Face
+    type: class
+    trigger: When you meet someone you've met before (your call) after some time apart
+    description: You take +1 forward against them.
+  - key: reputation
+    name: Reputation
+    type: class
+    trigger: When you first meet someone who's heard songs about you
+    roll: CHA
+    on_10: Tell the GM two things they've heard about you.
+    on_7_9: Tell the GM one thing they've heard, and the GM tells you one thing.
+  - key: eldritch_chord
+    name: Eldritch Chord
+    type: class
+    trigger: When you use arcane art
+    description: You choose two effects. You also get to choose one of those effects to double.
+    replaces: eldritch_tones
+  - key: an_ear_for_magic
+    name: An Ear For Magic
+    type: class
+    trigger: When you hear an enemy cast a spell
+    description: The GM will tell you the name of the spell and its effects. Take +1 forward when acting on the answers.
+  - key: devious
+    name: Devious
+    type: class
+    trigger: When you use charming and open
+    description: You may also ask "How are you vulnerable to me?" Your subject may not ask this question of you.
+  - key: duelist_block
+    name: Duelist's Block
+    type: class
+    trigger: When you hack and slash
+    description: You take +2 armor forward.
+    replaces: duelist_parry
+  - key: con_bard
+    name: Con
+    type: class
+    trigger: When you parley with someone on a 7+
+    description: You also take +1 forward with them and get to ask their player one question which they must answer truthfully.
+    replaces: bamboozle
+  - key: multiclass_master_bard
+    name: Multiclass Master
+    type: class
+    description: Get one move from another class. Treat your level as one lower for choosing the move.
+    requires: multiclass_initiate_bard

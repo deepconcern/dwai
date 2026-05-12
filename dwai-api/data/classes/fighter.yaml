@@ -13,10 +13,8 @@ description:
 hp_base: 10
 damage_die: 10
 names:
-  dwarf:
-    [Ozruk, Surtur, Brunhilda, Annika, Janos, Greta, Dim, Rundrig, Jarl, Xotoq]
-  elf:
-    [Elohiir, Sharaseth, Hasrith, Shevaral, Cadeus, Eldar, Kithracet, Thelian]
+  dwarf: [Ozruk, Surtur, Brunhilda, Annika, Janos, Greta, Dim, Rundrig, Jarl, Xotoq]
+  elf: [Elohiir, Sharaseth, Hasrith, Shevaral, Cadeus, Eldar, Kithracet, Thelian]
   halfling: [Finnegan, Olive, Randolph, Bartleby, Aubrey, Baldwin, Becca]
   human: [Hawke, Rudiger, Gregor, Brianne, Walton, Castor, Shanna, Ajax, Hob]
 looks:
@@ -25,65 +23,119 @@ looks:
   skin: [Calloused Skin, Tanned Skin, Scarred Skin]
   body: [Built Body, Lithe Body, Ravaged Body]
 race_moves:
-  - name: Dwarf
-    description:
-      When you share a drink with someone, you may parley with them using
-      CON instead of CHA.
-  - name: Elf
+  - key: dwarf_fighter
+    name: Dwarf
+    type: class
+    trigger: When you share a drink with someone
+    description: You may parley with them using CON instead of CHA.
+  - key: elf_fighter
+    name: Elf
+    type: class
     description:
       Choose one weapon—you can always treat weapons of that type as if they
       had the precise tag.
-  - name: Halfling
-    description:
-      When you defy danger and use your small size to your advantage, take
-      +1.
-  - name: Human
+  - key: halfling_fighter
+    name: Halfling
+    type: class
+    trigger: When you defy danger and use your small size to your advantage
+    description: Take +1.
+  - key: human_fighter
+    name: Human
+    type: class
     description:
       Once per battle you may reroll a single damage roll (yours or someone
       else's).
 starting_moves:
-  - name: Bend Bars, Lift Gates
-    description:
-      When you use pure strength to destroy an inanimate obstacle, roll+Str.
-      ✴On a 10+, choose 3. ✴On a 7-9 choose 2.
+  - key: bend_bars_lift_gates
+    name: Bend Bars, Lift Gates
+    type: class
+    trigger: When you use pure strength to destroy an inanimate obstacle
+    roll: STR
+    on_10: Choose 3.
+    on_7_9: Choose 2.
     options:
       - It doesn't take a very long time
       - Nothing of value is damaged
       - It doesn't make an inordinate amount of noise
       - You can fix the thing again without a lot of effort
-  - name: Armored
+  - key: armored_fighter
+    name: Armored
+    type: class
     description: You ignore the clumsy tag on armor you wear.
-  - name: Signature Weapon
+  - key: signature_weapon
+    name: Signature Weapon
+    type: class
     description:
-      "This is your weapon. There are many like it, but this one is yours.
-      Your weapon is your best friend. It is your life. You master it as you master
-      your life. Your weapon, without you, is useless. Without your weapon, you are
-      useless. You must wield your weapon true. Choose a base description, all are 2
-      weight: Choose the range that best fits your weapon: Choose two enhancements:
-      Choose a look:"
-    options:
-      - Sword
-      - Axe
-      - Hammer
-      - Spear
-      - Flail
-      - Fists
-      - Hand
-      - Close
-      - Reach
-      - Hooks and spikes. +1 damage, but +1 weight.
-      - Sharp. +2 piercing.
-      - Perfectly weighted. Add precise.
-      - Serrated edges. +1 damage.
-      - Glows in the presence of one type of creature, your choice.
-      - Huge. Add messy and forceful.
-      - Versatile. Choose an additional range.
-      - Well-crafted. -1 weight.
-      - Ancient
-      - Unblemished
-      - Ornate
-      - Blood-stained
-      - Sinister
+      This is your weapon. There are many like it, but this one is yours. Your
+      weapon is your best friend. It is your life. You master it as you master your life.
+      Your weapon, without you, is useless. Without your weapon, you are useless. You
+      must wield your weapon true. Choose a base (all are 2 weight), a range, two
+      enhancements, and a look.
+    creation_options:
+      - group: Base
+        pick: 1
+        choices:
+          - key: sword
+            label: Sword
+          - key: axe
+            label: Axe
+          - key: hammer
+            label: Hammer
+          - key: spear
+            label: Spear
+          - key: flail
+            label: Flail
+          - key: fists
+            label: Fists
+      - group: Range
+        pick: 1
+        choices:
+          - key: hand
+            label: Hand
+          - key: close
+            label: Close
+          - key: reach
+            label: Reach
+      - group: Enhancements
+        pick: 2
+        choices:
+          - key: hooks_and_spikes
+            label: Hooks and spikes
+            description: +1 damage, but +1 weight.
+          - key: sharp
+            label: Sharp
+            description: +2 piercing.
+          - key: perfectly_weighted
+            label: Perfectly weighted
+            description: Add precise.
+          - key: serrated_edges
+            label: Serrated edges
+            description: +1 damage.
+          - key: glows
+            label: Glows
+            description: Glows in the presence of one type of creature, your choice.
+          - key: huge
+            label: Huge
+            description: Add messy and forceful.
+          - key: versatile
+            label: Versatile
+            description: Choose an additional range.
+          - key: well_crafted
+            label: Well-crafted
+            description: -1 weight.
+      - group: Look
+        pick: 1
+        choices:
+          - key: ancient
+            label: Ancient
+          - key: unblemished
+            label: Unblemished
+          - key: ornate
+            label: Ornate
+          - key: blood_stained
+            label: Blood-stained
+          - key: sinister
+            label: Sinister
 alignments:
   - alignment: Good
     description: Defend those weaker than you.
@@ -95,101 +147,153 @@ starting_gear:
   load_base: 12
   default:
     - Signature weapon
-    - Dungeon rations (5 uses, 1 weight)
+    - dungeon_rations
   options:
-    - Chainmail (1 armor, 1 weight) and adventuring gear (1 weight)
-    - Scale armor (2 armor, 3 weight)
-    - 2 Healing potions (0 weight)
-    - Shield (+1 armor, 2 weight)
-    - Antitoxin (0 weight), dungeon rations (1 weight), and poultices and herbs (1 weight)
-    - 22 coins
+    - pick: 1
+      choices:
+        - items:
+            - scale_armor
+        - items:
+            - chainmail
+            - adventuring_gear
+    - pick: 2
+      choices:
+        - items:
+            - healing_potion
+            - healing_potion
+        - items:
+            - shield
+        - items:
+            - antitoxin
+            - dungeon_rations
+            - poultices_and_herbs
+        - items:
+            - 22 coins
 bonds:
   - _______________ owes me their life, whether they admit it or not.
   - I have sworn to protect _______________.
   - I worry about the ability of _______________ to survive in the dungeon.
   - _______________ is soft, but I will make them hard like me.
 advanced_moves_2_5:
-  - name: Merciless
+  - key: merciless
+    name: Merciless
+    type: class
     description: When you deal damage, deal +1d4 damage.
-  - name: Heirloom
+  - key: heirloom
+    name: Heirloom
+    type: class
+    trigger: When you consult the spirits that reside within your signature weapon
+    roll: CHA
+    on_10: The GM will give you good detail.
+    on_7_9: The GM will give you an impression.
+    description: They will give you an insight relating to the current situation, and might ask you some questions in return.
+  - key: armor_mastery
+    name: Armor Mastery
+    type: class
+    trigger: When you make your armor take the brunt of damage dealt to you
     description:
-      When you consult the spirits that reside within your signature weapon,
-      they will give you an insight relating to the current situation, and might ask
-      you some questions in return, roll+CHA. ✴On a 10+, the GM will give you good detail.
-      ✴On a 7-9, the GM will give you an impression.
-  - name: Armor Mastery
-    description:
-      When you make your armor take the brunt of damage dealt to you, the
-      damage is negated but you must reduce the armor value of your armor or shield
-      (your choice) by 1. The value is reduced each time you make this choice. If the
-      reduction leaves the item with 0 armor it is destroyed.
-  - name: Improved Weapon
+      The damage is negated but you must reduce the armor value of your armor
+      or shield (your choice) by 1. The value is reduced each time you make this choice.
+      If the reduction leaves the item with 0 armor it is destroyed.
+  - key: improved_weapon
+    name: Improved Weapon
+    type: class
     description: Choose one extra enhancement for your signature weapon.
-  - name: Seeing Red
-    description: When you discern realities during combat, you take +1.
-  - name: Interrogator
-    description:
-      When you parley using threats of impending violence as leverage, you
-      may use STR instead of CHA.
-  - name: Scent of Blood
-    description:
-      When you hack and slash an enemy, your next attack against that same
-      foe deals +1d4 damage.
-  - name: Multiclass Dabbler
+  - key: seeing_red
+    name: Seeing Red
+    type: class
+    trigger: When you discern realities during combat
+    description: You take +1.
+  - key: interrogator
+    name: Interrogator
+    type: class
+    trigger: When you parley using threats of impending violence as leverage
+    description: You may use STR instead of CHA.
+  - key: scent_of_blood
+    name: Scent of Blood
+    type: class
+    trigger: When you hack and slash an enemy
+    description: Your next attack against that same foe deals +1d4 damage.
+  - key: multiclass_dabbler_fighter
+    name: Multiclass Dabbler
+    type: class
     description:
       Get one move from another class. Treat your level as one lower for
       choosing the move.
-  - name: Iron Hide
+  - key: iron_hide
+    name: Iron Hide
+    type: class
     description: You gain +1 armor.
-  - name: Blacksmith
+  - key: blacksmith
+    name: Blacksmith
+    type: class
+    trigger: When you have access to a forge
     description:
-      When you have access to a forge you can graft the magical powers of
-      a weapon onto your signature weapon. This process destroys the magical weapon.
-      Your signature weapon gains the magical powers of the destroyed weapon.
+      You can graft the magical powers of a weapon onto your signature weapon.
+      This process destroys the magical weapon. Your signature weapon gains the magical
+      powers of the destroyed weapon.
 advanced_moves_6_10:
-  - name: Bloodthirsty
+  - key: bloodthirsty
+    name: Bloodthirsty
+    type: class
     description: When you deal damage, deal +1d8 damage.
-    requirement: "Replaces: Merciless"
-  - name: Armored Perfection
+    replaces: merciless
+  - key: armored_perfection
+    name: Armored Perfection
+    type: class
+    trigger: When you choose to let your armor take the brunt of damage dealt to you
     description:
-      When you choose to let your armor take the brunt of damage dealt to
-      you, the damage is negated and you take +1 forward against the attacker, but you
-      must reduce the armor value of your armor or shield (your choice) by 1. The value
-      is reduced each time you make this choice. If the reduction leaves the item with
-      0 armor it is destroyed.
-    requirement: "Replaces: Armor Mastery"
-  - name: Evil Eye
+      The damage is negated and you take +1 forward against the attacker, but
+      you must reduce the armor value of your armor or shield (your choice) by 1. The
+      value is reduced each time you make this choice. If the reduction leaves the item
+      with 0 armor it is destroyed.
+    replaces: armor_mastery
+  - key: evil_eye
+    name: Evil Eye
+    type: class
+    trigger: When you enter combat
+    roll: CHA
+    on_10: Hold 2.
+    on_7_9: Hold 1.
+    on_miss: Your enemies immediately identify you as their biggest threat.
     description:
-      When you enter combat, roll+CHA. ✴On a 10+, hold 2. ✴On a 7-9, hold
-      1. Spend your hold to make eye contact with an NPC present, who freezes or flinches
-      and can't act until you break it off. ✴On a 6-, your enemies immediately identify
-      you as their biggest threat.
-    requirement: "Requires: Seeing Red"
-  - name: Taste of Blood
-    description:
-      When you hack and slash an enemy, your next attack against that same
-      foe deals +1d8 damage.
-    requirement: "Replaces: Scent of Blood"
-  - name: Multiclass Initiate
+      Spend your hold to make eye contact with an NPC present, who freezes or
+      flinches and can't act until you break it off.
+    requires: seeing_red
+  - key: taste_of_blood
+    name: Taste of Blood
+    type: class
+    trigger: When you hack and slash an enemy
+    description: Your next attack against that same foe deals +1d8 damage.
+    replaces: scent_of_blood
+  - key: multiclass_initiate_fighter
+    name: Multiclass Initiate
+    type: class
     description:
       Get one move from another class. Treat your level as one lower for
       choosing the move.
-    requirement: "Requires: Multiclass Dabbler"
-  - name: Steel Hide
+    requires: multiclass_dabbler_fighter
+  - key: steel_hide
+    name: Steel Hide
+    type: class
     description: You gain +2 armor.
-    requirement: "Replaces: Iron Hide"
-  - name: Through Death's Eyes
-    description:
-      When you go into battle, roll+WIS. ✴On a 10+, name someone who will
-      live and someone who will die. ✴On a 7-9, name someone who will live or someone
-      who will die. Name NPCs, not player characters. The GM will make your vision come
-      true, if it's even remotely possible. ✴On a 6- you see your own death and consequently
-      take -1 ongoing throughout the battle.
-  - name: Eye for Weaponry
-    description:
-      When you look over an enemy's weaponry, ask the GM how much damage
-      they do.
-  - name: Superior Warrior
-    description:
-      When you hack and slash on a 12+ you deal your damage, avoid their
-      attack, and impress, dismay, or frighten your enemy.
+    replaces: iron_hide
+  - key: through_deaths_eyes
+    name: Through Death's Eyes
+    type: class
+    trigger: When you go into battle
+    roll: WIS
+    on_10: Name someone who will live and someone who will die.
+    on_7_9: Name someone who will live or someone who will die.
+    on_miss: You see your own death and consequently take -1 ongoing throughout the battle.
+    description: Name NPCs, not player characters. The GM will make your vision come true, if it's even remotely possible.
+  - key: eye_for_weaponry
+    name: Eye for Weaponry
+    type: class
+    trigger: When you look over an enemy's weaponry
+    description: Ask the GM how much damage they do.
+  - key: superior_warrior
+    name: Superior Warrior
+    type: class
+    trigger: When you hack and slash on a 12+
+    description: You deal your damage, avoid their attack, and impress, dismay, or frighten your enemy.

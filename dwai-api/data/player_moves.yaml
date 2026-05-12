@@ -1,0 +1,254 @@
+- key: hack_and_slash
+  name: Hack and Slash
+  type: basic
+  trigger: When you attack an enemy in melee
+  roll: STR
+  on_10:
+    You deal your damage to the enemy and avoid their attack. At your option,
+    you may choose to do +1d6 damage but expose yourself to the enemy's attack.
+  on_7_9: You deal your damage to the enemy and the enemy makes an attack against you.
+
+- key: volley
+  name: Volley
+  type: basic
+  trigger: When you take aim and shoot at an enemy at range
+  roll: DEX
+  on_10: You have a clear shot—deal your damage.
+  on_7_9: You deal your damage but choose one (whichever you choose you deal your damage).
+  options:
+    - You have to move to get the shot placing you in danger of the GM's choice.
+    - You have to take what you can get—deal -1d6 damage.
+    - You have to take several shots, reducing your ammo by one.
+
+- key: defy_danger
+  name: Defy Danger
+  type: basic
+  trigger: When you act despite an imminent threat or suffer a calamity, say how you deal with it
+  roll: STR (power through), DEX (get out of the way or act fast), CON (endure), INT (quick thinking), WIS (mental fortitude), or CHA (charm and social grace)
+  on_10: You do what you set out to; the threat doesn't come to bear.
+  on_7_9: You stumble, hesitate, or flinch—the GM will offer you a worse outcome, hard bargain, or ugly choice.
+
+- key: defend
+  name: Defend
+  type: basic
+  trigger: When you stand in defense of a person, item, or location under attack
+  roll: CON
+  on_10: Hold 3.
+  on_7_9: Hold 1.
+  description:
+    So long as you stand in defense, when you or the thing you defend is
+    attacked you may spend hold, 1 for 1, to choose an option.
+  options:
+    - Redirect an attack from the thing you defend to yourself.
+    - Halve the attack's effect or damage.
+    - Open up the attacker to an ally giving that ally +1 forward against the attacker.
+    - Deal damage to the attacker equal to your level.
+
+- key: spout_lore
+  name: Spout Lore
+  type: basic
+  trigger: When you consult your accumulated knowledge about something
+  roll: INT
+  on_10:
+    The GM will tell you something interesting and useful about the subject
+    relevant to your situation.
+  on_7_9:
+    The GM will only tell you something interesting—it's on you to make it useful.
+    The GM might ask you "How do you know this?" Tell them the truth, now.
+
+- key: discern_realities
+  name: Discern Realities
+  type: basic
+  trigger: When you closely study a situation or person
+  roll: WIS
+  on_10: Ask the GM three questions from the list below.
+  on_7_9: Ask the GM one question from the list below.
+  description: Take +1 forward when acting on the answers.
+  options:
+    - What happened here recently?
+    - What is about to happen?
+    - What should I be on the lookout for?
+    - What here is useful or valuable to me?
+    - Who's really in control here?
+    - What here is not what it appears to be?
+
+- key: parley
+  name: Parley
+  type: basic
+  trigger: When you have leverage on a GM character and manipulate them
+  roll: CHA
+  on_10: They ask you for something and do it if you make them a promise first.
+  on_7_9: They ask you for something and do it if you make them a promise first. They need some concrete assurance of your promise, right now.
+  description: Leverage is something they need or want.
+
+- key: aid_or_interfere
+  name: Aid or Interfere
+  type: basic
+  trigger: When you help or hinder someone you have a Bond with
+  roll: Bond with them
+  on_10: They take +1 (aid) or -2 (interfere), your choice.
+  on_7_9: They take +1 (aid) or -2 (interfere), your choice. You also expose yourself to danger, retribution, or cost.
+
+- key: last_breath
+  name: Last Breath
+  type: special
+  trigger: When you're dying
+  roll: nothing (+nothing—Death doesn't care how tough or cool you are)
+  on_10: You've cheated death—you're in a bad spot but you're still alive.
+  on_7_9:
+    Death will offer you a bargain. Take it and stabilize or refuse and pass
+    beyond the Black Gates into whatever fate awaits you.
+  on_miss:
+    Your fate is sealed. You're marked as Death's own and you'll cross the
+    threshold soon. The GM will tell you when.
+  description:
+    You catch a glimpse of what lies beyond the Black Gates of Death's Kingdom
+    (the GM will describe it).
+
+- key: encumbrance
+  name: Encumbrance
+  type: special
+  trigger: When you make a move while carrying weight
+  description:
+    Up to or equal to Load, you're fine. Equal to load+1 or load+2, you take
+    -1. Greater than load+2, you have a choice—drop at least 1 weight and roll at
+    -1, or automatically fail.
+
+- key: make_camp
+  name: Make Camp
+  type: special
+  trigger: When you settle in to rest
+  description:
+    Consume a ration. If you're somewhere dangerous, decide the watch order
+    as well. If you have enough XP you may Level Up. When you wake from at least a
+    few uninterrupted hours of sleep, heal damage equal to half your max HP.
+
+- key: take_watch
+  name: Take Watch
+  type: special
+  trigger: When you're on watch and something approaches the camp
+  roll: WIS
+  on_10: You're able to wake the camp and prepare a response; the camp takes +1 forward.
+  on_7_9:
+    You react just a moment too late—the camp is awake but hasn't had time to
+    prepare. You have weapons and armor but little else.
+  on_miss: Whatever lurks outside the campfire's light has the drop on you.
+
+- key: undertake_a_perilous_journey
+  name: Undertake a Perilous Journey
+  type: special
+  trigger: When you travel through hostile territory
+  roll: WIS (each assigned role rolls separately)
+  on_10:
+    "Quartermaster: reduces rations required by one. Trailblazer: reduces
+    travel time (GM says by how much). Scout: spots trouble to get the drop on it."
+  on_7_9:
+    Each role performs as expected—normal rations consumed, journey takes
+    about as long as expected, no one gets the drop on anyone.
+  description:
+    Choose one party member each as trailblazer, scout, and quartermaster
+    (the same character cannot have two jobs). Unassigned roles are treated as if
+    they rolled a 6.
+
+- key: level_up
+  name: Level Up
+  type: special
+  trigger: When you have downtime (hours or days) and XP equal to (or greater than) your current level + 7
+  description:
+    Subtract your current level +7 from your XP, increase your level by 1,
+    and choose a new advanced move from your class. If you are the wizard, you also
+    get to add a new spell to your spellbook. Choose one of your stats and increase
+    it by 1 (this may change your modifier). Note that changing your Constitution
+    increases your maximum and current HP. Ability scores can't go higher than 18.
+
+- key: end_of_session
+  name: End of Session
+  type: special
+  trigger: When you reach the end of a session
+  description:
+    Choose one of your bonds that you feel is resolved (completely explored,
+    no longer relevant, or otherwise). Ask the player of the character you have the
+    bond with if they agree. If they do, mark XP and write a new bond with whomever
+    you wish. Once bonds have been updated, look at your alignment. If you fulfilled
+    it at least once this session, mark XP. Then answer the three questions as a
+    group; mark XP for each "yes."
+  options:
+    - Did we learn something new and important about the world?
+    - Did we overcome a notable monster or enemy?
+    - Did we loot a memorable treasure?
+
+- key: carouse
+  name: Carouse
+  type: special
+  trigger: When you return triumphant and throw a big party (spend 100 coin)
+  roll: +extra 100s of coin spent
+  on_10: Choose 3.
+  on_7_9: Choose 1.
+  on_miss: You still choose one, but things get really out of hand.
+  options:
+    - You befriend a useful NPC.
+    - You hear rumors of an opportunity.
+    - You gain useful information.
+    - You are not entangled, ensorcelled, or tricked.
+
+- key: supply
+  name: Supply
+  type: special
+  trigger: When you go to buy something with money on hand
+  roll: CHA (only if the item is special, beyond what's usually available, or non-mundane)
+  on_10: You find what you're looking for at a fair price.
+  on_7_9: You'll have to pay more or settle for something similar.
+  description:
+    If it's something readily available in the settlement you're in, you can
+    buy it at market price without rolling.
+
+- key: recover
+  name: Recover
+  type: special
+  trigger: When you do nothing but rest in comfort and safety
+  description:
+    After a day of rest you recover all your HP. After three days of rest
+    you remove one debility of your choice. If you're under the care of a healer
+    (magical or otherwise) you heal a debility for every two days of rest instead.
+
+- key: recruit
+  name: Recruit
+  type: special
+  trigger: When you put out word that you're looking to hire help
+  roll: flat 2d6 (no stat)
+  on_10:
+    You've got your pick of a number of skilled applicants; your choice who
+    you hire, no penalty for not taking them along.
+  on_7_9: You'll have to settle for someone close or turn them away.
+  on_miss:
+    Someone influential and ill-suited declares they'd like to come along
+    (a foolhardy youth, a loose-cannon, or a veiled enemy, for example). Bring them
+    and take the consequences or turn them away. If you turn away applicants you
+    take -1 forward to Recruit.
+  description:
+    If you make it known that your pay is generous, take +1. If you make it
+    known what you're setting out to do, take +1. If you make it known they'll get
+    a share of whatever you find, take +1. If you have a useful reputation around
+    these parts take an additional +1.
+
+- key: outstanding_warrants
+  name: Outstanding Warrants
+  type: special
+  trigger: When you return to a civilized place in which you've caused trouble before
+  roll: CHA
+  on_10: Word has spread of your deeds and everyone recognizes you.
+  on_7_9: Word has spread of your deeds and everyone recognizes you. The GM also chooses a complication.
+  options:
+    - The local constabulary has a warrant out for your arrest.
+    - Someone has put a price on your head.
+    - Someone important to you has been put in a bad spot as a result of your actions.
+
+- key: bolster
+  name: Bolster
+  type: special
+  trigger: When you spend your leisure time in study, meditation, or hard practice
+  description:
+    You gain preparation. If you prepare for a week or two, 1 preparation.
+    If you prepare for a month or longer, 3 preparation. When your preparation pays
+    off spend 1 preparation for +1 to any roll. You can only spend one preparation
+    per roll.

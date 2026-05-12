@@ -141,10 +141,18 @@ type ComplexityRoot struct {
 	}
 
 	Move struct {
-		Key     func(childComplexity int) int
-		Name    func(childComplexity int) int
-		Trigger func(childComplexity int) int
-		Type    func(childComplexity int) int
+		Description func(childComplexity int) int
+		Key         func(childComplexity int) int
+		Name        func(childComplexity int) int
+		On10        func(childComplexity int) int
+		On7to9      func(childComplexity int) int
+		OnMiss      func(childComplexity int) int
+		Options     func(childComplexity int) int
+		ReplacesKey func(childComplexity int) int
+		RequiresKey func(childComplexity int) int
+		Roll        func(childComplexity int) int
+		Trigger     func(childComplexity int) int
+		Type        func(childComplexity int) int
 	}
 
 	MoveQuery struct {
@@ -549,6 +557,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.MessageQuery.All(childComplexity), true
 
+	case "Move.description":
+		if e.ComplexityRoot.Move.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.Description(childComplexity), true
 	case "Move.key":
 		if e.ComplexityRoot.Move.Key == nil {
 			break
@@ -561,6 +575,48 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Move.Name(childComplexity), true
+	case "Move.on10":
+		if e.ComplexityRoot.Move.On10 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.On10(childComplexity), true
+	case "Move.on7to9":
+		if e.ComplexityRoot.Move.On7to9 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.On7to9(childComplexity), true
+	case "Move.onMiss":
+		if e.ComplexityRoot.Move.OnMiss == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.OnMiss(childComplexity), true
+	case "Move.options":
+		if e.ComplexityRoot.Move.Options == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.Options(childComplexity), true
+	case "Move.replacesKey":
+		if e.ComplexityRoot.Move.ReplacesKey == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.ReplacesKey(childComplexity), true
+	case "Move.requiresKey":
+		if e.ComplexityRoot.Move.RequiresKey == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.RequiresKey(childComplexity), true
+	case "Move.roll":
+		if e.ComplexityRoot.Move.Roll == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.Roll(childComplexity), true
 	case "Move.trigger":
 		if e.ComplexityRoot.Move.Trigger == nil {
 			break
@@ -1008,10 +1064,26 @@ func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.
 		return ec.fieldContext_Move_key(ctx, field)
 	case "name":
 		return ec.fieldContext_Move_name(ctx, field)
-	case "trigger":
-		return ec.fieldContext_Move_trigger(ctx, field)
 	case "type":
 		return ec.fieldContext_Move_type(ctx, field)
+	case "trigger":
+		return ec.fieldContext_Move_trigger(ctx, field)
+	case "roll":
+		return ec.fieldContext_Move_roll(ctx, field)
+	case "on10":
+		return ec.fieldContext_Move_on10(ctx, field)
+	case "on7to9":
+		return ec.fieldContext_Move_on7to9(ctx, field)
+	case "onMiss":
+		return ec.fieldContext_Move_onMiss(ctx, field)
+	case "options":
+		return ec.fieldContext_Move_options(ctx, field)
+	case "description":
+		return ec.fieldContext_Move_description(ctx, field)
+	case "requiresKey":
+		return ec.fieldContext_Move_requiresKey(ctx, field)
+	case "replacesKey":
+		return ec.fieldContext_Move_replacesKey(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Move", field.Name)
 }
@@ -2682,29 +2754,6 @@ func (ec *executionContext) fieldContext_Move_name(_ context.Context, field grap
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _Move_trigger(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_trigger(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Trigger, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Move_trigger(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
 func (ec *executionContext) _Move_type(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2725,6 +2774,213 @@ func (ec *executionContext) _Move_type(ctx context.Context, field graphql.Collec
 	)
 }
 func (ec *executionContext) fieldContext_Move_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_trigger(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_trigger(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Trigger, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_trigger(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_roll(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_roll(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Roll, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_roll(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_on10(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_on10(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.On10, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_on10(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_on7to9(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_on7to9(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.On7to9, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_on7to9(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_onMiss(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_onMiss(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.OnMiss, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_onMiss(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_options(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_options(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Options, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Move_options(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_description(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_requiresKey(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_requiresKey(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RequiresKey, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_requiresKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_replacesKey(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_replacesKey(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ReplacesKey, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_replacesKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -5587,16 +5843,32 @@ func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "trigger":
-			out.Values[i] = ec._Move_trigger(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "type":
 			out.Values[i] = ec._Move_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "trigger":
+			out.Values[i] = ec._Move_trigger(ctx, field, obj)
+		case "roll":
+			out.Values[i] = ec._Move_roll(ctx, field, obj)
+		case "on10":
+			out.Values[i] = ec._Move_on10(ctx, field, obj)
+		case "on7to9":
+			out.Values[i] = ec._Move_on7to9(ctx, field, obj)
+		case "onMiss":
+			out.Values[i] = ec._Move_onMiss(ctx, field, obj)
+		case "options":
+			out.Values[i] = ec._Move_options(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Move_description(ctx, field, obj)
+		case "requiresKey":
+			out.Values[i] = ec._Move_requiresKey(ctx, field, obj)
+		case "replacesKey":
+			out.Values[i] = ec._Move_replacesKey(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

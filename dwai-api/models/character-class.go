@@ -11,27 +11,53 @@ import (
 )
 
 type AlignmentTemplateModel struct {
-	alignment   string
-	description string
+	Alignment   string
+	Description string
 }
 
 func (m *AlignmentTemplateModel) ToObject() *model.AlignmentTemplate {
 	return &model.AlignmentTemplate{
-		Alignment:   m.alignment,
-		Description: m.description,
+		Alignment:   m.Alignment,
+		Description: m.Description,
 	}
 }
 
+// MoveCreationChoiceModel maps to the YAML creation_options[].choices[] entry.
+type MoveCreationChoiceModel struct {
+	Key         string
+	Label       string
+	Description *string
+}
+
+// MoveCreationOptionGroupModel maps to the YAML creation_options[] entry.
+type MoveCreationOptionGroupModel struct {
+	Group   string
+	Pick    int
+	Choices []MoveCreationChoiceModel
+}
+
+// ClassMoveModel extends MoveModel with creation_options used only in class files.
+type ClassMoveModel struct {
+	MoveModel       `yaml:",inline"`
+	CreationOptions []MoveCreationOptionGroupModel `yaml:"creation_options"`
+}
+
+func (m *ClassMoveModel) ToObject() *model.Move {
+	return m.MoveModel.ToObject()
+}
+
 type CharacterClassModel struct {
-	Alignments    []*AlignmentTemplateModel
-	Bonds         []string
-	DamageDie     int32
-	HpBase        int32
-	Key           string
-	Looks         map[string][]string
-	Name          string
-	RaceMoves     []*MoveModel
-	StartingMoves []*MoveModel
+	Alignments          []*AlignmentTemplateModel
+	Bonds               []string
+	DamageDie           int32 `yaml:"damage_die"`
+	HpBase              int32 `yaml:"hp_base"`
+	Key                 string
+	Looks               map[string][]string
+	Name                string
+	RaceMoves           []*ClassMoveModel `yaml:"race_moves"`
+	StartingMoves       []*ClassMoveModel `yaml:"starting_moves"`
+	AdvancedMoves25     []*ClassMoveModel `yaml:"advanced_moves_2_5"`
+	AdvancedMoves610    []*ClassMoveModel `yaml:"advanced_moves_6_10"`
 }
 
 type CharacterClassMap map[string]CharacterClassModel

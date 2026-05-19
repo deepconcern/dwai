@@ -71,7 +71,9 @@ func main() {
 		BasicMoves:       models.LoadBasicMoves(),
 		CharacterClasses: models.LoadCharacterClasses(),
 		DbPool:           pool,
+		Equipment:        models.LoadEquipment(),
 		Loaders:          models.NewLoaders(pool),
+		TagDefinitions:   models.LoadTags(),
 	}}))
 
 	srv.AddTransport(transport.Options{})

@@ -31,6 +31,7 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	AbilityScore() AbilityScoreResolver
+	CharacterClass() CharacterClassResolver
 	CharacterClassQuery() CharacterClassQueryResolver
 	CharacterMutation() CharacterMutationResolver
 	CharacterQuery() CharacterQueryResolver
@@ -71,6 +72,7 @@ type ComplexityRoot struct {
 		LookExamples       func(childComplexity int) int
 		Name               func(childComplexity int) int
 		RaceMoves          func(childComplexity int) int
+		StartingGear       func(childComplexity int) int
 		StartingMoves      func(childComplexity int) int
 	}
 
@@ -102,6 +104,19 @@ type ComplexityRoot struct {
 	GameQuery struct {
 		All  func(childComplexity int) int
 		ByID func(childComplexity int, id string) int
+	}
+
+	GearItem struct {
+		Count       func(childComplexity int) int
+		Description func(childComplexity int) int
+		Key         func(childComplexity int) int
+		Label       func(childComplexity int) int
+		Tags        func(childComplexity int) int
+	}
+
+	GearOptionGroup struct {
+		Choices func(childComplexity int) int
+		Pick    func(childComplexity int) int
 	}
 
 	Look struct {
@@ -187,10 +202,25 @@ type ComplexityRoot struct {
 		All   func(childComplexity int) int
 		ByKey func(childComplexity int, key string) int
 	}
+
+	StartingGear struct {
+		Default  func(childComplexity int) int
+		LoadBase func(childComplexity int) int
+		Options  func(childComplexity int) int
+	}
+
+	Tag struct {
+		Key      func(childComplexity int) int
+		Name     func(childComplexity int) int
+		Quantity func(childComplexity int) int
+	}
 }
 
 type AbilityScoreResolver interface {
 	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
+}
+type CharacterClassResolver interface {
+	StartingGear(ctx context.Context, obj *model.CharacterClass) (*model.StartingGear, error)
 }
 type CharacterClassQueryResolver interface {
 	All(ctx context.Context, obj *model.CharacterClassQuery) ([]*model.CharacterClass, error)
@@ -345,6 +375,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterClass.RaceMoves(childComplexity), true
+	case "CharacterClass.startingGear":
+		if e.ComplexityRoot.CharacterClass.StartingGear == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CharacterClass.StartingGear(childComplexity), true
 	case "CharacterClass.startingMoves":
 		if e.ComplexityRoot.CharacterClass.StartingMoves == nil {
 			break
@@ -454,6 +490,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.GameQuery.ByID(childComplexity, args["id"].(string)), true
+
+	case "GearItem.count":
+		if e.ComplexityRoot.GearItem.Count == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearItem.Count(childComplexity), true
+	case "GearItem.description":
+		if e.ComplexityRoot.GearItem.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearItem.Description(childComplexity), true
+	case "GearItem.key":
+		if e.ComplexityRoot.GearItem.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearItem.Key(childComplexity), true
+	case "GearItem.label":
+		if e.ComplexityRoot.GearItem.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearItem.Label(childComplexity), true
+	case "GearItem.tags":
+		if e.ComplexityRoot.GearItem.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearItem.Tags(childComplexity), true
+
+	case "GearOptionGroup.choices":
+		if e.ComplexityRoot.GearOptionGroup.Choices == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearOptionGroup.Choices(childComplexity), true
+	case "GearOptionGroup.pick":
+		if e.ComplexityRoot.GearOptionGroup.Pick == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GearOptionGroup.Pick(childComplexity), true
 
 	case "Look.id":
 		if e.ComplexityRoot.Look.ID == nil {
@@ -754,6 +834,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ScenarioQuery.ByKey(childComplexity, args["key"].(string)), true
 
+	case "StartingGear.default":
+		if e.ComplexityRoot.StartingGear.Default == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartingGear.Default(childComplexity), true
+	case "StartingGear.loadBase":
+		if e.ComplexityRoot.StartingGear.LoadBase == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartingGear.LoadBase(childComplexity), true
+	case "StartingGear.options":
+		if e.ComplexityRoot.StartingGear.Options == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartingGear.Options(childComplexity), true
+
+	case "Tag.key":
+		if e.ComplexityRoot.Tag.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Tag.Key(childComplexity), true
+	case "Tag.name":
+		if e.ComplexityRoot.Tag.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Tag.Name(childComplexity), true
+	case "Tag.quantity":
+		if e.ComplexityRoot.Tag.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Tag.Quantity(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -839,7 +957,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/games.graphqls" "schema/look_types.graphqls" "schema/messages.graphqls" "schema/moves.graphqls" "schema/scenarios.graphqls" "schema/schema.graphqls"
+//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/games.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/messages.graphqls" "schema/moves.graphqls" "schema/scenarios.graphqls" "schema/schema.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -854,6 +972,7 @@ var sources = []*ast.Source{
 	{Name: "schema/character_classes.graphqls", Input: sourceData("schema/character_classes.graphqls"), BuiltIn: false},
 	{Name: "schema/characters.graphqls", Input: sourceData("schema/characters.graphqls"), BuiltIn: false},
 	{Name: "schema/games.graphqls", Input: sourceData("schema/games.graphqls"), BuiltIn: false},
+	{Name: "schema/item.graphqls", Input: sourceData("schema/item.graphqls"), BuiltIn: false},
 	{Name: "schema/look_types.graphqls", Input: sourceData("schema/look_types.graphqls"), BuiltIn: false},
 	{Name: "schema/messages.graphqls", Input: sourceData("schema/messages.graphqls"), BuiltIn: false},
 	{Name: "schema/moves.graphqls", Input: sourceData("schema/moves.graphqls"), BuiltIn: false},
@@ -922,6 +1041,8 @@ func (ec *executionContext) childFields_CharacterClass(ctx context.Context, fiel
 		return ec.fieldContext_CharacterClass_raceMoves(ctx, field)
 	case "startingMoves":
 		return ec.fieldContext_CharacterClass_startingMoves(ctx, field)
+	case "startingGear":
+		return ec.fieldContext_CharacterClass_startingGear(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CharacterClass", field.Name)
 }
@@ -984,6 +1105,32 @@ func (ec *executionContext) childFields_GameQuery(ctx context.Context, field gra
 		return ec.fieldContext_GameQuery_byId(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type GameQuery", field.Name)
+}
+
+func (ec *executionContext) childFields_GearItem(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "count":
+		return ec.fieldContext_GearItem_count(ctx, field)
+	case "description":
+		return ec.fieldContext_GearItem_description(ctx, field)
+	case "key":
+		return ec.fieldContext_GearItem_key(ctx, field)
+	case "label":
+		return ec.fieldContext_GearItem_label(ctx, field)
+	case "tags":
+		return ec.fieldContext_GearItem_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GearItem", field.Name)
+}
+
+func (ec *executionContext) childFields_GearOptionGroup(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "pick":
+		return ec.fieldContext_GearOptionGroup_pick(ctx, field)
+	case "choices":
+		return ec.fieldContext_GearOptionGroup_choices(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GearOptionGroup", field.Name)
 }
 
 func (ec *executionContext) childFields_Look(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1060,16 +1207,12 @@ func (ec *executionContext) childFields_MessageQuery(ctx context.Context, field 
 
 func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "description":
+		return ec.fieldContext_Move_description(ctx, field)
 	case "key":
 		return ec.fieldContext_Move_key(ctx, field)
 	case "name":
 		return ec.fieldContext_Move_name(ctx, field)
-	case "type":
-		return ec.fieldContext_Move_type(ctx, field)
-	case "trigger":
-		return ec.fieldContext_Move_trigger(ctx, field)
-	case "roll":
-		return ec.fieldContext_Move_roll(ctx, field)
 	case "on10":
 		return ec.fieldContext_Move_on10(ctx, field)
 	case "on7to9":
@@ -1078,12 +1221,16 @@ func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.
 		return ec.fieldContext_Move_onMiss(ctx, field)
 	case "options":
 		return ec.fieldContext_Move_options(ctx, field)
-	case "description":
-		return ec.fieldContext_Move_description(ctx, field)
-	case "requiresKey":
-		return ec.fieldContext_Move_requiresKey(ctx, field)
 	case "replacesKey":
 		return ec.fieldContext_Move_replacesKey(ctx, field)
+	case "requiresKey":
+		return ec.fieldContext_Move_requiresKey(ctx, field)
+	case "roll":
+		return ec.fieldContext_Move_roll(ctx, field)
+	case "type":
+		return ec.fieldContext_Move_type(ctx, field)
+	case "trigger":
+		return ec.fieldContext_Move_trigger(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Move", field.Name)
 }
@@ -1118,6 +1265,30 @@ func (ec *executionContext) childFields_ScenarioQuery(ctx context.Context, field
 		return ec.fieldContext_ScenarioQuery_byKey(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ScenarioQuery", field.Name)
+}
+
+func (ec *executionContext) childFields_StartingGear(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "loadBase":
+		return ec.fieldContext_StartingGear_loadBase(ctx, field)
+	case "default":
+		return ec.fieldContext_StartingGear_default(ctx, field)
+	case "options":
+		return ec.fieldContext_StartingGear_options(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type StartingGear", field.Name)
+}
+
+func (ec *executionContext) childFields_Tag(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "key":
+		return ec.fieldContext_Tag_key(ctx, field)
+	case "name":
+		return ec.fieldContext_Tag_name(ctx, field)
+	case "quantity":
+		return ec.fieldContext_Tag_quantity(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 }
 
 func (ec *executionContext) childFields___Directive(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1910,6 +2081,38 @@ func (ec *executionContext) fieldContext_CharacterClass_startingMoves(_ context.
 	return fc, nil
 }
 
+func (ec *executionContext) _CharacterClass_startingGear(ctx context.Context, field graphql.CollectedField, obj *model.CharacterClass) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterClass_startingGear(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.CharacterClass().StartingGear(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.StartingGear) graphql.Marshaler {
+			return ec.marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterClass_startingGear(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterClass",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_StartingGear(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CharacterClassQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.CharacterClassQuery) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2316,6 +2519,185 @@ func (ec *executionContext) fieldContext_GameQuery_byId(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _GearItem_count(ctx context.Context, field graphql.CollectedField, obj *model.GearItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearItem_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Count, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearItem_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GearItem", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _GearItem_description(ctx context.Context, field graphql.CollectedField, obj *model.GearItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearItem_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearItem_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GearItem", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _GearItem_key(ctx context.Context, field graphql.CollectedField, obj *model.GearItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearItem_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearItem_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GearItem", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _GearItem_label(ctx context.Context, field graphql.CollectedField, obj *model.GearItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearItem_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearItem_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GearItem", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _GearItem_tags(ctx context.Context, field graphql.CollectedField, obj *model.GearItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearItem_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
+			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearItem_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GearItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GearOptionGroup_pick(ctx context.Context, field graphql.CollectedField, obj *model.GearOptionGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearOptionGroup_pick(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Pick, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearOptionGroup_pick(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GearOptionGroup", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _GearOptionGroup_choices(ctx context.Context, field graphql.CollectedField, obj *model.GearOptionGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GearOptionGroup_choices(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Choices, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v [][]*model.GearItem) graphql.Marshaler {
+			return ec.marshalNGearItem2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItemᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GearOptionGroup_choices(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GearOptionGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GearItem(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Look_id(ctx context.Context, field graphql.CollectedField, obj *model.Look) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2708,6 +3090,29 @@ func (ec *executionContext) fieldContext_MessageQuery_all(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Move_description(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _Move_key(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2751,75 +3156,6 @@ func (ec *executionContext) _Move_name(ctx context.Context, field graphql.Collec
 	)
 }
 func (ec *executionContext) fieldContext_Move_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Move_type(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_type(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Type, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Move_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Move_trigger(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_trigger(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Trigger, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
-			return ec.marshalOString2ᚖstring(ctx, selections, v)
-		},
-		true,
-		false,
-	)
-}
-func (ec *executionContext) fieldContext_Move_trigger(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Move_roll(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_roll(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Roll, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
-			return ec.marshalOString2ᚖstring(ctx, selections, v)
-		},
-		true,
-		false,
-	)
-}
-func (ec *executionContext) fieldContext_Move_roll(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -2915,16 +3251,16 @@ func (ec *executionContext) fieldContext_Move_options(_ context.Context, field g
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _Move_description(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+func (ec *executionContext) _Move_replacesKey(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_description(ctx, field)
+			return ec.fieldContext_Move_replacesKey(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Description, nil
+			return obj.ReplacesKey, nil
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
@@ -2934,7 +3270,7 @@ func (ec *executionContext) _Move_description(ctx context.Context, field graphql
 		false,
 	)
 }
-func (ec *executionContext) fieldContext_Move_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Move_replacesKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -2961,16 +3297,16 @@ func (ec *executionContext) fieldContext_Move_requiresKey(_ context.Context, fie
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _Move_replacesKey(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+func (ec *executionContext) _Move_roll(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Move_replacesKey(ctx, field)
+			return ec.fieldContext_Move_roll(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.ReplacesKey, nil
+			return obj.Roll, nil
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
@@ -2980,7 +3316,53 @@ func (ec *executionContext) _Move_replacesKey(ctx context.Context, field graphql
 		false,
 	)
 }
-func (ec *executionContext) fieldContext_Move_replacesKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Move_roll(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_type(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_type(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Move_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Move_trigger(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_trigger(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Trigger, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Move_trigger(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Move", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -3621,6 +4003,162 @@ func (ec *executionContext) fieldContext_ScenarioQuery_byKey(ctx context.Context
 		return fc, err
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _StartingGear_loadBase(ctx context.Context, field graphql.CollectedField, obj *model.StartingGear) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_StartingGear_loadBase(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LoadBase, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_StartingGear_loadBase(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("StartingGear", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _StartingGear_default(ctx context.Context, field graphql.CollectedField, obj *model.StartingGear) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_StartingGear_default(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Default, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.GearItem) graphql.Marshaler {
+			return ec.marshalNGearItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItemᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_StartingGear_default(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StartingGear",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GearItem(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StartingGear_options(ctx context.Context, field graphql.CollectedField, obj *model.StartingGear) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_StartingGear_options(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Options, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.GearOptionGroup) graphql.Marshaler {
+			return ec.marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_StartingGear_options(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StartingGear",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GearOptionGroup(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Tag_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Tag_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Tag", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Tag_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Tag_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Tag", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Tag_quantity(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Tag_quantity(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Tag_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Tag", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -5000,48 +5538,84 @@ func (ec *executionContext) _CharacterClass(ctx context.Context, sel ast.Selecti
 		case "alignmentTemplates":
 			out.Values[i] = ec._CharacterClass_alignmentTemplates(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "bonds":
 			out.Values[i] = ec._CharacterClass_bonds(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "damageDie":
 			out.Values[i] = ec._CharacterClass_damageDie(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "hpBase":
 			out.Values[i] = ec._CharacterClass_hpBase(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "key":
 			out.Values[i] = ec._CharacterClass_key(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "lookExamples":
 			out.Values[i] = ec._CharacterClass_lookExamples(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._CharacterClass_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "raceMoves":
 			out.Values[i] = ec._CharacterClass_raceMoves(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "startingMoves":
 			out.Values[i] = ec._CharacterClass_startingMoves(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "startingGear":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterClass_startingGear(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5481,6 +6055,109 @@ func (ec *executionContext) _GameQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var gearItemImplementors = []string{"GearItem"}
+
+func (ec *executionContext) _GearItem(ctx context.Context, sel ast.SelectionSet, obj *model.GearItem) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, gearItemImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GearItem")
+		case "count":
+			out.Values[i] = ec._GearItem_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._GearItem_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "key":
+			out.Values[i] = ec._GearItem_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._GearItem_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._GearItem_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var gearOptionGroupImplementors = []string{"GearOptionGroup"}
+
+func (ec *executionContext) _GearOptionGroup(ctx context.Context, sel ast.SelectionSet, obj *model.GearOptionGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, gearOptionGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GearOptionGroup")
+		case "pick":
+			out.Values[i] = ec._GearOptionGroup_pick(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "choices":
+			out.Values[i] = ec._GearOptionGroup_choices(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var lookImplementors = []string{"Look"}
 
 func (ec *executionContext) _Look(ctx context.Context, sel ast.SelectionSet, obj *model.Look) graphql.Marshaler {
@@ -5833,6 +6510,8 @@ func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Move")
+		case "description":
+			out.Values[i] = ec._Move_description(ctx, field, obj)
 		case "key":
 			out.Values[i] = ec._Move_key(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5843,15 +6522,6 @@ func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "type":
-			out.Values[i] = ec._Move_type(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "trigger":
-			out.Values[i] = ec._Move_trigger(ctx, field, obj)
-		case "roll":
-			out.Values[i] = ec._Move_roll(ctx, field, obj)
 		case "on10":
 			out.Values[i] = ec._Move_on10(ctx, field, obj)
 		case "on7to9":
@@ -5863,12 +6533,19 @@ func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "description":
-			out.Values[i] = ec._Move_description(ctx, field, obj)
-		case "requiresKey":
-			out.Values[i] = ec._Move_requiresKey(ctx, field, obj)
 		case "replacesKey":
 			out.Values[i] = ec._Move_replacesKey(ctx, field, obj)
+		case "requiresKey":
+			out.Values[i] = ec._Move_requiresKey(ctx, field, obj)
+		case "roll":
+			out.Values[i] = ec._Move_roll(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._Move_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "trigger":
+			out.Values[i] = ec._Move_trigger(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6354,6 +7031,101 @@ func (ec *executionContext) _ScenarioQuery(ctx context.Context, sel ast.Selectio
 			}
 		case "byKey":
 			out.Values[i] = ec._ScenarioQuery_byKey(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var startingGearImplementors = []string{"StartingGear"}
+
+func (ec *executionContext) _StartingGear(ctx context.Context, sel ast.SelectionSet, obj *model.StartingGear) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, startingGearImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StartingGear")
+		case "loadBase":
+			out.Values[i] = ec._StartingGear_loadBase(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "default":
+			out.Values[i] = ec._StartingGear_default(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "options":
+			out.Values[i] = ec._StartingGear_options(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tagImplementors = []string{"Tag"}
+
+func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *model.Tag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tag")
+		case "key":
+			out.Values[i] = ec._Tag_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Tag_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "quantity":
+			out.Values[i] = ec._Tag_quantity(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6987,6 +7759,74 @@ func (ec *executionContext) marshalNGameQuery2ᚖgithubᚗcomᚋdeepconcernᚋdw
 	return ec._GameQuery(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNGearItem2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItemᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*model.GearItem) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGearItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItemᚄ(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGearItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GearItem) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGearItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItem(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGearItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearItem(ctx context.Context, sel ast.SelectionSet, v *model.GearItem) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._GearItem(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GearOptionGroup) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroup(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroup(ctx context.Context, sel ast.SelectionSet, v *model.GearOptionGroup) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._GearOptionGroup(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7269,6 +8109,20 @@ func (ec *executionContext) marshalNScenarioQuery2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._ScenarioQuery(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStartingGear2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v model.StartingGear) graphql.Marshaler {
+	return ec._StartingGear(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v *model.StartingGear) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._StartingGear(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7313,6 +8167,32 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTag(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTag(ctx context.Context, sel ast.SelectionSet, v *model.Tag) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
@@ -7507,6 +8387,24 @@ func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 		return graphql.Null
 	}
 	return ec._Game(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt32(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt32(*v)
+	return res
 }
 
 func (ec *executionContext) marshalOLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v *model.LookType) graphql.Marshaler {

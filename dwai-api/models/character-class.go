@@ -47,17 +47,18 @@ func (m *ClassMoveModel) ToObject() *model.Move {
 }
 
 type CharacterClassModel struct {
-	Alignments          []*AlignmentTemplateModel
-	Bonds               []string
-	DamageDie           int32 `yaml:"damage_die"`
-	HpBase              int32 `yaml:"hp_base"`
-	Key                 string
-	Looks               map[string][]string
-	Name                string
-	RaceMoves           []*ClassMoveModel `yaml:"race_moves"`
-	StartingMoves       []*ClassMoveModel `yaml:"starting_moves"`
-	AdvancedMoves25     []*ClassMoveModel `yaml:"advanced_moves_2_5"`
-	AdvancedMoves610    []*ClassMoveModel `yaml:"advanced_moves_6_10"`
+	Alignments       []*AlignmentTemplateModel
+	Bonds            []string
+	DamageDie        int32 `yaml:"damage_die"`
+	HpBase           int32 `yaml:"hp_base"`
+	Key              string
+	Looks            map[string][]string
+	Name             string
+	RaceMoves        []*ClassMoveModel  `yaml:"race_moves"`
+	StartingMoves    []*ClassMoveModel  `yaml:"starting_moves"`
+	AdvancedMoves25  []*ClassMoveModel  `yaml:"advanced_moves_2_5"`
+	AdvancedMoves610 []*ClassMoveModel  `yaml:"advanced_moves_6_10"`
+	StartingGear     *StartingGearModel `yaml:"starting_gear"`
 }
 
 type CharacterClassMap map[string]CharacterClassModel

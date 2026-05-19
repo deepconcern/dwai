@@ -13,8 +13,10 @@ description:
 hp_base: 10
 damage_die: 10
 names:
-  dwarf: [Ozruk, Surtur, Brunhilda, Annika, Janos, Greta, Dim, Rundrig, Jarl, Xotoq]
-  elf: [Elohiir, Sharaseth, Hasrith, Shevaral, Cadeus, Eldar, Kithracet, Thelian]
+  dwarf:
+    [Ozruk, Surtur, Brunhilda, Annika, Janos, Greta, Dim, Rundrig, Jarl, Xotoq]
+  elf:
+    [Elohiir, Sharaseth, Hasrith, Shevaral, Cadeus, Eldar, Kithracet, Thelian]
   halfling: [Finnegan, Olive, Randolph, Bartleby, Aubrey, Baldwin, Becca]
   human: [Hawke, Rudiger, Gregor, Brianne, Walton, Castor, Shanna, Ajax, Hob]
 looks:
@@ -146,29 +148,27 @@ alignments:
 starting_gear:
   load_base: 12
   default:
-    - Signature weapon
-    - dungeon_rations
+    - label: Signature weapon
+      description: The weapon you customized above.
+    - key: dungeon_rations
+      uses: 5
   options:
     - pick: 1
       choices:
-        - items:
-            - scale_armor
-        - items:
-            - chainmail
-            - adventuring_gear
+        - - scale_armor
+        - - chainmail
+          - adventuring_gear
     - pick: 2
       choices:
-        - items:
-            - healing_potion
-            - healing_potion
-        - items:
-            - shield
-        - items:
-            - antitoxin
-            - dungeon_rations
-            - poultices_and_herbs
-        - items:
-            - 22 coins
+        - - healing_potion
+          - healing_potion
+        - - shield
+        - - antitoxin
+          - key: dungeon_rations
+            uses: 5
+          - poultices_and_herbs
+        - - label: 22 coins
+            count: 22
 bonds:
   - _______________ owes me their life, whether they admit it or not.
   - I have sworn to protect _______________.

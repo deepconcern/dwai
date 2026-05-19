@@ -4,16 +4,19 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
 import { useState, useCallback, ChangeEvent } from "react";
 
-import { graphql } from "@/gql";
+import { graphql, useFragment } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { PageTitle } from "@/components/PageTitle";
 import { Dropdown } from "@/components/Dropdown";
 import { capitalize } from "@/lib/capitalize";
-import { Button } from "@/components/Button";
 import { SectionTitle } from "@/components/SectionTitle";
 import { MoveCard } from "@/components/MoveCard";
 import { SelectableArea } from "@/components/SelectableArea";
-import clsx from "clsx";
+import { GearItemFragment } from "@/fragments/GearItemFragment";
+
+import { GearChoice } from "./GearChoice";
+import { List } from "@/components/List";
+import { ItemTextDisplay } from "@/components/ItemTextDisplay";
 
 const ABILITY_LABELS: { ability: Ability; label: string }[] = [
   { ability: "STRENGTH", label: "Strength" },
@@ -62,6 +65,18 @@ const GET_CHARACTER_CLASSES_QUERY = graphql(`
           key
           ...MoveFragment
         }
+        startingGear {
+          default {
+            ...GearItemFragment
+          }
+          loadBase
+          options {
+            pick
+            choices {
+              ...GearItemFragment
+            }
+          }
+        }
         startingMoves {
           key
           ...MoveFragment
@@ -94,6 +109,7 @@ export default function CreateCharacterPage() {
   const [alignmentType, setAlignmentType] = useState("");
   const [alignmentDescription, setAlignmentDescription] = useState("");
   const [characterClassKey, setCharacterClassKey] = useState("");
+  const [gearChoices, setGearChoices] = useState<number[][]>([]);
   const [looks, setLooks] = useState<LookEntry[]>([]);
   const [name, setName] = useState("");
   const [raceKey, setRaceKey] = useState("");
@@ -143,9 +159,33 @@ export default function CreateCharacterPage() {
   );
 
   const handleCharacterClassChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) =>
-      setCharacterClassKey(ev.target.value),
-    [setCharacterClassKey],
+    (ev: ChangeEvent<HTMLSelectElement>) => {
+      const newKey = ev.target.value;
+      const newClass = characterClassesData?.characterClasses.all.find(
+        (c) => c.key === newKey,
+      );
+      setAbilityScores(
+        ABILITY_LABELS.map(({ ability }) => ({ ability, score: null })),
+      );
+      setAlignmentType("");
+      setAlignmentDescription("");
+      setCharacterClassKey(newKey);
+      setGearChoices(
+        newClass ? newClass.startingGear.options.map(() => []) : [],
+      );
+      setLooks([]);
+      setRaceKey("");
+    },
+    [
+      characterClassesData,
+      setAbilityScores,
+      setAlignmentDescription,
+      setAlignmentType,
+      setCharacterClassKey,
+      setGearChoices,
+      setLooks,
+      setRaceKey,
+    ],
   );
 
   const handleCreate = useCallback(async () => {
@@ -161,6 +201,15 @@ export default function CreateCharacterPage() {
       router.push(`/character/${data.characters.create.id}`);
     }
   }, [abilityScores, createCharacter, looks, name, router]);
+
+  const handleGearChoiceChange = useCallback(
+    (choiceIndex: number, selected: number[]) => {
+      setGearChoices((choices) =>
+        choices.map((items, i) => (i === choiceIndex ? [...selected] : items)),
+      );
+    },
+    [setGearChoices],
+  );
 
   const handleRemoveLook = useCallback((i: number) => {
     setLooks((prev) => prev.filter((_, idx) => idx !== i));
@@ -374,8 +423,8 @@ export default function CreateCharacterPage() {
             {/* Race Moves */}
             <section>
               <SectionTitle title="Race" />
-              <p>Pick one:</p>
-              <div className="space-y-2">
+              <p className="mb-2">Choose 1 from:</p>
+              <div className="ml-8 space-y-2">
                 {characterClass.raceMoves.map((move) => (
                   <SelectableArea
                     key={move.key}
@@ -395,6 +444,32 @@ export default function CreateCharacterPage() {
                 {characterClass.startingMoves.map((move) => (
                   <MoveCard key={move.key} move={move} />
                 ))}
+              </div>
+            </section>
+
+            {/* Equipment */}
+            <section>
+              <SectionTitle title="Starting Gear" />
+              <p>You start with the following:</p>
+              <List
+                items={characterClass.startingGear.default.map((g, i) => ({
+                  content: <ItemTextDisplay item={g} />,
+                  key: i,
+                }))}
+              />
+              <div className="flex flex-col gap-4">
+                {characterClass.startingGear.options.map(
+                  ({ choices, pick }, i) => (
+                    <GearChoice
+                      choiceIndex={i}
+                      choices={choices}
+                      key={i}
+                      onChange={handleGearChoiceChange}
+                      pick={pick}
+                      selected={gearChoices[i]}
+                    />
+                  ),
+                )}
               </div>
             </section>
 

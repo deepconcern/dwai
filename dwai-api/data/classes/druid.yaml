@@ -1,5 +1,6 @@
 name: Druid
-description: Cast your eyes around the fire. What has brought you to these people,
+description:
+  Cast your eyes around the fire. What has brought you to these people,
   stinking of the dust and sweat of the city? Perhaps it is a kindness—do you protect
   them as the mother bear watches over her cubs? Are they your pack, now? Strange
   brothers and sisters you have. Whatever your inspiration, they would certainly fail
@@ -15,8 +16,22 @@ hp_base: 6
 damage_die: 6
 names:
   elf: [Hycorax, Ethanwe, Sinathel, Demanor, Menoliir, Mithralan, Taeros, Aegor]
-  halfling: [Tanner, Dunstan, Rose, Ivy, Robard, Mab, Thistle, Puck, Anne, Serah]
-  human: [Elana, Obelis, Herran, Syla, Andanna, Siobhan, Aziz, Pelin, Sibel, Nils, Wei]
+  halfling:
+    [Tanner, Dunstan, Rose, Ivy, Robard, Mab, Thistle, Puck, Anne, Serah]
+  human:
+    [
+      Elana,
+      Obelis,
+      Herran,
+      Syla,
+      Andanna,
+      Siobhan,
+      Aziz,
+      Pelin,
+      Sibel,
+      Nils,
+      Wei,
+    ]
 looks:
   eyes: [Wise Eyes, Wild Eyes, Haunting Eyes]
   hair: [Furry Hood, Messy Hair, Braided Hair]
@@ -120,30 +135,26 @@ alignments:
 starting_gear:
   load_base: 6
   default:
-    - Token of your land (describe it)
+    - label: "Token of your land (describe it)"
+      weight: 0
   options:
     - pick: 1
       choices:
-        - items:
-            - hide_armor
-        - items:
-            - wooden_shield
-        - items:
-            - shillelagh
-        - items:
-            - staff
-        - items:
-            - spear
-        - items:
-            - adventuring_gear
-        - items:
-            - poultices_and_herbs
-        - items:
-            - halfling_pipeleaf
-        - items:
-            - antitoxin
-            - antitoxin
-            - antitoxin
+        - - hide_armor
+        - - wooden_shield
+    - pick: 1
+      choices:
+        - - shillelagh
+        - - staff
+        - - spear
+    - pick: 1
+      choices:
+        - - adventuring_gear
+        - - poultices_and_herbs
+        - - halfling_pipeleaf
+        - - antitoxin
+          - antitoxin
+          - antitoxin
 bonds:
   - ____________________ smells more like prey than a hunter.
   - The spirits spoke to me of a great danger that follows ______________.

@@ -1,5 +1,6 @@
 name: Ranger
-description: These city-born folk you travel with. Have they heard the call of the
+description:
+  These city-born folk you travel with. Have they heard the call of the
   wolf? Felt the winds howl in the bleak deserts of the East? Have they hunted their
   prey with the bow and the knife like you? Hell no. That's why they need you. Guide.
   Hunter. Creature of the wilds. You are these things and more. Your time in the wilderness
@@ -92,24 +93,24 @@ alignments:
 starting_gear:
   load_base: 11
   default:
-    - dungeon_rations
+    - key: dungeon_rations
+      uses: 5
     - leather_armor
     - bundle_of_arrows
   options:
     - pick: 1
       choices:
-        - items:
-            - hunters_bow
-            - short_sword
-        - items:
-            - hunters_bow
-            - spear
-        - items:
-            - adventuring_gear
-            - dungeon_rations
-        - items:
-            - adventuring_gear
-            - bundle_of_arrows
+        - - hunters_bow
+          - short_sword
+        - - hunters_bow
+          - spear
+    - pick: 1
+      choices:
+        - - adventuring_gear
+          - key: dungeon_rations
+            uses: 5
+        - - adventuring_gear
+          - bundle_of_arrows
 bonds:
   - _______________ smells more like prey than a hunter.
   - I will keep _______________ safe from the dangers of the wild.

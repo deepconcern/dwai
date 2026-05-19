@@ -1,451 +1,601 @@
-general_tags:
-- name: Applied
-  description: It's only useful when carefully applied to a person or to something
-    they eat or drink.
-- name: Awkward
-  description: It's unwieldy and tough to use.
-- name: +Bonus
-  description: It modifies your effectiveness in a specified situation. It might be
-    "+1 forward to spout lore" or "-1 ongoing to hack and slash."
-- name: n coins
-  description: How much it costs to buy, normally. If the cost includes "-Charisma"
-    a little negotiation subtracts the haggler's Charisma score (not modifier) from
-    the price.
-- name: Dangerous
-  description: It's easy to get in trouble with it. If you interact with it without
-    proper precautions the GM may freely invoke the consequences of your foolish actions.
-- name: Ration
-  description: It's edible, more or less.
-- name: Requires
-  description: It's only useful to certain people. If you don't meet the requirements
-    it works poorly, if at all.
-- name: Slow
-  description: It takes minutes or more to use.
-- name: Touch
-  description: It's used by touching it to the target's skin.
-- name: Two-handed
-  description: It takes two hands to use it effectively.
-- name: n weight
-  description: Count the listed amount against your load. Something with no listed
-    weight isn't designed to be carried. 100 coins in standard denominations is 1
-    weight. The same value in gems or fine art may be lighter or heavier.
-- name: Worn
-  description: To use it, you have to be wearing it.
-- name: n Uses
-  description: It can only be used n times.
-weapons:
 - key: ragged_bow
   name: Ragged Bow
+  type: weapon
   tags:
   - near
-  - 15 coins
-  - 2 weight
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 2
 - key: fine_bow
   name: Fine Bow
+  type: weapon
   tags:
   - near
   - far
-  - 60 coins
-  - 2 weight
+  - key: cost
+    quantity: 60
+  - key: weight
+    quantity: 2
 - key: hunters_bow
   name: Hunter's Bow
+  type: weapon
   tags:
   - near
   - far
-  - 100 coins
-  - 1 weight
+  - key: cost
+    quantity: 100
+  - key: weight
+    quantity: 1
 - key: crossbow
   name: Crossbow
+  type: weapon
   tags:
   - near
-  - +1 damage
   - reload
-  - 35 coins
-  - 3 weight
+  - key: damage_bonus
+    quantity: 1
+  - key: cost
+    quantity: 35
+  - key: weight
+    quantity: 3
 - key: bundle_of_arrows
   name: Bundle of Arrows
+  type: weapon
   tags:
-  - 3 ammo
-  - 1 coin
-  - 1 weight
+  - key: ammo
+    quantity: 3
+  - key: cost
+    quantity: 1
+  - key: weight
+    quantity: 1
 - key: elven_arrows
   name: Elven Arrows
+  type: weapon
   tags:
-  - 4 ammo
-  - 20 coins
-  - 1 weight
+  - key: ammo
+    quantity: 4
+  - key: cost
+    quantity: 20
+  - key: weight
+    quantity: 1
 - key: club
   name: Club
+  type: weapon
   tags:
   - close
-  - 1 coin
-  - 2 weight
+  - key: cost
+    quantity: 1
+  - key: weight
+    quantity: 2
 - key: shillelagh
   name: Shillelagh
+  type: weapon
   tags:
   - close
-  - 1 coin
-  - 2 weight
+  - key: cost
+    quantity: 1
+  - key: weight
+    quantity: 2
 - key: staff
   name: Staff
+  type: weapon
   tags:
   - close
-  - two-handed
-  - 1 coin
-  - 1 weight
+  - two_handed
+  - key: cost
+    quantity: 1
+  - key: weight
+    quantity: 1
 - key: dagger
   name: Dagger
+  type: weapon
   tags:
   - hand
-  - 2 coins
-  - 1 weight
+  - key: cost
+    quantity: 2
+  - key: weight
+    quantity: 1
 - key: shiv
   name: Shiv
+  type: weapon
   tags:
   - hand
-  - 2 coins
-  - 1 weight
+  - key: cost
+    quantity: 2
+  - key: weight
+    quantity: 1
 - key: knife
   name: Knife
+  type: weapon
   tags:
   - hand
-  - 2 coins
-  - 1 weight
+  - key: cost
+    quantity: 2
+  - key: weight
+    quantity: 1
 - key: throwing_dagger
   name: Throwing Dagger
+  type: weapon
   tags:
   - thrown
   - near
-  - 1 coin
-  - 0 weight
+  - key: cost
+    quantity: 1
+  - key: weight
+    quantity: 0
 - key: short_sword
   name: Short Sword
+  type: weapon
   tags:
   - close
-  - 8 coins
-  - 1 weight
+  - key: cost
+    quantity: 8
+  - key: weight
+    quantity: 1
 - key: axe
   name: Axe
+  type: weapon
   tags:
   - close
-  - 8 coins
-  - 1 weight
+  - key: cost
+    quantity: 8
+  - key: weight
+    quantity: 1
 - key: warhammer
   name: Warhammer
+  type: weapon
   tags:
   - close
-  - 8 coins
-  - 1 weight
+  - key: cost
+    quantity: 8
+  - key: weight
+    quantity: 1
 - key: mace
   name: Mace
+  type: weapon
   tags:
   - close
-  - 8 coins
-  - 1 weight
+  - key: cost
+    quantity: 8
+  - key: weight
+    quantity: 1
 - key: spear
   name: Spear
+  type: weapon
   tags:
   - reach
   - thrown
   - near
-  - 5 coins
-  - 1 weight
+  - key: cost
+    quantity: 5
+  - key: weight
+    quantity: 1
 - key: long_sword
   name: Long Sword
+  type: weapon
   tags:
   - close
-  - +1 damage
-  - 15 coins
-  - 2 weight
+  - key: damage_bonus
+    quantity: 1
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 2
 - key: battle_axe
   name: Battle Axe
+  type: weapon
   tags:
   - close
-  - +1 damage
-  - 15 coins
-  - 2 weight
+  - key: damage_bonus
+    quantity: 1
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 2
 - key: flail
   name: Flail
+  type: weapon
   tags:
   - close
-  - +1 damage
-  - 15 coins
-  - 2 weight
+  - key: damage_bonus
+    quantity: 1
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 2
 - key: halberd
   name: Halberd
+  type: weapon
   tags:
   - reach
-  - +1 damage
-  - two-handed
-  - 9 coins
-  - 2 weight
+  - two_handed
+  - key: damage_bonus
+    quantity: 1
+  - key: cost
+    quantity: 9
+  - key: weight
+    quantity: 2
 - key: rapier
   name: Rapier
+  type: weapon
   tags:
   - close
   - precise
-  - 25 coins
-  - 1 weight
+  - key: cost
+    quantity: 25
+  - key: weight
+    quantity: 1
 - key: dueling_rapier
   name: Dueling Rapier
+  type: weapon
   tags:
   - close
-  - 1 piercing
   - precise
-  - 50 coins
-  - 2 weight
-armor:
+  - key: piercing
+    quantity: 1
+  - key: cost
+    quantity: 50
+  - key: weight
+    quantity: 2
 - key: leather_armor
   name: Leather Armor
+  type: armor
   tags:
-  - 1 armor
   - worn
-  - 10 coins
-  - 1 weight
+  - key: armor
+    quantity: 1
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
 - key: hide_armor
   name: Hide Armor
+  type: armor
   tags:
-  - 1 armor
   - worn
-  - 10 coins
-  - 1 weight
+  - key: armor
+    quantity: 1
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
 - key: chainmail
   name: Chainmail
+  type: armor
   tags:
-  - 1 armor
   - worn
-  - 10 coins
-  - 1 weight
+  - key: armor
+    quantity: 1
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
 - key: scale_armor
   name: Scale Armor
+  type: armor
   tags:
-  - 2 armor
   - worn
   - clumsy
-  - 50 coins
-  - 3 weight
+  - key: armor
+    quantity: 2
+  - key: cost
+    quantity: 50
+  - key: weight
+    quantity: 3
 - key: plate_armor
   name: Plate Armor
+  type: armor
   tags:
-  - 3 armor
   - worn
   - clumsy
-  - 350 coins
-  - 4 weight
+  - key: armor
+    quantity: 3
+  - key: cost
+    quantity: 350
+  - key: weight
+    quantity: 4
 - key: shield
   name: Shield
+  type: armor
   tags:
-  - +1 armor
-  - 15 coins
-  - 2 weight
+  - key: armor_bonus
+    quantity: 1
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 2
 - key: wooden_shield
   name: Wooden Shield
+  type: armor
   tags:
-  - +1 armor
-  - 3 coins
-  - 1 weight
-dungeon_gear:
+  - key: armor_bonus
+    quantity: 1
+  - key: cost
+    quantity: 3
+  - key: weight
+    quantity: 1
 - key: adventuring_gear
   name: Adventuring Gear
+  type: dungeon_gear
   tags:
-  - 5 uses
-  - 20 coins
-  - 1 weight
+  - key: uses
+    quantity: 5
+  - key: cost
+    quantity: 20
+  - key: weight
+    quantity: 1
   description: Adventuring gear is a collection of useful mundane items such as chalk,
     poles, spikes, ropes, etc. When you rummage through your adventuring gear for
     some useful mundane item, you find what you need and mark off a use.
 - key: bandages
   name: Bandages
+  type: dungeon_gear
   tags:
-  - 3 uses
   - slow
-  - 5 coins
-  - 0 weight
+  - key: uses
+    quantity: 3
+  - key: cost
+    quantity: 5
+  - key: weight
+    quantity: 0
   description: When you have a few minutes to bandage someone else's wounds, heal
     them of 4 damage and expend a use.
 - key: poultices_and_herbs
   name: Poultices and Herbs
+  type: dungeon_gear
   tags:
-  - 2 uses
   - slow
-  - 10 coins
-  - 1 weight
+  - key: uses
+    quantity: 2
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
   description: When you carefully treat someone's wounds with poultices and herbs,
     heal them of 7 damage and expend a use.
 - key: healing_potion
   name: Healing Potion
+  type: dungeon_gear
   tags:
-  - 50 coins
-  - 0 weight
+  - key: cost
+    quantity: 50
+  - key: weight
+    quantity: 0
   description: When you drink an entire healing potion, heal yourself of 10 damage
     or remove one debility, your choice.
 - key: keg_of_dwarven_stout
   name: Keg of Dwarven Stout
+  type: dungeon_gear
   tags:
-  - 10 coins
-  - 4 weight
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 4
   description: When you open a keg of dwarven stout and let everyone drink freely,
     take +1 to your Carouse roll. If you drink a whole keg yourself, you are very,
     very drunk.
 - key: bag_of_books
   name: Bag of Books
+  type: dungeon_gear
   tags:
-  - 5 uses
-  - 10 coins
-  - 2 weight
+  - key: uses
+    quantity: 5
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 2
   description: When your bag of books contains just the right book for the subject
     you're spouting lore on, consult the book, mark off a use, and take +1 to your
     roll.
 - key: antitoxin
   name: Antitoxin
+  type: dungeon_gear
   tags:
-  - 10 coins
-  - 0 weight
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 0
   description: When you drink antitoxin, you're cured of one poison affecting you.
 - key: dungeon_rations
   name: Dungeon Rations
+  type: dungeon_gear
   tags:
-  - Ration
-  - 5 uses
-  - 3 coins
-  - 1 weight
+  - ration
+  - key: uses
+    quantity: 5
+  - key: cost
+    quantity: 3
+  - key: weight
+    quantity: 1
   description: Not tasty, but not bad either.
 - key: personal_feast
   name: Personal Feast
+  type: dungeon_gear
   tags:
-  - Ration
-  - 1 use
-  - 10 coins
-  - 1 weight
+  - ration
+  - key: uses
+    quantity: 1
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
   description: Ostentatious to say the least.
 - key: dwarven_hardtack
   name: Dwarven Hardtack
+  type: dungeon_gear
   tags:
-  - Requires Dwarf
   - ration
-  - 7 uses
-  - 3 coins
-  - 1 weight
+  - requires_dwarf
+  - key: uses
+    quantity: 7
+  - key: cost
+    quantity: 3
+  - key: weight
+    quantity: 1
   description: Dwarves say it tastes like home. Everyone else says it tastes like
     home, if home is a hog farm, and on fire.
 - key: elven_bread
   name: Elven Bread
+  type: dungeon_gear
   tags:
-  - Ration
-  - 7 uses
-  - 10 coins
-  - 1 weight
+  - ration
+  - key: uses
+    quantity: 7
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 1
   description: Only the greatest of elf-friends are treated to this rare delicacy.
 - key: halfling_pipeleaf
   name: Halfling Pipeleaf
+  type: dungeon_gear
   tags:
-  - 6 uses
-  - 5 coins
-  - 0 weight
+  - key: uses
+    quantity: 6
+  - key: cost
+    quantity: 5
+  - key: weight
+    quantity: 0
   description: When you share halfling pipeleaf with someone, expend two uses and
     take +1 forward to parley with them.
-poisons:
 - key: oil_of_tagit
   name: Oil of Tagit
+  type: poison
   tags:
-  - Dangerous
+  - dangerous
   - applied
-  - 15 coins
-  - 0 weight
+  - key: cost
+    quantity: 15
+  - key: weight
+    quantity: 0
   description: The target falls into a light sleep.
 - key: bloodweed
   name: Bloodweed
+  type: poison
   tags:
-  - Dangerous
+  - dangerous
   - touch
-  - 12 coins
-  - 0 weight
+  - key: cost
+    quantity: 12
+  - key: weight
+    quantity: 0
   description: Until cured, whenever the afflicted rolls damage, they roll an additional
     d4 and subtract that result from their normal damage.
 - key: goldenroot
   name: Goldenroot
+  type: poison
   tags:
-  - Dangerous
+  - dangerous
   - applied
-  - 20 coins
-  - 0 weight
+  - key: cost
+    quantity: 20
+  - key: weight
+    quantity: 0
   description: The target treats the next creature they see as a trusted ally, until
     proved otherwise.
 - key: serpents_tears
   name: Serpent's Tears
+  type: poison
   tags:
-  - Dangerous
+  - dangerous
   - touch
-  - 10 coins
-  - 0 weight
+  - key: cost
+    quantity: 10
+  - key: weight
+    quantity: 0
   description: Anyone dealing damage against the target rolls twice and takes the
     better result.
-services:
 - key: service_peasant_inn
   name: A week's stay at a peasant inn
+  type: service
   tags:
   - 14-Charisma coins
 - key: service_civilized_inn
   name: A week's stay at a civilized inn
+  type: service
   tags:
   - 30-Charisma coins
 - key: service_fancy_inn
   name: A week's stay at the fanciest inn in town
+  type: service
   tags:
   - 43-Charisma coins
 - key: service_unskilled_labor
   name: A week's unskilled mundane labor
+  type: service
   tags:
-  - 10 coins
+  - key: cost
+    quantity: 10
 - key: service_army_enlistment
   name: A month's pay for enlistment in an army
+  type: service
   tags:
-  - 30 coins
+  - key: cost
+    quantity: 30
 - key: service_blacksmith
   name: A custom item from a blacksmith
+  type: service
   tags:
   - Base Item + 50 coins
 - key: service_companionship
   name: A night's "companionship"
+  type: service
   tags:
   - 20-Charisma coins
 - key: service_song_and_dance
   name: An evening of song and dance
+  type: service
   tags:
   - 18-Charisma coins
 - key: service_bandit_escort
   name: Escort for a day along a bandit-infested road
+  type: service
   tags:
-  - 20 coins
+  - key: cost
+    quantity: 20
 - key: service_monster_escort
   name: Escort for a day along a monster-infested road
+  type: service
   tags:
-  - 54 coins
+  - key: cost
+    quantity: 54
 - key: service_killing
   name: A run-of-the-mill killing
+  type: service
   tags:
-  - 5 coins
+  - key: cost
+    quantity: 5
 - key: service_assassination
   name: An assassination
+  type: service
   tags:
-  - 120 coins
+  - key: cost
+    quantity: 120
 - key: service_chirurgeon
   name: Healing from a chirurgeon
+  type: service
   tags:
-  - 5 coins
+  - key: cost
+    quantity: 5
 - key: service_prayers
   name: A month's prayers for the departed
+  type: service
   tags:
-  - 1 coin
+  - key: cost
+    quantity: 1
 - key: service_repairs
   name: Repairs to a mundane item
+  type: service
   tags:
   - 25% of the item's cost
-magic_items:
 - key: argo_thaan
   name: Argo-Thaan, Holy Avenger
+  type: magic_item
   tags:
-  - Close, 2 weight
+  - close
+  - key: weight
+    quantity: 2
   description: There are many swords in this world, but there is only one Argo-thaan.
     It is a blade of gold, silver and light, revered as a holy relic by all orders
     and religions for whom Good rings true. Its touch is a blessing and to many, the
@@ -458,8 +608,12 @@ magic_items:
     be drawn to a cause of true Good, like iron to a magnet.
 - key: arrows_of_acheron
   name: Arrows of Acheron
+  type: magic_item
   tags:
-  - 1 ammo, 1 weight
+  - key: ammo
+    quantity: 1
+  - key: weight
+    quantity: 1
   description: Crafted in darkness by a blind fletcher, these arrows can find their
     target in even the deepest darkness. An archer may fire them blind, in the dark,
     with his eyes bound by heavy cloth and still be assured of a clean shot. If the
@@ -467,33 +621,42 @@ magic_items:
     and dust.
 - key: axe_of_the_conqueror_king
   name: Axe of the Conqueror-King
+  type: magic_item
   tags:
-  - Close, 1 weight
+  - close
+  - key: weight
+    quantity: 1
   description: It is crafted of shining steel, glowing with a golden light and imbued
     with mythical powers of authority. When you bear the axe, you become a beacon
     of inspiration to all you lead. Any hirelings in your employ have +1 Loyalty,
     no matter the quality of your leadership.
 - key: barb_of_the_black_gate
   name: Barb of the Black Gate
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A nail or spike, twisted and forever cold, said to have been pried
     from the Gates of Death. When hammered into a corpse, it disappears and ensures
     that corpse will never be risen again—no magic short of that of Death himself
     can reignite the flame of life (natural or otherwise) in the body.
 - key: bag_of_holding
   name: Bag of Holding
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: 'A bag of holding is larger on the inside than the outside, it can
     contain an infinite number of items, and its weight never increases. When you
-    try to retrieve an item from a bag of holding, roll+WIS. ✴On a 10+, it's right
+    try to retrieve an item from a bag of holding, roll+WIS. ✴On a 10+, it''s right
     there. ✴On a 7-9, choose one: No matter how many items it contains, a bag of holding
     is always 0 weight.'
 - key: the_burning_wheel
   name: The Burning Wheel
+  type: magic_item
   tags:
-  - 2 weight
+  - key: weight
+    quantity: 2
   description: 'An ancient wooden wheel, as might appear on a war-wagon, banded with
     steel. On a glance, it appears to be nothing special—many spokes are shattered
     and the thing seems mundane. Under the scrutiny of magic or the eyes of an expert,
@@ -507,15 +670,21 @@ magic_items:
     confer any protection from those flames, nor does it provide any bonus to swimming.'
 - key: captain_blighs_cornucopia
   name: Captain Bligh's Cornucopia
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: A brass naval horn, curled and ornate, carved with symbols of the gods
     of Plenty. When blown, in addition to sound, the horn spills forth food. Enough
     to feed a meal to everyone who hears its sound.
 - key: the_carcosan_spire
   name: The Carcosan Spire
+  type: magic_item
   tags:
-  - Reach, Thrown, 3 weight
+  - reach
+  - thrown
+  - key: weight
+    quantity: 3
   description: None know from whence this spear of twisted white coral comes. Those
     who bear it too long find their minds full of alien dreams and begin to hear the
     strange thoughts of the Others. None are impervious. Used against any "natural"
@@ -526,8 +695,10 @@ magic_items:
     its own.
 - key: cloak_of_silent_stars
   name: Cloak of Silent Stars
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: A cape of rich black velvet outside and sparkling with tiny points
     of light within, this cloak bends fate, time and reality around it to protect
     the wearer, who may defy danger with whatever stat they like. To do this, the
@@ -538,8 +709,10 @@ magic_items:
     before losing its magic.
 - key: coin_of_remembering
   name: Coin of Remembering
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: What appears, at a glance, to be a simple copper coin is, in truth,
     an enchanted coin. Its bearer can, at any time, redeem it to know immediately
     one fact that has been forgotten. The coin vanishes thereafter. It does not have
@@ -549,15 +722,23 @@ magic_items:
     what was sought.
 - key: common_scroll
   name: Common Scroll
+  type: magic_item
   tags:
-  - 1 use, 0 weight
+  - key: uses
+    quantity: 1
+  - key: weight
+    quantity: 0
   description: A common scroll has a spell inscribed on it. The spell must be castable
     by you or on your class's spell list for you to be able to cast it. When you cast
     a spell from a scroll, the spell takes effect, simple as that.
 - key: devilsbane_oil
   name: Devilsbane Oil
+  type: magic_item
   tags:
-  - 1 use, 0 weight
+  - key: uses
+    quantity: 1
+  - key: weight
+    quantity: 0
   description: A holy oil, created in limited supply by a mute sect of mountain monks
     whose order protected humanity from the powers of the Demon Pits in ancient epochs.
     Only a few jars remain. When applied to any weapon and used to strike a denizen
@@ -569,8 +750,12 @@ magic_items:
     it. The oil lasts for one full day before it soaks in or evaporates.
 - key: earworm_wax
   name: Earworm Wax
+  type: magic_item
   tags:
-  - 1 use, 0 weight
+  - key: uses
+    quantity: 1
+  - key: weight
+    quantity: 0
   description: A yellowish candle. Seems never to burn out and the light it casts
     is strange and weak. Its wax is always cool, too. Drip the wax into the ear of
     a target and gain 3 hold. Spend that hold and ask your target a question. They
@@ -578,8 +763,10 @@ magic_items:
     after the fact? Those are up to you to deal with.
 - key: the_echo
   name: The Echo
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A seemingly empty bottle. Once unstoppered, the whispers of another
     plane resound once and fall silent. In the silence, the bearer learns in his soul
     the coming of one great danger and how he can avoid it. At any point after you
@@ -587,16 +774,20 @@ magic_items:
     player's—and roll again. Once opened, the Echo is released and gone forever.
 - key: the_epoch_lens
   name: The Epoch Lens
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: An archmage, old and too frail to leave his tower, crafted this intricate
     and fragile device of glass and gold to examine the histories and relics he so
     loved. Looking at an object through the lens reveals visions of who made it and
     where it came from.
 - key: farsight_stone
   name: Farsight Stone
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: Swirling clouds fill this smoky orb and those in its presence often
     hear strange whispers. In ancient times, it was part of a network of such stones,
     used to communicate and surveil across great distances. When you gaze into the
@@ -607,8 +798,10 @@ magic_items:
     you, as well.
 - key: the_fiasco_codex
   name: The Fiasco Codex
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A thick tome, said to be penned in the blood of poor fools and robber-barons
     by some demon prince possessed of dark humor, this tome details tales and stories
     of those whose ambition overwhelmed their reason. Reading from this tome teaches
@@ -618,8 +811,10 @@ magic_items:
     takes 2 to 3 hours to read.
 - key: flask_of_breath
   name: Flask of Breath
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A simple thing, but useful when you need a breath of fresh air. The
     flask appears empty but cannot be filled, anything added to it simply spills out.
     This is because the flask is eternally full of air. If placed underwater, it will
@@ -627,8 +822,10 @@ magic_items:
     concern, for example. I'm sure you'll find all sorts of unusual uses for it.
 - key: folly_held_aloft
   name: Folly Held Aloft, The Wax Wings, A Huge Mistake
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: Who hasn't always wanted to soar the pretty blue sky? In an attempt
     to grant the wishes of land-bound folk, these great magical wings were created.
     Known by many names and crafted by as many mages, they commonly take the shape
@@ -640,8 +837,10 @@ magic_items:
     coming-down part and everything between is up to the GM.
 - key: immovable_rod
   name: Immovable Rod
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A funny metal rod with a button on it. Press the button and the rod
     just sticks. It freezes in place—in midair, standing up or lying down. It can't
     be moved. Pull it, push it, try as hard as you like, the rod stays. Maybe it can
@@ -649,8 +848,10 @@ magic_items:
     with you. Might be useful to have such a stubborn thing along.
 - key: infinite_book
   name: Infinite Book
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: 'This book contains an infinite number of pages in a finite space.
     With no limit to the pages, everything that ever was, is, or will be is contained
     somewhere in the book. Luckily the index is great. When you spout lore while consulting
@@ -658,8 +859,10 @@ magic_items:
     problem or situation you''re in.'
 - key: inspectacles
   name: Inspectacles
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: Rough-hewn glass in wooden frames. Dinged up and barely held together,
     they somehow allow the wearer to see much more than their naked eyes might. When
     you discern realities wearing these gifted lenses, you get to bend the rules a
@@ -668,8 +871,10 @@ magic_items:
     what you want to know.
 - key: the_kumeh_maneuver
   name: The Ku'meh Maneuver
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: A great, leathery tome worn shiny by the hands of a hundred great generals,
     this book is often passed from warrior to warrior, from father to son along the
     great battle lines that have divided Dungeon World's past. Anyone reading it may,
@@ -680,8 +885,10 @@ magic_items:
     apply -2 to any roll of yours or the poor sap who listened to your advice.
 - key: lamented_memento
   name: Lamented Memento
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: Taking the form of a single lock of bright red hair, bound in a black
     ribbon and immune to the ravages of time, the Lamented Memento bears a grim enchantment.
     In it are the memories and emotions of a girl who dealt with Death at the Black
@@ -691,8 +898,12 @@ magic_items:
     Last Breath move.
 - key: lodestone_shield
   name: Lodestone Shield
+  type: magic_item
   tags:
-  - +1 armor, 1 weight
+  - key: armor_bonus
+    quantity: 1
+  - key: weight
+    quantity: 1
   description: What mixed-up dummy made this? Shields are meant to repel metal, not
     draw it in! Emblazoned with a lion rampant, the Lodestone Shield has the power
     to pull blades and arrows to it. When you defend against enemies using metal weapons
@@ -700,8 +911,10 @@ magic_items:
     a handful of loose change stuck to it.
 - key: map_of_the_last_patrol
   name: Map of the Last Patrol
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: An ancient order of brave rangers once patrolled the land, protecting
     villages and warning kings and queens of encroaching danger. They're long gone,
     now, but their legacy remains. This map, when marked with the blood of a group
@@ -709,8 +922,10 @@ magic_items:
     of the map.
 - key: neds_head
   name: Ned's Head
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: An old skull, missing its jaw and very much worse-for-wear. The skull
     remembers the folly of its former owner—a man with more honor than sense. Once
     per night, the owner of the skull can ask "Who has it in for me?" and the skull
@@ -718,8 +933,10 @@ magic_items:
     killed, it disappears surreptitiously. No one knows where it might turn up next.
 - key: nightsiders_key
   name: Nightsider's Key
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: This key unlocks any door for you, provided you don't belong where
     you intend to go. So long as you do nothing that would alert another to your presence
     (remaining unheard, unseen and unnoticed) and takes nothing more than your memories
@@ -727,8 +944,10 @@ magic_items:
     It's like you were never there at all.
 - key: sacred_herbs
   name: Sacred Herbs
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: 'The sacred herbs, collected and prepared by an order of lost wizard-monks,
     can be found in bundles with two or three uses to them. Kept dry, they last indefinitely.
     When smoked in a pipe or consumed in an incense burner and the thick, blue smoke
@@ -740,16 +959,20 @@ magic_items:
     ask you, "What is it you fear most?" You must answer honestly, of course.'
 - key: the_sartar_duck
   name: The Sartar Duck
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: An odd, hand-carved wooden duck. Who would make such a funny thing?
     While you bear it, you find yourself an exceptionally gifted storyteller—no matter
     the language, you can make yourself and your story clear to any audience. They
     will understand your meaning, if not your words.
 - key: tears_of_annalise
   name: Tears of Annalise
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: Cloudy red gemstones the size of a thumbnail, the Tears of Annalise
     are always found in pairs. When swallowed by two different people, they bind the
     swallowers together—when either feels strong emotions (particularly sadness, loss,
@@ -757,8 +980,9 @@ magic_items:
     the blood of the other.
 - key: teleportation_room
   name: Teleportation Room
+  type: magic_item
   tags:
-  - Slow
+  - slow
   description: James Ninefingers, eccentric genius mage, created these room-sized
     magical apparati. A stone chamber etched with runes and scribblings, glowing with
     a faint blue light. When you enter and say aloud the name of a location, roll+INT.
@@ -768,29 +992,39 @@ magic_items:
     space with these devices.
 - key: timunns_armor
   name: Timunn's Armor
+  type: magic_item
   tags:
-  - 1 armor, 1 weight
+  - key: armor
+    quantity: 1
+  - key: weight
+    quantity: 1
   description: A stealthy suit of armor, it appears as many things to many people
     and blends in with appropriate apparel. The wearer always seems the height of
     fashion to any who gaze upon him.
 - key: titus_truthful_tallow
   name: Titus' Truthful Tallow
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: A candle of ivory- and copper-colored tallow with a wick of spun silver.
     When lit, none upon whom its light falls is able to tell a lie. They may keep
     silent or dissemble but when asked a question directly, they can speak naught
     but truth.
 - key: tricksy_rope
   name: Tricksy Rope
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: A rope that listens. Does tricks, too, like a smart and more obedient
     snake might. Tell it "Coil" or "Slack" or "Come here, rope" and it will.
 - key: the_sterling_hand
   name: The Sterling Hand
+  type: magic_item
   tags:
-  - 0 weight
+  - key: weight
+    quantity: 0
   description: Crafted by dwarven whitesmiths, this mirrored-metal hand is deeply
     scored with runes of power and rejuvenation. Meant to replace wounded or destroyed
     limbs from mining accidents, the Sterling Hand bonds to the wound, old or new,
@@ -798,8 +1032,10 @@ magic_items:
     pure enough silver to harm creatures affected by such.
 - key: vellius_gauntlets
   name: Vellius's Gauntlets
+  type: magic_item
   tags:
-  - 1 weight
+  - key: weight
+    quantity: 1
   description: Crafted in the name of Vellius the Clumsy, Vellius the Butter-Fingered,
     Vellius the Clod, these gloves of simple cloth prevent you from dropping any object
     you don't intent to. You cannot be disarmed and will not fall from any rope or
@@ -807,8 +1043,11 @@ magic_items:
     pulling at your legs while you grip onto something solid.
 - key: violation_glaive
   name: Violation Glaive
+  type: magic_item
   tags:
-  - Reach, 2 weight
+  - reach
+  - key: weight
+    quantity: 2
   description: 'A legendary blade, said to have been thrust backwards in time from
     some grim future, the violation glaive is crafted of strange green iron. The blade
     strikes at the mind of those it wounds, as well as the body. When you hack and
@@ -817,8 +1056,13 @@ magic_items:
     reverence, or trust).'
 - key: vorpal_sword
   name: Vorpal Sword
+  type: magic_item
   tags:
-  - Close, 3 piercing, 2 weight
+  - close
+  - key: piercing
+    quantity: 3
+  - key: weight
+    quantity: 2
   description: Snicker-snack and all that. Sharp as anything, this simple-seeming
     sword means to separate one thing from another—the limb from the body or folk
     from their lives. When you deal damage with the Vorpal Sword, your enemy must

@@ -1,5 +1,6 @@
 name: Bard
-description: The poems say an adventurer's life is all open roads and the glory of
+description:
+  The poems say an adventurer's life is all open roads and the glory of
   coin and combat. The tales told in every farmhand-filled inn have to have some ring
   of truth to them, don't they? The songs to inspire peasantry and royals alike—to
   soothe the savage beast or drive men to a frenzy—have to come from somewhere. Enter
@@ -12,8 +13,32 @@ description: The poems say an adventurer's life is all open roads and the glory 
 hp_base: 6
 damage_die: 6
 names:
-  elf: [Astrafel, Daelwyn, Feliana, Damarra, Sistranalle, Pendrell, Melliandre, Dagoliir]
-  human: [Baldric, Leena, Dunwick, Willem, Edwyn, Florian, Seraphine, Quorra, Charlotte, Lily, Ramonde, Cassandra]
+  elf:
+    [
+      Astrafel,
+      Daelwyn,
+      Feliana,
+      Damarra,
+      Sistranalle,
+      Pendrell,
+      Melliandre,
+      Dagoliir,
+    ]
+  human:
+    [
+      Baldric,
+      Leena,
+      Dunwick,
+      Willem,
+      Edwyn,
+      Florian,
+      Seraphine,
+      Quorra,
+      Charlotte,
+      Lily,
+      Ramonde,
+      Cassandra,
+    ]
 looks:
   eyes: [Knowing Eyes, Fiery Eyes, Joyous Eyes]
   hair: [Fancy Hair, Wild Hair, Stylish Cap]
@@ -99,40 +124,41 @@ alignments:
 starting_gear:
   load_base: 9
   default:
-    - dungeon_rations
+    - key: dungeon_rations
+      uses: 5
   options:
     - pick: 1
       choices:
-        - items:
-            - Your father's mandolin, repaired
-        - items:
-            - A fine lute, a gift from a noble
-        - items:
-            - The pipes with which you courted your first love
-        - items:
-            - A stolen horn
-        - items:
-            - A fiddle, never before played
-        - items:
-            - A songbook in a forgotten tongue
-        - items:
-            - leather_armor
-        - items:
-            - Ostentatious clothes
-        - items:
-            - dueling_rapier
-        - items:
-            - ragged_bow
-            - bundle_of_arrows
-            - short_sword
-        - items:
-            - adventuring_gear
-        - items:
-            - bandages
-        - items:
-            - halfling_pipeleaf
-        - items:
-            - 3 coins
+        - - label: "Your father's mandolin, repaired"
+            weight: 0
+        - - label: A fine lute, a gift from a noble
+            weight: 0
+        - - label: The pipes with which you courted your first love
+            weight: 0
+        - - label: A stolen horn
+            weight: 0
+        - - label: A fiddle, never before played
+            weight: 0
+        - - label: A songbook in a forgotten tongue
+            weight: 0
+    - pick: 1
+      choices:
+        - - leather_armor
+        - - label: Ostentatious clothes
+            weight: 0
+    - pick: 1
+      choices:
+        - - dueling_rapier
+        - - ragged_bow
+          - bundle_of_arrows
+          - short_sword
+    - pick: 1
+      choices:
+        - - adventuring_gear
+        - - bandages
+        - - halfling_pipeleaf
+        - - label: 3 coins
+            count: 3
 bonds:
   - This is not my first adventure with _______________.
   - I sang stories of _______________ long before I ever met them in person.

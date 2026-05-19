@@ -132,27 +132,27 @@ alignments:
 starting_gear:
   load_base: 10
   default:
-    - dungeon_rations
-    - Symbol of the divine (describe it)
+    - key: dungeon_rations
+      uses: 5
+    - label: "Symbol of the divine (describe it)"
+      weight: 0
   options:
     - pick: 1
       choices:
-        - items:
-            - chainmail
-        - items:
-            - shield
-        - items:
-            - warhammer
-        - items:
-            - mace
-        - items:
-            - staff
-            - bandages
-        - items:
-            - adventuring_gear
-            - dungeon_rations
-        - items:
-            - healing_potion
+        - - chainmail
+        - - shield
+    - pick: 1
+      choices:
+        - - warhammer
+        - - mace
+        - - staff
+          - bandages
+    - pick: 1
+      choices:
+        - - adventuring_gear
+          - key: dungeon_rations
+            uses: 5
+        - - healing_potion
 bonds:
   - _______________ has insulted my deity; I do not trust them.
   - _______________ is a good and faithful person; I trust them implicitly.

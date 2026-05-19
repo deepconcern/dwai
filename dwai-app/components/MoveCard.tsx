@@ -1,8 +1,10 @@
-import { FC } from "react";
+import clsx from "clsx";
+import { FC, useMemo } from "react";
 
 import { FragmentType, useFragment } from "@/gql";
-import { MoveFragment } from "@/lib/MoveFragment";
-import clsx from "clsx";
+import { MoveFragment } from "@/fragments/MoveFragment";
+
+import { List } from "./List";
 
 export type MoveCardProps = {
   className?: string | null;
@@ -14,6 +16,22 @@ export const MoveCard: FC<MoveCardProps> = ({
   move: moveFragment,
 }) => {
   const move = useFragment(MoveFragment, moveFragment);
+
+  const rollResults = useMemo(() => {
+    if (!move.roll) return [];
+
+    const results = [];
+    if (move.on10) {
+      results.push({ content: <>On a 10+: {move.on10}</>, key: "10+" });
+    }
+    if (move.on7to9) {
+      results.push({ content: <>On a 7-9: {move.on7to9}</>, key: "7-9" });
+    }
+    if (move.onMiss) {
+      results.push({ content: <>On a miss: {move.onMiss}</>, key: "miss" });
+    }
+    return results;
+  }, [move]);
 
   return (
     <div className={clsx(className, "border p-4 rounded")}>
@@ -35,11 +53,7 @@ export const MoveCard: FC<MoveCardProps> = ({
         {move.roll && (
           <>
             <p className="text-sm text-gray-300">On a roll of {move.roll}...</p>
-            <ul className="list-disc list-inside text-sm text-gray-300">
-              {move.on10 && <li>On a 10+: {move.on10}</li>}
-              {move.on7to9 && <li>On a 7-9: {move.on7to9}</li>}
-              {move.onMiss && <li>On a miss: {move.onMiss}</li>}
-            </ul>
+            <List className="text-gray-300 text-sm" items={rollResults} />
           </>
         )}
         {move.description && (
@@ -48,11 +62,13 @@ export const MoveCard: FC<MoveCardProps> = ({
         {move.options.length > 0 && (
           <div>
             <p className="text-sm text-gray-300">Options:</p>
-            <ul className="list-disc list-inside text-sm text-gray-300">
-              {move.options.map((option, i) => (
-                <li key={i}>{option}</li>
-              ))}
-            </ul>
+            <List
+              className="text-gray-300 text-sm"
+              items={move.options.map((option, i) => ({
+                content: option,
+                key: i,
+              }))}
+            />
           </div>
         )}
       </div>

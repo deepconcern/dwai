@@ -1,3 +1,35 @@
+"A single item in a character's starting gear. Exactly one of key, base, or label will be set to identify the item."
+type GearItem {
+  "Quantity of a stackable resource (e.g. coins) spent as a whole unit."
+  count: Int!
+  "Flavour or rules text for custom items."
+  description: String!
+  "Key of a common item in equipment.yaml. Set for plain key references."
+  key: String!
+  "Display name for custom or inherited items."
+  label: String!
+  "Tags associated with the item"
+  tags: [Tag!]!
+}
+
+"A pick-N group of gear choices presented to the player during character creation."
+type GearOptionGroup {
+  "How many choices the player picks from this group."
+  pick: Int!
+  "The available choices."
+  choices: [[GearItem!]!]!
+}
+
+"The starting gear configuration for a character class."
+type StartingGear {
+  "Base load capacity before applying Constitution modifier."
+  loadBase: Int!
+  "Items every character of this class receives automatically."
+  default: [GearItem!]!
+  "Pick-N option groups the player chooses from during character creation."
+  options: [GearOptionGroup!]!
+}
+
 "An example of an alignment a player may use"
 type AlignmentTemplate {
   "The alignment type"
@@ -33,6 +65,8 @@ type CharacterClass {
   raceMoves: [Move!]!
   "Moves every character of this class begins with."
   startingMoves: [Move!]!
+  "Starting gear configuration for this class."
+  startingGear: StartingGear!
 }
 
 "Namespace for character class queries."

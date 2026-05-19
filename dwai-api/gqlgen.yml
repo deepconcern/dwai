@@ -201,6 +201,11 @@ models:
       modifier:
         resolver: true
 
+  CharacterClass:
+    fields:
+      startingGear:
+        resolver: true
+
   CharacterClassQuery:
     fields:
       all:

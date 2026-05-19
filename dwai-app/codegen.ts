@@ -3,7 +3,7 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 const config: CodegenConfig = {
   overwrite: true,
   schema: "http://localhost:5000/graphql",
-  documents: "{app,components,lib}/**/*.{ts,tsx}",
+  documents: "{app,components,fragments,lib}/**/*.{ts,tsx}",
   generates: {
     "gql/": {
       preset: "client",

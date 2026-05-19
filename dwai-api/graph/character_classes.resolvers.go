@@ -13,6 +13,13 @@ import (
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
 )
 
+// StartingGear is the resolver for the startingGear field.
+func (r *characterClassResolver) StartingGear(ctx context.Context, obj *model.CharacterClass) (*model.StartingGear, error) {
+	c := (*r.CharacterClasses)[obj.Key]
+
+	return c.StartingGear.ToObject(r.Equipment, r.TagDefinitions), nil
+}
+
 // All is the resolver for the all field.
 func (r *characterClassQueryResolver) All(ctx context.Context, obj *model.CharacterClassQuery) ([]*model.CharacterClass, error) {
 	characterClasses := make([]*model.CharacterClass, 0)
@@ -34,9 +41,13 @@ func (r *characterClassQueryResolver) ByKey(ctx context.Context, obj *model.Char
 	return nil, errors.New("No model found")
 }
 
+// CharacterClass returns CharacterClassResolver implementation.
+func (r *Resolver) CharacterClass() CharacterClassResolver { return &characterClassResolver{r} }
+
 // CharacterClassQuery returns CharacterClassQueryResolver implementation.
 func (r *Resolver) CharacterClassQuery() CharacterClassQueryResolver {
 	return &characterClassQueryResolver{r}
 }
 
+type characterClassResolver struct{ *Resolver }
 type characterClassQueryResolver struct{ *Resolver }

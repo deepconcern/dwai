@@ -1,5 +1,6 @@
 name: Wizard
-description: Dungeon World has rules. Not the laws of men or the rule of some petty
+description:
+  Dungeon World has rules. Not the laws of men or the rule of some petty
   tyrant. Bigger, better rules. You drop something—it falls. You can't make something
   out of nothing. The dead stay dead, right? Oh, the things we tell ourselves to feel
   better about the long, dark nights. You've spent so very long poring over those
@@ -92,28 +93,29 @@ alignments:
 starting_gear:
   load_base: 7
   default:
-    - Spellbook
-    - dungeon_rations
+    - label: Spellbook
+      description: Your spellbook, filled with the spells you know.
+      weight: 1
+    - key: dungeon_rations
+      uses: 5
   options:
     - pick: 1
       choices:
-        - items:
-            - leather_armor
-        - items:
-            - bag_of_books
-            - healing_potion
-            - healing_potion
-            - healing_potion
-        - items:
-            - dagger
-        - items:
-            - staff
-        - items:
-            - healing_potion
-        - items:
-            - antitoxin
-            - antitoxin
-            - antitoxin
+        - - leather_armor
+        - - bag_of_books
+          - healing_potion
+          - healing_potion
+          - healing_potion
+    - pick: 1
+      choices:
+        - - dagger
+        - - staff
+    - pick: 1
+      choices:
+        - - healing_potion
+        - - antitoxin
+          - antitoxin
+          - antitoxin
 bonds:
   - _______________ will play an important role in the events to come. I have foreseen it!
   - _______________ is keeping an important secret from me.

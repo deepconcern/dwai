@@ -69,6 +69,8 @@ type CharacterClass struct {
 	RaceMoves []*Move `json:"raceMoves"`
 	// Moves every character of this class begins with.
 	StartingMoves []*Move `json:"startingMoves"`
+	// Starting gear configuration for this class.
+	StartingGear *StartingGear `json:"startingGear"`
 }
 
 // Namespace for character mutations.
@@ -118,6 +120,28 @@ type GameQuery struct {
 	All []*Game `json:"all"`
 	// Returns a single game by ID, or null if not found.
 	ByID *Game `json:"byId,omitempty"`
+}
+
+// A single item in a character's starting gear. Exactly one of key, base, or label will be set to identify the item.
+type GearItem struct {
+	// Quantity of a stackable resource (e.g. coins) spent as a whole unit.
+	Count int32 `json:"count"`
+	// Flavour or rules text for custom items.
+	Description string `json:"description"`
+	// Key of a common item in equipment.yaml. Set for plain key references.
+	Key string `json:"key"`
+	// Display name for custom or inherited items.
+	Label string `json:"label"`
+	// Tags associated with the item
+	Tags []*Tag `json:"tags"`
+}
+
+// A pick-N group of gear choices presented to the player during character creation.
+type GearOptionGroup struct {
+	// How many choices the player picks from this group.
+	Pick int32 `json:"pick"`
+	// The available choices.
+	Choices [][]*GearItem `json:"choices"`
 }
 
 // A single appearance choice made for a character.
@@ -173,16 +197,12 @@ type MessageQuery struct {
 
 // An action or ability a character can perform, as defined by the Dungeon World ruleset.
 type Move struct {
+	// Supplemental rules text: hold-spend rules, passive effects, procedural instructions.
+	Description *string `json:"description,omitempty"`
 	// Unique key for this move.
 	Key string `json:"key"`
 	// Human-readable name of the move.
 	Name string `json:"name"`
-	// Category of the move: basic, special, or class.
-	Type string `json:"type"`
-	// The fictional trigger condition ('When you...'). Null for passive/procedural moves.
-	Trigger *string `json:"trigger,omitempty"`
-	// Which stat to roll, or a description of the roll (e.g. 'STR', 'CON', 'Bond with them'). Null if no roll.
-	Roll *string `json:"roll,omitempty"`
 	// Full success outcome text (10+).
 	On10 *string `json:"on10,omitempty"`
 	// Partial success outcome text (7–9).
@@ -191,12 +211,16 @@ type Move struct {
 	OnMiss *string `json:"onMiss,omitempty"`
 	// Options the player may choose from on a roll result, or a list of choices when taking the move.
 	Options []string `json:"options"`
-	// Supplemental rules text: hold-spend rules, passive effects, procedural instructions.
-	Description *string `json:"description,omitempty"`
-	// Advanced move prerequisite: the key of a move the player must already have.
-	RequiresKey *string `json:"requiresKey,omitempty"`
 	// Advanced move replacement: the key of the move this one supersedes.
 	ReplacesKey *string `json:"replacesKey,omitempty"`
+	// Advanced move prerequisite: the key of a move the player must already have.
+	RequiresKey *string `json:"requiresKey,omitempty"`
+	// Which stat to roll, or a description of the roll (e.g. 'STR', 'CON', 'Bond with them'). Null if no roll.
+	Roll *string `json:"roll,omitempty"`
+	// Category of the move: basic, special, or class.
+	Type string `json:"type"`
+	// The fictional trigger condition ('When you...'). Null for passive/procedural moves.
+	Trigger *string `json:"trigger,omitempty"`
 }
 
 // Namespace for move queries.
@@ -237,6 +261,26 @@ type ScenarioQuery struct {
 	All []*Scenario `json:"all"`
 	// Returns a single scenario by key, or null if not found.
 	ByKey *Scenario `json:"byKey,omitempty"`
+}
+
+// The starting gear configuration for a character class.
+type StartingGear struct {
+	// Base load capacity before applying Constitution modifier.
+	LoadBase int32 `json:"loadBase"`
+	// Items every character of this class receives automatically.
+	Default []*GearItem `json:"default"`
+	// Pick-N option groups the player chooses from during character creation.
+	Options []*GearOptionGroup `json:"options"`
+}
+
+// A tag describing a property of an equipment item. Simple tags (e.g. 'close', 'worn') have no quantity; quantified tags (e.g. cost, weight, armor) carry a numeric value.
+type Tag struct {
+	// Unique key for this tag (e.g. 'close', 'cost', 'weight').
+	Key string `json:"key"`
+	// Human-readable tag name (e.g. 'Close', 'n Coins', 'n Weight').
+	Name string `json:"name"`
+	// Numeric value for quantified tags. Null for simple tags.
+	Quantity *int32 `json:"quantity,omitempty"`
 }
 
 // The six core ability scores used for all rolls and derived stats in Dungeon World.

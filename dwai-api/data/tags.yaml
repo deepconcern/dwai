@@ -1,0 +1,90 @@
+- key: applied
+  name: Applied
+  description:
+    It's only useful when carefully applied to a person or to something
+    they eat or drink.
+- key: ammo
+  name: Ammo
+  description: It provides n shots worth of ammunition.
+- key: armor
+  name: Armor
+  description: It reduces incoming damage by n.
+- key: armor_bonus
+  name: Armor Bonus
+  description: It adds n to your total armor.
+- key: awkward
+  name: Awkward
+  description: It's unwieldy and tough to use.
+- key: clumsy
+  name: Clumsy
+  description: It's tough to move around in.
+- key: close
+  name: Close
+  description: It can reach opponents within a few feet.
+- key: cost
+  name: Coins
+  description:
+    How much it costs to buy, normally. If the cost includes "-Charisma"
+    a little negotiation subtracts the haggler's Charisma score (not modifier) from
+    the price.
+- key: damage_bonus
+  name: Damage Bonus
+  description: It modifies your damage roll by n.
+- key: dangerous
+  name: Dangerous
+  description:
+    It's easy to get in trouble with it. If you interact with it without
+    proper precautions the GM may freely invoke the consequences of your foolish actions.
+- key: far
+  name: Far
+  description: It can reach opponents at a distance.
+- key: hand
+  name: Hand
+  description: It can reach opponents within arm's reach.
+- key: near
+  name: Near
+  description: It can reach opponents up to a few dozen feet away.
+- key: piercing
+  name: Piercing
+  description: It ignores n points of armor on a hit.
+- key: precise
+  name: Precise
+  description: It rewards careful aim. Use DEX instead of STR when Hack and Slashing.
+- key: ration
+  name: Ration
+  description: It's edible, more or less.
+- key: reach
+  name: Reach
+  description: It can reach opponents who are several feet away.
+- key: reload
+  name: Reload
+  description: After firing, you must take time to reload before firing again.
+- key: requires
+  name: Requires
+  description:
+    It's only useful to certain people. If you don't meet the requirements
+    it works poorly, if at all.
+- key: slow
+  name: Slow
+  description: It takes minutes or more to use.
+- key: thrown
+  name: Thrown
+  description: It can be hurled at a distance. Near range when thrown.
+- key: touch
+  name: Touch
+  description: It's used by touching it to the target's skin.
+- key: two_handed
+  name: Two-handed
+  description: It takes two hands to use it effectively.
+- key: uses
+  name: Uses
+  description: It can only be used n times.
+- key: weight
+  name: Weight
+  description:
+    Count the listed amount against your load. Something with no listed
+    weight isn't designed to be carried. 100 coins in standard denominations is 1
+    weight. The same value in gems or fine art may be lighter or heavier.
+- key: worn
+  name: Worn
+  description: To use it, you have to be wearing it.

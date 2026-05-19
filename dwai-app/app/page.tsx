@@ -5,6 +5,7 @@ import { query } from "@/lib/apollo-client";
 import Link from "next/link";
 import { PageTitle } from "@/components/PageTitle";
 import { ButtonLink } from "@/components/ButtonLink";
+import { List } from "@/components/List";
 
 const GET_CHARACTERS_QUERY = graphql(`
   query GetCharacters {
@@ -31,18 +32,19 @@ export const Home = async () => {
         <div className="flex flex-1 flex-col gap-2">
           <h3 className="font-semibold text-lg">Characters</h3>
           {data && data.characters.all.length > 0 && (
-            <ul>
-              {data.characters.all.map((character) => (
-                <li key={character.id} className="mb-2">
+            <List
+              items={data.characters.all.map((character) => ({
+                content: (
                   <Link
                     href={`/character/${character.id}`}
                     className="hover:underline"
                   >
                     {character.name}
                   </Link>
-                </li>
-              ))}
-            </ul>
+                ),
+                key: character.id,
+              }))}
+            />
           )}
           {!data || data.characters.all.length === 0 ? (
             <p>No characters found.</p>

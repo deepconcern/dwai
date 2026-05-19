@@ -1,5 +1,6 @@
 name: Thief
-description: You've heard them, sitting around the campfire. Bragging about this battle
+description:
+  You've heard them, sitting around the campfire. Bragging about this battle
   or that. About how their gods are smiling on your merry band. You count your coins
   and smile to yourself—this is the thrill above all. You alone know the secret of
   Dungeon World—filthy filthy lucre. Sure, they give you lip for all the times you've
@@ -92,29 +93,32 @@ alignments:
 starting_gear:
   load_base: 9
   default:
-    - dungeon_rations
+    - key: dungeon_rations
+      uses: 5
     - leather_armor
-    - 3 uses of chosen poison
-    - 10 coins
+    - label: Chosen poison
+      description: A poison of your choice.
+      weight: 0
+      uses: 3
+    - label: 10 coins
+      count: 10
   options:
     - pick: 1
       choices:
-        - items:
-            - dagger
-            - short_sword
-        - items:
-            - rapier
-        - items:
-            - throwing_dagger
-            - throwing_dagger
-            - throwing_dagger
-        - items:
-            - ragged_bow
-            - bundle_of_arrows
-        - items:
-            - adventuring_gear
-        - items:
-            - healing_potion
+        - - dagger
+          - short_sword
+        - - rapier
+    - pick: 1
+      choices:
+        - - throwing_dagger
+          - throwing_dagger
+          - throwing_dagger
+        - - ragged_bow
+          - bundle_of_arrows
+    - pick: 1
+      choices:
+        - - adventuring_gear
+        - - healing_potion
 bonds:
   - I stole something from _______________.
   - _______________ has my back when things go wrong.

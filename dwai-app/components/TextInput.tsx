@@ -6,8 +6,5 @@ export type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export const TextInput: FC<TextInputProps> = ({ className, ...rest }) => (
-  <input
-    className={clsx(className, "border rounded px-3 py-2")}
-    {...rest}
-  />
+  <input className={clsx(className, "border rounded px-3 py-2")} {...rest} />
 );

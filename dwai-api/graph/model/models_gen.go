@@ -41,12 +41,22 @@ type AlignmentTemplate struct {
 type Character struct {
 	// The character's six core ability scores, one for each ability.
 	Abilities []*AbilityScore `json:"abilities"`
+	// The alignment type (e.g. 'Good', 'Neutral', 'Evil').
+	AlignmentType string `json:"alignmentType"`
+	// The description of the alignment ethos.
+	AlignmentDescription string `json:"alignmentDescription"`
+	// The character's class (e.g. Fighter, Wizard).
+	CharacterClass *CharacterClass `json:"characterClass"`
+	// The character's current HP.
+	HitPoints int32 `json:"hitPoints"`
 	// Unique identifier for the character.
 	ID string `json:"id"`
-	// The character's name.
-	Name string `json:"name"`
 	// The character's appearance choices, one per look type.
 	Looks []*Look `json:"looks"`
+	// The character's name.
+	Name string `json:"name"`
+	// The character's race move.
+	RaceMove *Move `json:"raceMove"`
 }
 
 // A playable character class as defined by the Dungeon World ruleset (e.g. Fighter, Wizard).
@@ -89,11 +99,40 @@ type CharacterQuery struct {
 
 // Input for creating a new character.
 type CreateCharacterInput struct {
+	// The character's ability scores.
 	Abilities []*AbilityScoreInput `json:"abilities"`
-	// The character's name.
-	Name string `json:"name"`
+	// The alignment type (e.g. 'Good', 'Neutral', 'Evil').
+	AlignmentType string `json:"alignmentType"`
+	// The description of the alignment ethos.
+	AlignmentDescription string `json:"alignmentDescription"`
+	// The key of the character's class (e.g. 'fighter').
+	CharacterClassKey string `json:"characterClassKey"`
 	// One look selection per look type.
 	Looks []*NewLookInput `json:"looks"`
+	// Choices made for moves that have creation options (e.g. Signature Weapon).
+	MoveCreationOptionChoices []*MoveCreationOptionChoiceInput `json:"moveCreationOptionChoices"`
+	// The character's name.
+	Name string `json:"name"`
+	// The key of the race move chosen for this character.
+	RaceMoveKey string `json:"raceMoveKey"`
+}
+
+// A set of choices the player can select from when taking a creation option.
+type CreationOption struct {
+	// A list of choices the player can select from when taking this creation option.
+	Choices []*CreationOptionChoice `json:"choices"`
+	// Human-readable label for this creation option (e.g. 'Look').
+	Label string `json:"label"`
+	// How many choices the player can select from the list of options.
+	Pick int32 `json:"pick"`
+}
+
+// An option the player can choose from when taking a move or making a character creation choice.
+type CreationOptionChoice struct {
+	// Unique key for this choice.
+	Key string `json:"key"`
+	// Human-readable label for this choice (e.g. 'Flail').
+	Label string `json:"label"`
 }
 
 // An active game session linking a character to a scenario.
@@ -148,10 +187,10 @@ type GearOptionGroup struct {
 type Look struct {
 	// Unique identifier for this look entry.
 	ID string `json:"id"`
+	// The look type this value belongs to (e.g. Eyes, Hair). Null if the look type no longer exists.
+	LookType *LookType `json:"lookType"`
 	// The chosen appearance value (e.g. 'Wild Eyes').
 	Value string `json:"value"`
-	// The look type this value belongs to (e.g. Eyes, Hair). Null if the look type no longer exists.
-	LookType *LookType `json:"lookType,omitempty"`
 }
 
 type LookExample struct {
@@ -197,6 +236,8 @@ type MessageQuery struct {
 
 // An action or ability a character can perform, as defined by the Dungeon World ruleset.
 type Move struct {
+	// Creation options the player must choose when taking this move, if any.
+	CreationOptions []*CreationOption `json:"creationOptions"`
 	// Supplemental rules text: hold-spend rules, passive effects, procedural instructions.
 	Description *string `json:"description,omitempty"`
 	// Unique key for this move.
@@ -221,6 +262,16 @@ type Move struct {
 	Type string `json:"type"`
 	// The fictional trigger condition ('When you...'). Null for passive/procedural moves.
 	Trigger *string `json:"trigger,omitempty"`
+}
+
+// A choice made for a move's creation option during character creation.
+type MoveCreationOptionChoiceInput struct {
+	// The index of the creation option group within the move.
+	ChoiceIndex int32 `json:"choiceIndex"`
+	// The key of the move this choice belongs to.
+	MoveKey string `json:"moveKey"`
+	// The key of the selected option.
+	OptionKey string `json:"optionKey"`
 }
 
 // Namespace for move queries.

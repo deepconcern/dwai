@@ -1,11 +1,11 @@
-import "./index.css";
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-
-import { ApolloWrapper } from "@/components/ApolloWrapper";
 import Link from "next/link";
 import { FC, PropsWithChildren } from "react";
+
+import { ApolloWrapper } from "@/components/ApolloWrapper";
+
+import "./index.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +36,9 @@ export const RootLayout: FC<PropsWithChildren> = ({ children }) => (
             </Link>
           </nav>
         </header>
-        <main className="flex-1 p-4">{children}</main>
+        <main className="bg-gray-900 flex-1 max-w-5xl mx-auto m-4 p-4 w-full">
+          {children}
+        </main>
       </body>
     </html>
   </ApolloWrapper>

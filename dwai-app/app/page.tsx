@@ -1,11 +1,10 @@
-import { gql } from "@apollo/client";
-
-import { graphql } from "@/gql";
-import { query } from "@/lib/apollo-client";
 import Link from "next/link";
-import { PageTitle } from "@/components/PageTitle";
+
 import { ButtonLink } from "@/components/ButtonLink";
 import { List } from "@/components/List";
+import { PageTitle } from "@/components/PageTitle";
+import { graphql } from "@/gql";
+import { query } from "@/lib/apollo-client";
 
 const GET_CHARACTERS_QUERY = graphql(`
   query GetCharacters {

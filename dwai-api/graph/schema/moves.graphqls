@@ -1,5 +1,25 @@
+"An option the player can choose from when taking a move or making a character creation choice."
+type CreationOptionChoice {
+  "Unique key for this choice."
+  key: ID!
+  "Human-readable label for this choice (e.g. 'Flail')."
+  label: String!
+}
+
+"A set of choices the player can select from when taking a creation option."
+type CreationOption {
+  "A list of choices the player can select from when taking this creation option."
+  choices: [CreationOptionChoice!]!
+  "Human-readable label for this creation option (e.g. 'Look')."
+  label: String!
+  "How many choices the player can select from the list of options."
+  pick: Int!
+}
+
 "An action or ability a character can perform, as defined by the Dungeon World ruleset."
 type Move {
+  "Creation options the player must choose when taking this move, if any."
+  creationOptions: [CreationOption!]!
   "Supplemental rules text: hold-spend rules, passive effects, procedural instructions."
   description: String
   "Unique key for this move."

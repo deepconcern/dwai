@@ -74,7 +74,7 @@ starting_moves:
       must wield your weapon true. Choose a base (all are 2 weight), a range, two
       enhancements, and a look.
     creation_options:
-      - group: Base
+      - label: Base
         pick: 1
         choices:
           - key: sword
@@ -89,7 +89,7 @@ starting_moves:
             label: Flail
           - key: fists
             label: Fists
-      - group: Range
+      - label: Range
         pick: 1
         choices:
           - key: hand
@@ -98,7 +98,7 @@ starting_moves:
             label: Close
           - key: reach
             label: Reach
-      - group: Enhancements
+      - label: Enhancements
         pick: 2
         choices:
           - key: hooks_and_spikes
@@ -125,7 +125,7 @@ starting_moves:
           - key: well_crafted
             label: Well-crafted
             description: -1 weight.
-      - group: Look
+      - label: Look
         pick: 1
         choices:
           - key: ancient

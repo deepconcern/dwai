@@ -1,21 +1,28 @@
 import clsx from "clsx";
 import { FC, useMemo } from "react";
 
-import { FragmentType, useFragment } from "@/gql";
 import { MoveFragment } from "@/fragments/MoveFragment";
+import { FragmentType, useFragment } from "@/gql";
 
+import { ChoiceList } from "./ChoiceList";
 import { List } from "./List";
 
 export type MoveCardProps = {
   className?: string | null;
   move: FragmentType<typeof MoveFragment>;
+  onChange?: (selectedOptions: string[][]) => void;
+  selectedOptions?: string[][];
 };
 
 export const MoveCard: FC<MoveCardProps> = ({
   className,
   move: moveFragment,
+  onChange,
+  selectedOptions,
 }) => {
   const move = useFragment(MoveFragment, moveFragment);
+
+  selectedOptions = selectedOptions ?? move.creationOptions.map(() => []);
 
   const rollResults = useMemo(() => {
     if (!move.roll) return [];
@@ -71,6 +78,28 @@ export const MoveCard: FC<MoveCardProps> = ({
             />
           </div>
         )}
+        {move.creationOptions.map((option, i) => (
+          <div key={i}>
+            <p className="text-sm text-gray-300">
+              Creation option: {option.label} (pick {option.pick})
+            </p>
+            <ChoiceList
+              items={option.choices.map((choice) => ({
+                key: choice.key,
+                label: choice.label,
+              }))}
+              onChange={(newSelectedChoices) =>
+                onChange?.(
+                  selectedOptions.map((s, optionIndex) =>
+                    i === optionIndex ? newSelectedChoices : s,
+                  ),
+                )
+              }
+              pick={option.pick}
+              values={selectedOptions[i]}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

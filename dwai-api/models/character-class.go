@@ -31,9 +31,9 @@ type MoveCreationChoiceModel struct {
 
 // MoveCreationOptionGroupModel maps to the YAML creation_options[] entry.
 type MoveCreationOptionGroupModel struct {
-	Group   string
-	Pick    int
-	Choices []MoveCreationChoiceModel
+	Label   string
+	Pick    int32
+	Choices []*MoveCreationChoiceModel
 }
 
 // ClassMoveModel extends MoveModel with creation_options used only in class files.
@@ -43,7 +43,29 @@ type ClassMoveModel struct {
 }
 
 func (m *ClassMoveModel) ToObject() *model.Move {
-	return m.MoveModel.ToObject()
+	move := m.MoveModel.ToObject()
+
+	// Add creation options if they exist
+	if len(m.CreationOptions) > 0 {
+		creationOptions := make([]*model.CreationOption, len(m.CreationOptions))
+		for i, group := range m.CreationOptions {
+			choices := make([]*model.CreationOptionChoice, len(group.Choices))
+			for j, choice := range group.Choices {
+				choices[j] = &model.CreationOptionChoice{
+					Key:   choice.Key,
+					Label: choice.Label,
+				}
+			}
+			creationOptions[i] = &model.CreationOption{
+				Label:   group.Label,
+				Pick:    group.Pick,
+				Choices: choices,
+			}
+		}
+		move.CreationOptions = creationOptions
+	}
+
+	return move
 }
 
 type CharacterClassModel struct {
@@ -106,7 +128,11 @@ func (m *CharacterClassModel) ToObject() *model.CharacterClass {
 	}
 }
 
-type LookTypeModel struct{}
+type LookTypeModel struct{
+	Examples []string
+	Key  string
+	Name string
+}
 
 func LoadCharacterClasses() *CharacterClassMap {
 	dir_path := filepath.Join("data", "classes")
@@ -143,3 +169,5 @@ func LoadCharacterClasses() *CharacterClassMap {
 	return &characterClassMap
 
 }
+
+func LoadLookTypes() []string {

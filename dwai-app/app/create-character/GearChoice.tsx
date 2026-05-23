@@ -1,10 +1,8 @@
-import { MouseEvent, useCallback, useMemo } from "react";
-
 import { ItemTextDisplay } from "@/components/ItemTextDisplay";
-import { SelectableArea } from "@/components/SelectableArea";
-import { FragmentType } from "@/gql";
-import { GearItemFragment } from "@/fragments/GearItemFragment";
 import { List } from "@/components/List";
+import { SelectableArea } from "@/components/SelectableArea";
+import { GearItemFragment } from "@/fragments/GearItemFragment";
+import { FragmentType } from "@/gql";
 
 export type GearChoiceProps = {
   choiceIndex: number;
@@ -20,53 +18,43 @@ export const GearChoice: React.FC<GearChoiceProps> = ({
   onChange,
   pick,
   selected,
-}) => {
-  onChange = useMemo(() => onChange || (() => {}), [onChange]);
-  selected = useMemo(() => selected || [], [selected]);
+}) => (
+  <div>
+    <p className="mb-2">Choose {pick} from:</p>
+    <div className="flex flex-col gap-2 ml-8">
+      {choices.map((items, itemIndex) => (
+        <SelectableArea
+          data-items-index={itemIndex}
+          key={itemIndex}
+          onDeselect={() => {
+            if (!selected) return;
 
-  const handleToggle = useCallback(
-    (ev: MouseEvent<HTMLDivElement>) => {
-      const itemsIndex = parseInt(
-        (ev.currentTarget as HTMLDivElement).dataset.itemsIndex || "",
-        10,
-      );
+            if (!selected.includes(itemIndex)) return;
 
-      if (isNaN(itemsIndex)) {
-        return;
-      }
+            onChange?.(
+              choiceIndex,
+              selected.filter((i) => i !== itemIndex),
+            );
+          }}
+          onSelect={() => {
+            if (!selected) return;
 
-      if (selected.includes(itemsIndex)) {
-        onChange(
-          choiceIndex,
-          selected.filter((i) => i !== itemsIndex),
-        );
-      } else if (selected.length < pick) {
-        onChange(choiceIndex, [...selected, itemsIndex]);
-      }
-    },
-    [choiceIndex, onChange, pick, selected],
-  );
+            if (selected.includes(itemIndex)) return;
 
-  return (
-    <div>
-      <p className="mb-2">Choose {pick} from:</p>
-      <div className="flex flex-col gap-2 ml-8">
-        {choices.map((items, choiceIndex) => (
-          <SelectableArea
-            data-items-index={choiceIndex}
-            key={choiceIndex}
-            onClick={handleToggle}
-            selected={!!selected?.includes(choiceIndex)}
-          >
-            <List
-              items={items.map((i, j) => ({
-                content: <ItemTextDisplay item={i} />,
-                key: j,
-              }))}
-            />
-          </SelectableArea>
-        ))}
-      </div>
+            if (selected.length >= pick) return;
+
+            onChange?.(choiceIndex, [...selected, itemIndex]);
+          }}
+          selected={!!selected?.includes(itemIndex)}
+        >
+          <List
+            items={items.map((i, j) => ({
+              content: <ItemTextDisplay item={i} />,
+              key: j,
+            }))}
+          />
+        </SelectableArea>
+      ))}
     </div>
-  );
-};
+  </div>
+);

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 
@@ -60,15 +60,10 @@ func main() {
 
 	// Get SQL migration files
 
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		fmt.Println("No caller information")
-		os.Exit(1)
-	}
+	migration_dir := path.Join("sql", "migrations")
+	fmt.Printf("Looking for migration files in: %s\n", migration_dir)
 
-	dir := filepath.Dir(filename)
-
-	entries, err := os.ReadDir(dir)
+	entries, err := os.ReadDir(migration_dir)
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +92,7 @@ func main() {
 		for _, migration := range downMigrations {
 			fmt.Printf("Applying migration: %s\n", migration)
 
-			runMigration(conn, filepath.Join(dir, migration))
+			runMigration(conn, filepath.Join(migration_dir, migration))
 		}
 	}
 
@@ -105,7 +100,7 @@ func main() {
 		for _, migration := range upMigrations {
 			fmt.Printf("Applying migration: %s\n", migration)
 
-			runMigration(conn, filepath.Join(dir, migration))
+			runMigration(conn, filepath.Join(migration_dir, migration))
 		}
 	}
 }

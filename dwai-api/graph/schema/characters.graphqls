@@ -36,31 +36,52 @@ input AbilityScoreInput {
 type Character {
   "The character's six core ability scores, one for each ability."
   abilities: [AbilityScore!]!
+  "The alignment type (e.g. 'Good', 'Neutral', 'Evil')."
+  alignmentType: String!
+  "The description of the alignment ethos."
+  alignmentDescription: String!
+  "The character's class (e.g. Fighter, Wizard)."
+  characterClass: CharacterClass!
+  "The character's current HP."
+  hitPoints: Int!
   "Unique identifier for the character."
   id: ID!
-  "The character's name."
-  name: String!
   "The character's appearance choices, one per look type."
   looks: [Look!]!
+  "The character's name."
+  name: String!
+  "The character's race move."
+  raceMove: Move!
 }
 
 "A single appearance choice made for a character."
 type Look {
   "Unique identifier for this look entry."
   id: ID!
+  "The look type this value belongs to (e.g. Eyes, Hair). Null if the look type no longer exists."
+  lookType: LookType!
   "The chosen appearance value (e.g. 'Wild Eyes')."
   value: String!
-  "The look type this value belongs to (e.g. Eyes, Hair). Null if the look type no longer exists."
-  lookType: LookType
 }
 
 "Input for creating a new character."
 input CreateCharacterInput {
+  "The character's ability scores."
   abilities: [AbilityScoreInput!]!
-  "The character's name."
-  name: String!
+  "The alignment type (e.g. 'Good', 'Neutral', 'Evil')."
+  alignmentType: String!
+  "The description of the alignment ethos."
+  alignmentDescription: String!
+  "The key of the character's class (e.g. 'fighter')."
+  characterClassKey: String!
   "One look selection per look type."
   looks: [NewLookInput!]!
+  "Choices made for moves that have creation options (e.g. Signature Weapon)."
+  moveCreationOptionChoices: [MoveCreationOptionChoiceInput!]!
+  "The character's name."
+  name: String!
+  "The key of the race move chosen for this character."
+  raceMoveKey: String!
 }
 
 "A single look selection when creating a character."
@@ -69,6 +90,16 @@ input NewLookInput {
   lookTypeKey: String!
   "The chosen appearance value."
   value: String!
+}
+
+"A choice made for a move's creation option during character creation."
+input MoveCreationOptionChoiceInput {
+  "The index of the creation option group within the move."
+  choiceIndex: Int!
+  "The key of the move this choice belongs to."
+  moveKey: String!
+  "The key of the selected option."
+  optionKey: String!
 }
 
 "Namespace for character queries."

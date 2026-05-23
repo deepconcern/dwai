@@ -8,9 +8,13 @@ package graph
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strconv"
 
+	"github.com/deepconcern/dwai/dwai-api/db"
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // Modifier is the resolver for the modifier field.
@@ -42,47 +46,196 @@ func (r *abilityScoreResolver) Modifier(ctx context.Context, obj *model.AbilityS
 	return 3, nil
 }
 
-// Create is the resolver for the create field.
-func (r *characterMutationResolver) Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error) {
-	// Create character in database
+// CharacterClass is the resolver for the characterClass field.
+func (r *characterResolver) CharacterClass(ctx context.Context, obj *model.Character) (*model.CharacterClass, error) {
+	var uuid pgtype.UUID
+	if err := uuid.Scan(obj.ID); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
 
-	var id string
-	if err := r.DbPool.QueryRow(context.Background(), "INSERT INTO characters (name) VALUES ($1) RETURNING id", input.Name).Scan(&id); err != nil {
-		fmt.Printf("Error creating character: %s\n", err)
+	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	if err != nil {
 		return nil, err
 	}
 
-	// Build character and prime the loader cache
-
-	characterModel := &models.CharacterModel{
-		ID:   id,
-		Name: input.Name,
+	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
+	if !ok {
+		return nil, fmt.Errorf("No class with key '%s'", characterModel.CharacterClassKey)
 	}
 
-	r.Loaders.CharacterLoader.Prime(characterModel.ID, characterModel)
+	return characterClassModel.ToObject(), nil
+}
 
-	return characterModel.ToObject(), nil
+// Looks is the resolver for the looks field.
+func (r *characterResolver) Looks(ctx context.Context, obj *model.Character) ([]*model.Look, error) {
+	var uuid pgtype.UUID
+	if err := uuid.Scan(obj.ID); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	queries := db.New(r.DbPool)
+
+	rows, err := queries.SelectLooksByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load looks for character with ID '%s': %w", uuid.String(), err)
+	}
+
+	looks := make([]*model.Look, len(rows))
+	for i, row := range rows {
+		looks[i] = models.ToLookObject(&row)
+	}
+
+	return looks, nil
+}
+
+// RaceMove is the resolver for the raceMove field.
+func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) (*model.Move, error) {
+	var uuid pgtype.UUID
+	if err := uuid.Scan(obj.ID); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
+	if !ok {
+		fmt.Printf("%+v\n", characterModel)
+		return nil, fmt.Errorf("No character class with key '%s'", characterModel.CharacterClassKey)
+	}
+
+	raceMoveIndex := slices.IndexFunc(characterClassModel.RaceMoves, func(rm *models.ClassMoveModel) bool {
+		return rm.Key == characterModel.RaceMoveKey
+	})
+	if raceMoveIndex == -1 {
+		return nil, fmt.Errorf("No race move with key '%s'", characterModel.RaceMoveKey)
+	}
+
+	return characterClassModel.RaceMoves[raceMoveIndex].ToObject(), nil
+}
+
+// Create is the resolver for the create field.
+func (r *characterMutationResolver) Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error) {
+	// Parse ability scores from the input slice into individual vars.
+	var charisma, constitution, dexterity, intelligence, strength, wisdom int32
+	for _, ab := range input.Abilities {
+		switch ab.Ability {
+		case model.AbilityCharisma:
+			charisma = ab.Score
+		case model.AbilityConstitution:
+			constitution = ab.Score
+		case model.AbilityDexterity:
+			dexterity = ab.Score
+		case model.AbilityIntelligence:
+			intelligence = ab.Score
+		case model.AbilityStrength:
+			strength = ab.Score
+		case model.AbilityWisdom:
+			wisdom = ab.Score
+		}
+	}
+
+	characterClassModel := (*r.CharacterClasses)[input.CharacterClassKey]
+
+	// Get initial hit points
+	hitPoints := constitution + characterClassModel.HpBase
+
+	// Run all inserts in a single transaction.
+	tx, err := r.DbPool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	queries := db.New(tx)
+
+	// Insert the character row.
+	characterId, err := queries.InsertCharacter(ctx, db.InsertCharacterParams{
+		AlignmentDescription: input.AlignmentDescription,
+		AlignmentType:        input.AlignmentType,
+		CharacterClassKey:    input.CharacterClassKey,
+		Charisma:             charisma,
+		Constitution:         constitution,
+		Dexterity:            dexterity,
+		HitPoints:            hitPoints,
+		Intelligence:         intelligence,
+		Name:                 input.Name,
+		RaceMoveKey:          input.RaceMoveKey,
+		Strength:             strength,
+		Wisdom:               wisdom,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to insert character: %w", err)
+	}
+
+	// Insert looks.
+
+	for _, look := range input.Looks {
+		if _, err = queries.InsertLook(ctx, db.InsertLookParams{
+			CharacterID: characterId,
+			LookType:    look.LookTypeKey,
+			Value:       look.Value,
+		}); err != nil {
+			return nil, fmt.Errorf("Failed to insert look: %w", err)
+		}
+	}
+
+	// Insert move creation option choices.
+	for _, choice := range input.MoveCreationOptionChoices {
+		if _, err = queries.InsertMoveCreationOptionChoice(ctx, db.InsertMoveCreationOptionChoiceParams{
+			CharacterID: characterId,
+			ChoiceIndex: choice.ChoiceIndex,
+			MoveKey:     choice.MoveKey,
+			OptionKey:   choice.OptionKey,
+		}); err != nil {
+			return nil, fmt.Errorf("Failed to insert move creation option choice: %w", err)
+		}
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("Failed to commit transaction: %w", err)
+	}
+
+	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, characterId)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load character with ID '%s' after creation: %w", characterId, err)
+	}
+
+	return models.ToCharacterObject(characterModel), nil
 }
 
 // All is the resolver for the all field.
 func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error) {
+	queries := db.New(r.DbPool)
+
 	// Database query for all characters
 
-	rows, err := r.DbPool.Query(context.Background(), "SELECT id, name FROM characters")
+	rows, err := queries.SelectAllCharacters(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	// Extract characters from rows
 
-	characterModels := make([]*models.CharacterModel, 0)
-	for rows.Next() {
-		var characterModel models.CharacterModel
-		if err := rows.Scan(&characterModel.ID, &characterModel.Name); err != nil {
-			return nil, err
-		}
-		characterModels = append(characterModels, &characterModel)
+	characterModels := make([]*db.Character, len(rows))
+	for _, row := range rows {
+		characterModels = append(characterModels, &db.Character{
+			AlignmentDescription: row.AlignmentDescription,
+			AlignmentType:        row.AlignmentType,
+			CharacterClassKey:    row.CharacterClassKey,
+			Charisma:             row.Charisma,
+			Constitution:         row.Constitution,
+			Dexterity:            row.Dexterity,
+			HitPoints:            row.HitPoints,
+			ID:                   row.ID,
+			Intelligence:         row.Intelligence,
+			Name:                 row.Name,
+			RaceMoveKey:          row.RaceMoveKey,
+			Strength:             row.Strength,
+			Wisdom:               row.Wisdom,
+		})
 	}
 
 	// Build characters and prime the loader cache
@@ -90,7 +243,7 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 	characters := make([]*model.Character, len(characterModels))
 	for i, characterModel := range characterModels {
 		r.Loaders.CharacterLoader.Prime(characterModel.ID, characterModel)
-		characters[i] = characterModel.ToObject()
+		characters[i] = models.ToCharacterObject(characterModel)
 	}
 
 	return characters, nil
@@ -98,16 +251,39 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 
 // ByID is the resolver for the byId field.
 func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error) {
-	m, err := r.Loaders.CharacterLoader.Load(ctx, id)
+	var uuid pgtype.UUID
+	if err := uuid.Scan(id); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	m, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
 
-	return m.ToObject(), nil
+	return models.ToCharacterObject(m), nil
+}
+
+// LookType is the resolver for the lookType field.
+func (r *lookResolver) LookType(ctx context.Context, obj *model.Look) (*model.LookType, error) {
+	id, err := strconv.ParseInt(obj.ID, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid look ID: %w", err)
+	}
+
+	m, err := r.Loaders.LookLoader.Load(ctx, int32(id))
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToLookTypeObject(m), nil
 }
 
 // AbilityScore returns AbilityScoreResolver implementation.
 func (r *Resolver) AbilityScore() AbilityScoreResolver { return &abilityScoreResolver{r} }
+
+// Character returns CharacterResolver implementation.
+func (r *Resolver) Character() CharacterResolver { return &characterResolver{r} }
 
 // CharacterMutation returns CharacterMutationResolver implementation.
 func (r *Resolver) CharacterMutation() CharacterMutationResolver {
@@ -117,6 +293,11 @@ func (r *Resolver) CharacterMutation() CharacterMutationResolver {
 // CharacterQuery returns CharacterQueryResolver implementation.
 func (r *Resolver) CharacterQuery() CharacterQueryResolver { return &characterQueryResolver{r} }
 
+// Look returns LookResolver implementation.
+func (r *Resolver) Look() LookResolver { return &lookResolver{r} }
+
 type abilityScoreResolver struct{ *Resolver }
+type characterResolver struct{ *Resolver }
 type characterMutationResolver struct{ *Resolver }
 type characterQueryResolver struct{ *Resolver }
+type lookResolver struct{ *Resolver }

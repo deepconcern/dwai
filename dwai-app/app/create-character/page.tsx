@@ -2,21 +2,22 @@
 
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { useState, useCallback, ChangeEvent } from "react";
+import { ChangeEvent, useCallback, useState } from "react";
 
+import { Dropdown } from "@/components/Dropdown";
+import { ItemTextDisplay } from "@/components/ItemTextDisplay";
+import { List } from "@/components/List";
+import { MoveCard } from "@/components/MoveCard";
+import { PageTitle } from "@/components/PageTitle";
+import { SectionTitle } from "@/components/SectionTitle";
+import { SelectableArea } from "@/components/SelectableArea";
+import { TextInput } from "@/components/TextInput";
+import { MoveFragment } from "@/fragments/MoveFragment";
 import { graphql, useFragment } from "@/gql";
 import { Ability } from "@/gql/graphql";
-import { PageTitle } from "@/components/PageTitle";
-import { Dropdown } from "@/components/Dropdown";
 import { capitalize } from "@/lib/capitalize";
-import { SectionTitle } from "@/components/SectionTitle";
-import { MoveCard } from "@/components/MoveCard";
-import { SelectableArea } from "@/components/SelectableArea";
-import { GearItemFragment } from "@/fragments/GearItemFragment";
 
 import { GearChoice } from "./GearChoice";
-import { List } from "@/components/List";
-import { ItemTextDisplay } from "@/components/ItemTextDisplay";
 
 const ABILITY_LABELS: { ability: Ability; label: string }[] = [
   { ability: "STRENGTH", label: "Strength" },
@@ -83,6 +84,13 @@ const GET_CHARACTER_CLASSES_QUERY = graphql(`
         }
       }
     }
+    lookTypes {
+      all {
+        examples
+        key
+        name
+      }
+    }
   }
 `);
 
@@ -111,8 +119,11 @@ export default function CreateCharacterPage() {
   const [characterClassKey, setCharacterClassKey] = useState("");
   const [gearChoices, setGearChoices] = useState<number[][]>([]);
   const [looks, setLooks] = useState<LookEntry[]>([]);
+  const [moveOptions, setMoveOptions] = useState<{
+    [moveKey: string]: string[][];
+  }>({});
   const [name, setName] = useState("");
-  const [raceKey, setRaceKey] = useState("");
+  const [raceMoveKey, setRaceMoveKey] = useState("");
 
   const { data: characterClassesData, loading: classesLoading } = useQuery(
     GET_CHARACTER_CLASSES_QUERY,
@@ -122,6 +133,8 @@ export default function CreateCharacterPage() {
   const characterClass = characterClassesData?.characterClasses.all.find(
     (c) => c.key === characterClassKey,
   );
+
+  const lookTypes = characterClassesData?.lookTypes.all ?? [];
 
   const conScore = abilityScores.find(
     (a) => a.ability === "CONSTITUTION",
@@ -174,7 +187,7 @@ export default function CreateCharacterPage() {
         newClass ? newClass.startingGear.options.map(() => []) : [],
       );
       setLooks([]);
-      setRaceKey("");
+      setRaceMoveKey("");
     },
     [
       characterClassesData,
@@ -184,7 +197,7 @@ export default function CreateCharacterPage() {
       setCharacterClassKey,
       setGearChoices,
       setLooks,
-      setRaceKey,
+      setRaceMoveKey,
     ],
   );
 
@@ -194,7 +207,27 @@ export default function CreateCharacterPage() {
       .map((a) => ({ ability: a.ability, score: a.score as number }));
 
     const { data } = await createCharacter({
-      variables: { input: { abilities, looks, name } },
+      variables: {
+        input: {
+          abilities,
+          alignmentDescription,
+          alignmentType,
+          characterClassKey,
+          moveCreationOptionChoices: Object.keys(moveOptions).flatMap(
+            (moveKey) =>
+              moveOptions[moveKey].flatMap((options, choiceIndex) =>
+                options.flatMap((optionKey) => ({
+                  choiceIndex,
+                  moveKey,
+                  optionKey,
+                })),
+              ),
+          ),
+          raceMoveKey,
+          looks,
+          name,
+        },
+      },
     });
 
     if (data) {
@@ -250,6 +283,7 @@ export default function CreateCharacterPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+
           handleCreate();
         }}
         className="space-y-8"
@@ -258,8 +292,8 @@ export default function CreateCharacterPage() {
         <div className="flex gap-4">
           <div className="flex-2">
             <label className="block text-sm font-medium mb-1">Name</label>
-            <input
-              className="w-full border rounded px-3 py-2"
+            <TextInput
+              className="w-full"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -295,19 +329,25 @@ export default function CreateCharacterPage() {
             <div className="grid grid-cols-2 gap-8">
               <section>
                 <SectionTitle title="Looks" />
-                <p>Pick as many looks as you like:</p>
+                <p>
+                  Pick as many looks as you like (choose from the examples, or
+                  enter your own):
+                </p>
                 <div className="space-y-2">
                   {looks.map((look, i) => {
                     const examples =
-                      characterClass.lookExamples.find(
-                        (e) => e.type === look.lookTypeKey,
-                      )?.examples ?? [];
+                      lookTypes.find((t) => t.key === look.lookTypeKey)
+                        ?.examples ?? [];
+
                     return (
-                      <div key={i} className="flex gap-2 items-center">
+                      <div
+                        key={look.lookTypeKey}
+                        className="flex gap-2 items-center"
+                      >
                         <Dropdown
-                          items={characterClass.lookExamples.map((l) => ({
-                            label: capitalize(l.type),
-                            value: l.type,
+                          items={lookTypes.map((l) => ({
+                            label: capitalize(l.name),
+                            value: l.key,
                           }))}
                           onChange={(e) =>
                             handleLookTypeChange(i, e.target.value)
@@ -315,8 +355,8 @@ export default function CreateCharacterPage() {
                           placeholder="-"
                           value={look.lookTypeKey}
                         />
-                        <input
-                          className="flex-1 border rounded px-2 py-1 text-sm"
+                        <TextInput
+                          className="flex-1"
                           list={`look-examples-${i}`}
                           value={look.value}
                           onChange={(e) =>
@@ -382,24 +422,27 @@ export default function CreateCharacterPage() {
             <section>
               <SectionTitle title="Alignment" />
               <p>Select an alignment, or fill in with your own:</p>
-              <div className="space-y-2">
-                {characterClass.alignmentTemplates.map((template, i) => (
-                  <button
-                    className="bg-gray-900 cursor-pointer rounded p-4 text-left w-full"
-                    key={i}
-                    type="button"
-                    onClick={handleAlignmentTemplateClick(i)}
-                  >
-                    <div className="font-medium capitalize">
-                      {template.alignment}
-                    </div>
-                    <div className="text-sm text-gray-300">
-                      {template.description}
-                    </div>
-                  </button>
-                ))}
+              <div className="mt-2 space-y-2">
+                <div className="ml-8 space-y-2">
+                  {characterClass.alignmentTemplates.map((template, i) => (
+                    <button
+                      className="bg-gray-800 cursor-pointer rounded p-4 text-left w-full"
+                      key={i}
+                      type="button"
+                      onClick={handleAlignmentTemplateClick(i)}
+                    >
+                      <div className="font-medium capitalize">
+                        {template.alignment}
+                      </div>
+                      <div className="text-sm text-gray-300">
+                        {template.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
                 <div className="flex gap-3 px-4 py-3 rounded border cursor-pointer transition-colors">
                   <Dropdown
+                    className="flex-1"
                     items={["chaotic", "evil", "good", "lawful", "neutral"].map(
                       (a) => ({
                         label: capitalize(a),
@@ -410,8 +453,8 @@ export default function CreateCharacterPage() {
                     placeholder="-"
                     value={alignmentType}
                   />
-                  <input
-                    className="flex-1 border rounded px-2 py-1 text-sm"
+                  <TextInput
+                    className="flex-3"
                     placeholder="Alignment description..."
                     value={alignmentDescription}
                     onChange={handleAlignmentDescriptionChange}
@@ -428,8 +471,9 @@ export default function CreateCharacterPage() {
                 {characterClass.raceMoves.map((move) => (
                   <SelectableArea
                     key={move.key}
-                    onClick={() => setRaceKey(move.key)}
-                    selected={raceKey === move.key}
+                    onSelect={() => setRaceMoveKey(move.key)}
+                    onDeselect={() => setRaceMoveKey("")}
+                    selected={raceMoveKey === move.key}
                   >
                     <MoveCard move={move} />
                   </SelectableArea>
@@ -441,8 +485,18 @@ export default function CreateCharacterPage() {
             <section>
               <SectionTitle title="Class Moves" />
               <div className="grid grid-cols-2 gap-4">
-                {characterClass.startingMoves.map((move) => (
-                  <MoveCard key={move.key} move={move} />
+                {characterClass.startingMoves.map((moveFragment) => (
+                  <MoveCard
+                    key={moveFragment.key}
+                    move={moveFragment}
+                    onChange={(selectedOptions) => {
+                      setMoveOptions((moveOptions) => ({
+                        ...moveOptions,
+                        [moveFragment.key]: selectedOptions,
+                      }));
+                    }}
+                    selectedOptions={moveOptions[moveFragment.key]}
+                  />
                 ))}
               </div>
             </section>

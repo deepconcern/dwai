@@ -29,6 +29,7 @@ func (m *MoveModel) ToObject() *model.Move {
 	if options == nil {
 		options = []string{}
 	}
+
 	return &model.Move{
 		Key:         m.Key,
 		Name:        m.Name,

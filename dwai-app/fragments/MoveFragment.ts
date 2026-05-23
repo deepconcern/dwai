@@ -2,6 +2,14 @@ import { graphql } from "@/gql";
 
 export const MoveFragment = graphql(`
   fragment MoveFragment on Move {
+    creationOptions {
+      choices {
+        key
+        label
+      }
+      label
+      pick
+    }
     description
     key
     name

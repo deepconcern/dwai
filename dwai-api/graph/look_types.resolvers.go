@@ -15,23 +15,31 @@ import (
 
 // All is the resolver for the all field.
 func (r *lookTypeQueryResolver) All(ctx context.Context, obj *model.LookTypeQuery) ([]*model.LookType, error) {
-	lookTypeMap := make(map[string][]string)
+	lookTypeMap := make(map[string]map[string]struct{})
 
 	for _, class := range *r.CharacterClasses {
 		for lookType, examples := range class.Looks {
-			existingExamples, ok := lookTypeMap[lookType]
+			exampleMap, ok := lookTypeMap[lookType]
 			if !ok {
-				existingExamples = []string{}
+				exampleMap = make(map[string]struct{})
 			}
-			lookTypeMap[lookType] = append(existingExamples, examples...)
+			for _, example := range examples {
+				exampleMap[example] = struct{}{}
+			}
+			lookTypeMap[lookType] = exampleMap
 		}
 	}
 
 	lookTypes := make([]*model.LookType, 0, len(lookTypeMap))
-	for lookType, examples := range lookTypeMap {
+	for lookType, exampleMap := range lookTypeMap {
 		// Capitalize the first letter of the look type for display purposes
 		r, size := utf8.DecodeRuneInString(lookType)
 		name := strings.ToUpper(string(r)) + lookType[size:]
+
+		examples := make([]string, 0, len(exampleMap))
+		for example := range exampleMap {
+			examples = append(examples, example)
+		}
 
 		lookTypes = append(lookTypes, &model.LookType{
 			Examples: examples,

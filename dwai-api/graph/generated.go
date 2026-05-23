@@ -31,10 +31,12 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	AbilityScore() AbilityScoreResolver
+	Character() CharacterResolver
 	CharacterClass() CharacterClassResolver
 	CharacterClassQuery() CharacterClassQueryResolver
 	CharacterMutation() CharacterMutationResolver
 	CharacterQuery() CharacterQueryResolver
+	Look() LookResolver
 	LookTypeQuery() LookTypeQueryResolver
 	MoveQuery() MoveQueryResolver
 	Mutation() MutationResolver
@@ -57,10 +59,15 @@ type ComplexityRoot struct {
 	}
 
 	Character struct {
-		Abilities func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Looks     func(childComplexity int) int
-		Name      func(childComplexity int) int
+		Abilities            func(childComplexity int) int
+		AlignmentDescription func(childComplexity int) int
+		AlignmentType        func(childComplexity int) int
+		CharacterClass       func(childComplexity int) int
+		HitPoints            func(childComplexity int) int
+		ID                   func(childComplexity int) int
+		Looks                func(childComplexity int) int
+		Name                 func(childComplexity int) int
+		RaceMove             func(childComplexity int) int
 	}
 
 	CharacterClass struct {
@@ -88,6 +95,17 @@ type ComplexityRoot struct {
 	CharacterQuery struct {
 		All  func(childComplexity int) int
 		ByID func(childComplexity int, id string) int
+	}
+
+	CreationOption struct {
+		Choices func(childComplexity int) int
+		Label   func(childComplexity int) int
+		Pick    func(childComplexity int) int
+	}
+
+	CreationOptionChoice struct {
+		Key   func(childComplexity int) int
+		Label func(childComplexity int) int
 	}
 
 	Game struct {
@@ -156,18 +174,19 @@ type ComplexityRoot struct {
 	}
 
 	Move struct {
-		Description func(childComplexity int) int
-		Key         func(childComplexity int) int
-		Name        func(childComplexity int) int
-		On10        func(childComplexity int) int
-		On7to9      func(childComplexity int) int
-		OnMiss      func(childComplexity int) int
-		Options     func(childComplexity int) int
-		ReplacesKey func(childComplexity int) int
-		RequiresKey func(childComplexity int) int
-		Roll        func(childComplexity int) int
-		Trigger     func(childComplexity int) int
-		Type        func(childComplexity int) int
+		CreationOptions func(childComplexity int) int
+		Description     func(childComplexity int) int
+		Key             func(childComplexity int) int
+		Name            func(childComplexity int) int
+		On10            func(childComplexity int) int
+		On7to9          func(childComplexity int) int
+		OnMiss          func(childComplexity int) int
+		Options         func(childComplexity int) int
+		ReplacesKey     func(childComplexity int) int
+		RequiresKey     func(childComplexity int) int
+		Roll            func(childComplexity int) int
+		Trigger         func(childComplexity int) int
+		Type            func(childComplexity int) int
 	}
 
 	MoveQuery struct {
@@ -219,6 +238,13 @@ type ComplexityRoot struct {
 type AbilityScoreResolver interface {
 	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
 }
+type CharacterResolver interface {
+	CharacterClass(ctx context.Context, obj *model.Character) (*model.CharacterClass, error)
+
+	Looks(ctx context.Context, obj *model.Character) ([]*model.Look, error)
+
+	RaceMove(ctx context.Context, obj *model.Character) (*model.Move, error)
+}
 type CharacterClassResolver interface {
 	StartingGear(ctx context.Context, obj *model.CharacterClass) (*model.StartingGear, error)
 }
@@ -232,6 +258,9 @@ type CharacterMutationResolver interface {
 type CharacterQueryResolver interface {
 	All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error)
 	ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error)
+}
+type LookResolver interface {
+	LookType(ctx context.Context, obj *model.Look) (*model.LookType, error)
 }
 type LookTypeQueryResolver interface {
 	All(ctx context.Context, obj *model.LookTypeQuery) ([]*model.LookType, error)
@@ -308,6 +337,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.Abilities(childComplexity), true
+	case "Character.alignmentDescription":
+		if e.ComplexityRoot.Character.AlignmentDescription == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.AlignmentDescription(childComplexity), true
+	case "Character.alignmentType":
+		if e.ComplexityRoot.Character.AlignmentType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.AlignmentType(childComplexity), true
+	case "Character.characterClass":
+		if e.ComplexityRoot.Character.CharacterClass == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.CharacterClass(childComplexity), true
+	case "Character.hitPoints":
+		if e.ComplexityRoot.Character.HitPoints == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.HitPoints(childComplexity), true
 	case "Character.id":
 		if e.ComplexityRoot.Character.ID == nil {
 			break
@@ -326,6 +379,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.Name(childComplexity), true
+	case "Character.raceMove":
+		if e.ComplexityRoot.Character.RaceMove == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.RaceMove(childComplexity), true
 
 	case "CharacterClass.alignmentTemplates":
 		if e.ComplexityRoot.CharacterClass.AlignmentTemplates == nil {
@@ -435,6 +494,38 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterQuery.ByID(childComplexity, args["id"].(string)), true
+
+	case "CreationOption.choices":
+		if e.ComplexityRoot.CreationOption.Choices == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreationOption.Choices(childComplexity), true
+	case "CreationOption.label":
+		if e.ComplexityRoot.CreationOption.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreationOption.Label(childComplexity), true
+	case "CreationOption.pick":
+		if e.ComplexityRoot.CreationOption.Pick == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreationOption.Pick(childComplexity), true
+
+	case "CreationOptionChoice.key":
+		if e.ComplexityRoot.CreationOptionChoice.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreationOptionChoice.Key(childComplexity), true
+	case "CreationOptionChoice.label":
+		if e.ComplexityRoot.CreationOptionChoice.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreationOptionChoice.Label(childComplexity), true
 
 	case "Game.characterId":
 		if e.ComplexityRoot.Game.CharacterID == nil {
@@ -637,6 +728,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.MessageQuery.All(childComplexity), true
 
+	case "Move.creationOptions":
+		if e.ComplexityRoot.Move.CreationOptions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Move.CreationOptions(childComplexity), true
 	case "Move.description":
 		if e.ComplexityRoot.Move.Description == nil {
 			break
@@ -882,6 +979,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAbilityScoreInput,
 		ec.unmarshalInputCreateCharacterInput,
+		ec.unmarshalInputMoveCreationOptionChoiceInput,
 		ec.unmarshalInputNewLookInput,
 	)
 	first := true
@@ -1011,12 +1109,22 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 	switch field.Name {
 	case "abilities":
 		return ec.fieldContext_Character_abilities(ctx, field)
+	case "alignmentType":
+		return ec.fieldContext_Character_alignmentType(ctx, field)
+	case "alignmentDescription":
+		return ec.fieldContext_Character_alignmentDescription(ctx, field)
+	case "characterClass":
+		return ec.fieldContext_Character_characterClass(ctx, field)
+	case "hitPoints":
+		return ec.fieldContext_Character_hitPoints(ctx, field)
 	case "id":
 		return ec.fieldContext_Character_id(ctx, field)
-	case "name":
-		return ec.fieldContext_Character_name(ctx, field)
 	case "looks":
 		return ec.fieldContext_Character_looks(ctx, field)
+	case "name":
+		return ec.fieldContext_Character_name(ctx, field)
+	case "raceMove":
+		return ec.fieldContext_Character_raceMove(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
 }
@@ -1073,6 +1181,28 @@ func (ec *executionContext) childFields_CharacterQuery(ctx context.Context, fiel
 		return ec.fieldContext_CharacterQuery_byId(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CharacterQuery", field.Name)
+}
+
+func (ec *executionContext) childFields_CreationOption(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "choices":
+		return ec.fieldContext_CreationOption_choices(ctx, field)
+	case "label":
+		return ec.fieldContext_CreationOption_label(ctx, field)
+	case "pick":
+		return ec.fieldContext_CreationOption_pick(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreationOption", field.Name)
+}
+
+func (ec *executionContext) childFields_CreationOptionChoice(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "key":
+		return ec.fieldContext_CreationOptionChoice_key(ctx, field)
+	case "label":
+		return ec.fieldContext_CreationOptionChoice_label(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreationOptionChoice", field.Name)
 }
 
 func (ec *executionContext) childFields_Game(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1137,10 +1267,10 @@ func (ec *executionContext) childFields_Look(ctx context.Context, field graphql.
 	switch field.Name {
 	case "id":
 		return ec.fieldContext_Look_id(ctx, field)
-	case "value":
-		return ec.fieldContext_Look_value(ctx, field)
 	case "lookType":
 		return ec.fieldContext_Look_lookType(ctx, field)
+	case "value":
+		return ec.fieldContext_Look_value(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Look", field.Name)
 }
@@ -1207,6 +1337,8 @@ func (ec *executionContext) childFields_MessageQuery(ctx context.Context, field 
 
 func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "creationOptions":
+		return ec.fieldContext_Move_creationOptions(ctx, field)
 	case "description":
 		return ec.fieldContext_Move_description(ctx, field)
 	case "key":
@@ -1760,6 +1892,107 @@ func (ec *executionContext) fieldContext_Character_abilities(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Character_alignmentType(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_alignmentType(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AlignmentType, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_alignmentType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Character_alignmentDescription(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_alignmentDescription(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AlignmentDescription, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_alignmentDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Character_characterClass(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_characterClass(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().CharacterClass(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterClass) graphql.Marshaler {
+			return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_characterClass(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CharacterClass(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Character_hitPoints(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_hitPoints(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.HitPoints, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_hitPoints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_id(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1781,6 +2014,38 @@ func (ec *executionContext) _Character_id(ctx context.Context, field graphql.Col
 }
 func (ec *executionContext) fieldContext_Character_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Character_looks(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_looks(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().Looks(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Look) graphql.Marshaler {
+			return ec.marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_looks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Look(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Character_name(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -1806,33 +2071,33 @@ func (ec *executionContext) fieldContext_Character_name(_ context.Context, field
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _Character_looks(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+func (ec *executionContext) _Character_raceMove(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Character_looks(ctx, field)
+			return ec.fieldContext_Character_raceMove(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Looks, nil
+			return ec.Resolvers.Character().RaceMove(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Look) graphql.Marshaler {
-			return ec.marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Move) graphql.Marshaler {
+			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Character_looks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Character_raceMove(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Character",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Look(ctx, field)
+			return ec.childFields_Move(ctx, field)
 		},
 	}
 	return fc, nil
@@ -2309,6 +2574,130 @@ func (ec *executionContext) fieldContext_CharacterQuery_byId(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _CreationOption_choices(ctx context.Context, field graphql.CollectedField, obj *model.CreationOption) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreationOption_choices(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Choices, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.CreationOptionChoice) graphql.Marshaler {
+			return ec.marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreationOption_choices(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreationOption",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CreationOptionChoice(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreationOption_label(ctx context.Context, field graphql.CollectedField, obj *model.CreationOption) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreationOption_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreationOption_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreationOption", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _CreationOption_pick(ctx context.Context, field graphql.CollectedField, obj *model.CreationOption) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreationOption_pick(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Pick, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreationOption_pick(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreationOption", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CreationOptionChoice_key(ctx context.Context, field graphql.CollectedField, obj *model.CreationOptionChoice) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreationOptionChoice_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreationOptionChoice_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreationOptionChoice", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _CreationOptionChoice_label(ctx context.Context, field graphql.CollectedField, obj *model.CreationOptionChoice) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreationOptionChoice_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreationOptionChoice_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreationOptionChoice", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _Game_id(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2721,6 +3110,38 @@ func (ec *executionContext) fieldContext_Look_id(_ context.Context, field graphq
 	return graphql.NewScalarFieldContext("Look", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Look_lookType(ctx context.Context, field graphql.CollectedField, obj *model.Look) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Look_lookType(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Look().LookType(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.LookType) graphql.Marshaler {
+			return ec.marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Look_lookType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Look",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_LookType(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Look_value(ctx context.Context, field graphql.CollectedField, obj *model.Look) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2742,38 +3163,6 @@ func (ec *executionContext) _Look_value(ctx context.Context, field graphql.Colle
 }
 func (ec *executionContext) fieldContext_Look_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Look", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Look_lookType(ctx context.Context, field graphql.CollectedField, obj *model.Look) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Look_lookType(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.LookType, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.LookType) graphql.Marshaler {
-			return ec.marshalOLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx, selections, v)
-		},
-		true,
-		false,
-	)
-}
-func (ec *executionContext) fieldContext_Look_lookType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Look",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_LookType(ctx, field)
-		},
-	}
-	return fc, nil
 }
 
 func (ec *executionContext) _LookExample_type(ctx context.Context, field graphql.CollectedField, obj *model.LookExample) (ret graphql.Marshaler) {
@@ -3085,6 +3474,38 @@ func (ec *executionContext) fieldContext_MessageQuery_all(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Message(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Move_creationOptions(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Move_creationOptions(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreationOptions, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.CreationOption) graphql.Marshaler {
+			return ec.marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Move_creationOptions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Move",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CreationOption(ctx, field)
 		},
 	}
 	return fc, nil
@@ -5268,7 +5689,7 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"abilities", "name", "looks"}
+	fieldsInOrder := [...]string{"abilities", "alignmentType", "alignmentDescription", "characterClassKey", "looks", "moveCreationOptionChoices", "name", "raceMoveKey"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5282,13 +5703,27 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 				return it, err
 			}
 			it.Abilities = data
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		case "alignmentType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alignmentType"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Name = data
+			it.AlignmentType = data
+		case "alignmentDescription":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alignmentDescription"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AlignmentDescription = data
+		case "characterClassKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("characterClassKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CharacterClassKey = data
 		case "looks":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("looks"))
 			data, err := ec.unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInputᚄ(ctx, v)
@@ -5296,6 +5731,71 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 				return it, err
 			}
 			it.Looks = data
+		case "moveCreationOptionChoices":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moveCreationOptionChoices"))
+			data, err := ec.unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MoveCreationOptionChoices = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "raceMoveKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("raceMoveKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RaceMoveKey = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMoveCreationOptionChoiceInput(ctx context.Context, obj any) (model.MoveCreationOptionChoiceInput, error) {
+	var it model.MoveCreationOptionChoiceInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"choiceIndex", "moveKey", "optionKey"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "choiceIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("choiceIndex"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ChoiceIndex = data
+		case "moveKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moveKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MoveKey = data
+		case "optionKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("optionKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OptionKey = data
 		}
 	}
 	return it, nil
@@ -5484,23 +5984,141 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 		case "abilities":
 			out.Values[i] = ec._Character_abilities(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "alignmentType":
+			out.Values[i] = ec._Character_alignmentType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "alignmentDescription":
+			out.Values[i] = ec._Character_alignmentDescription(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "characterClass":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_characterClass(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "hitPoints":
+			out.Values[i] = ec._Character_hitPoints(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "id":
 			out.Values[i] = ec._Character_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "looks":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_looks(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "name":
 			out.Values[i] = ec._Character_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "looks":
-			out.Values[i] = ec._Character_looks(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+		case "raceMove":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_raceMove(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5921,6 +6539,99 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var creationOptionImplementors = []string{"CreationOption"}
+
+func (ec *executionContext) _CreationOption(ctx context.Context, sel ast.SelectionSet, obj *model.CreationOption) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, creationOptionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreationOption")
+		case "choices":
+			out.Values[i] = ec._CreationOption_choices(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._CreationOption_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pick":
+			out.Values[i] = ec._CreationOption_pick(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var creationOptionChoiceImplementors = []string{"CreationOptionChoice"}
+
+func (ec *executionContext) _CreationOptionChoice(ctx context.Context, sel ast.SelectionSet, obj *model.CreationOptionChoice) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, creationOptionChoiceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreationOptionChoice")
+		case "key":
+			out.Values[i] = ec._CreationOptionChoice_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._CreationOptionChoice_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var gameImplementors = []string{"Game"}
 
 func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj *model.Game) graphql.Marshaler {
@@ -6172,15 +6883,49 @@ func (ec *executionContext) _Look(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Look_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "lookType":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Look_lookType(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "value":
 			out.Values[i] = ec._Look_value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "lookType":
-			out.Values[i] = ec._Look_lookType(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6510,6 +7255,11 @@ func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Move")
+		case "creationOptions":
+			out.Values[i] = ec._Move_creationOptions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "description":
 			out.Values[i] = ec._Move_description(ctx, field, obj)
 		case "key":
@@ -7689,6 +8439,58 @@ func (ec *executionContext) unmarshalNCreateCharacterInput2githubᚗcomᚋdeepco
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOption) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOption(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOption(ctx context.Context, sel ast.SelectionSet, v *model.CreationOption) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CreationOption(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOptionChoice) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoice(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoice(ctx context.Context, sel ast.SelectionSet, v *model.CreationOptionChoice) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CreationOptionChoice(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNDateTime2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7911,6 +8713,10 @@ func (ec *executionContext) marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋ
 	return ec._LookExample(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNLookType2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v model.LookType) graphql.Marshaler {
+	return ec._LookType(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LookType) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8033,6 +8839,26 @@ func (ec *executionContext) marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 		return graphql.Null
 	}
 	return ec._Move(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.MoveCreationOptionChoiceInput, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.MoveCreationOptionChoiceInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx context.Context, v any) (*model.MoveCreationOptionChoiceInput, error) {
+	res, err := ec.unmarshalInputMoveCreationOptionChoiceInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNMoveQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveQuery(ctx context.Context, sel ast.SelectionSet, v model.MoveQuery) graphql.Marshaler {
@@ -8405,13 +9231,6 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	_ = ctx
 	res := graphql.MarshalInt32(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v *model.LookType) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._LookType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOScenario2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenario(ctx context.Context, sel ast.SelectionSet, v *model.Scenario) graphql.Marshaler {

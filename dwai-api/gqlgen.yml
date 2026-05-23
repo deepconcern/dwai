@@ -201,6 +201,15 @@ models:
       modifier:
         resolver: true
 
+  Character:
+    fields:
+      characterClass:
+        resolver: true
+      looks:
+        resolver: true
+      raceMove:
+        resolver: true
+
   CharacterClass:
     fields:
       startingGear:
@@ -223,6 +232,11 @@ models:
       all:
         resolver: true
       byId:
+        resolver: true
+
+  Look:
+    fields:
+      lookType:
         resolver: true
 
   LookTypeQuery:

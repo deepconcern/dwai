@@ -1,6 +1,7 @@
-import { FragmentType, useFragment } from "@/gql";
-import { GearItemFragment } from "@/fragments/GearItemFragment";
 import { FC } from "react";
+
+import { GearItemFragment } from "@/fragments/GearItemFragment";
+import { FragmentType, useFragment } from "@/gql";
 
 export type ItemTextDisplayProps = {
   item: FragmentType<typeof GearItemFragment>;

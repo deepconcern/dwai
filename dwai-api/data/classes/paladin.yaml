@@ -68,7 +68,7 @@ starting_moves:
       State what you set out to do, then choose up to two boons. The GM will
       then tell you what vow or vows is required of you to maintain your blessing.
     creation_options:
-      - group: Mission
+      - label: Mission
         pick: 1
         choices:
           - key: slay_enemy
@@ -80,7 +80,7 @@ starting_moves:
           - key: discover_truth
             label: Discover the truth of something
             description: "Discover the truth of _______"
-      - group: Boons
+      - label: Boons
         pick: 2
         choices:
           - key: boon_direction

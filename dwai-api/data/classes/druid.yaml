@@ -67,7 +67,7 @@ starting_moves:
       physical attribute that marks you as born of the soil—that reflects the spirit
       of your land. Your tell remains no matter what shape you take.
     creation_options:
-      - group: Land
+      - label: Land
         pick: 1
         choices:
           - key: great_forests

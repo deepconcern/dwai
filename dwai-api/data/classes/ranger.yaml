@@ -60,7 +60,7 @@ starting_moves:
       to it per se but it always acts as you wish it to. Name your animal companion
       and choose its species, base stats, strengths, trainings, and weaknesses.
     creation_options:
-      - group: Base Stats
+      - label: Base Stats
         pick: 1
         choices:
           - key: base_balanced

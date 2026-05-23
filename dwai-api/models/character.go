@@ -2,23 +2,14 @@ package models
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/deepconcern/dwai/dwai-api/db"
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type CharacterModel struct {
-	Charisma     int32
-	Constitution int32
-	Dexterity    int32
-	ID           string
-	Intelligence int32
-	Name         string
-	Strength     int32
-	Wisdom       int32
-}
-
-func (c *CharacterModel) ToObject() *model.Character {
+func ToCharacterObject(c *db.Character) *model.Character {
 	abilities := []*model.AbilityScore{
 		{Ability: model.AbilityCharisma, Score: c.Charisma},
 		{Ability: model.AbilityConstitution, Score: c.Constitution},
@@ -30,42 +21,86 @@ func (c *CharacterModel) ToObject() *model.Character {
 
 	return &model.Character{
 		Abilities: abilities,
-		ID:        c.ID,
+		HitPoints: c.HitPoints,
+		ID:        c.ID.String(),
 		Name:      c.Name,
 	}
 }
 
-type characterLoader struct {
-	dbPool *pgxpool.Pool
+func ToLookObject(l *db.Look) *model.Look {
+	return &model.Look{
+		ID:    string(l.ID),
+		Value: l.Value,
+	}
 }
 
-func (c *characterLoader) loadCharacters(ctx context.Context, keys []string) ([]*CharacterModel, []error) {
+type characterLoader struct {
+	queries *db.Queries
+}
+
+type lookLoader struct {
+	queries *db.Queries
+}
+
+func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID) ([]*db.Character, []error) {
 	// Database query for all keys
-
-	rows, err := c.dbPool.Query(context.Background(), `
-		SELECT charisma, constitution, dexterity, id, intelligence, name, strength, wisdom
-		FROM characters WHERE id = ANY($1)
-	`, keys)
+	rows, err := c.queries.LoadCharacters(ctx, keys)
 	if err != nil {
-		return nil, []error{err}
-	}
-	defer rows.Close()
-
-	// Extract characters from rows
-
-	characters := make([]*CharacterModel, 0)
-	for rows.Next() {
-		var character CharacterModel
-
-		if err := rows.Scan(&character.Charisma, &character.Constitution, &character.Dexterity, &character.ID, &character.Intelligence, &character.Name, &character.Strength, &character.Wisdom); err != nil {
-			return nil, []error{err}
+		errors := make([]error, len(keys))
+		for i := range errors {
+			errors[i] = fmt.Errorf("Failed to load character with ID '%s': %w", keys[i].String(), err)
 		}
-		characters = append(characters, &character)
+		return nil, errors
+	}
+
+	characters := make([]*db.Character, 0)
+	for _, row := range rows {
+		characters = append(characters, &db.Character{
+			AlignmentDescription: row.AlignmentDescription,
+			AlignmentType:        row.AlignmentType,
+			CharacterClassKey:    row.CharacterClassKey,
+			Charisma:             row.Charisma,
+			Constitution:         row.Constitution,
+			Dexterity:            row.Dexterity,
+			HitPoints:            row.HitPoints,
+			ID:                   row.ID,
+			Intelligence:         row.Intelligence,
+			Name:                 row.Name,
+			RaceMoveKey:          row.RaceMoveKey,
+			Strength:             row.Strength,
+			Wisdom:               row.Wisdom,
+		})
 	}
 
 	return characters, nil
 }
 
-func NewCharacterLoader(dbPool *pgxpool.Pool) *characterLoader {
-	return &characterLoader{dbPool: dbPool}
+func (l *lookLoader) loadLooks(ctx context.Context, keys []int32) ([]*db.Look, []error) {
+	rows, err := l.queries.LoadLooks(ctx, keys)
+	if err != nil {
+		errors := make([]error, len(keys))
+		for i := range errors {
+			errors[i] = fmt.Errorf("Failed to load look with ID '%d': %w", keys[i], err)
+		}
+		return nil, errors
+	}
+
+	looks := make([]*db.Look, 0)
+	for _, row := range rows {
+		looks = append(looks, &db.Look{
+			ID:       row.ID,
+			LookType: row.LookType,
+			Value:    row.Value,
+		})
+	}
+
+	return looks, nil
+}
+
+func NewCharacterLoader(queries *db.Queries) *characterLoader {
+	return &characterLoader{queries: queries}
+}
+
+func NewLookLoader(queries *db.Queries) *lookLoader {
+	return &lookLoader{queries: queries}
 }

@@ -78,7 +78,7 @@ starting_moves:
       it; the GM will answer truthfully. The GM may then ask you what tale, song,
       or legend you heard that information in.
     creation_options:
-      - group: Area of Expertise
+      - label: Area of Expertise
         pick: 1
         choices:
           - key: spells_and_magicks

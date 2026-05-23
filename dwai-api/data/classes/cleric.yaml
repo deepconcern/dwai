@@ -54,7 +54,7 @@ starting_moves:
       your god a name (maybe Helferth, Sucellus, Zorica or Krugon the Bleak) and choose
       your deity's domain and one precept of your religion.
     creation_options:
-      - group: Domain
+      - label: Domain
         pick: 1
         choices:
           - key: healing_and_restoration
@@ -69,7 +69,7 @@ starting_moves:
             label: The Downtrodden and Forgotten
           - key: what_lies_beneath
             label: What Lies Beneath
-      - group: Precept
+      - label: Precept
         pick: 1
         choices:
           - key: petition_suffering

@@ -48,7 +48,7 @@ func (m *MoveModel) ToObject() *model.Move {
 
 type MoveMap map[string]*MoveModel
 
-func LoadBasicMoves() *MoveMap {
+func LoadPlayerMoves() *MoveMap {
 	path := filepath.Join("data", "player_moves.yaml")
 
 	content, err := os.ReadFile(path)

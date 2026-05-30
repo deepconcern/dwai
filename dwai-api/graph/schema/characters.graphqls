@@ -42,6 +42,9 @@ type Character {
   alignmentDescription: String!
   "The character's class (e.g. Fighter, Wizard)."
   characterClass: CharacterClass!
+  "Moves available to the character based on their class and choices"
+  classMoves: [Move!]!
+  equipment: Int!
   "The character's current HP."
   hitPoints: Int!
   "Unique identifier for the character."
@@ -62,6 +65,17 @@ type Look {
   lookType: LookType!
   "The chosen appearance value (e.g. 'Wild Eyes')."
   value: String!
+}
+
+type MoveCreationOptionChoice {
+  "The index of the creation option group within the move."
+  choiceIndex: Int!
+  "Unique identifier for this move creation option choice."
+  id: ID!
+  "The move this choice belongs to."
+  move: Move!
+  "The key of the selected option."
+  optionKey: String!
 }
 
 "Input for creating a new character."

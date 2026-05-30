@@ -1,5 +1,7 @@
 "An option the player can choose from when taking a move or making a character creation choice."
 type CreationOptionChoice {
+  "Whether the player has selected this option. Null if the player has not yet made a choice for this option."
+  isPicked: Boolean!
   "Unique key for this choice."
   key: ID!
   "Human-readable label for this choice (e.g. 'Flail')."
@@ -52,4 +54,6 @@ type MoveQuery {
   all: [Move!]!
   "Returns a single move by key, or null if not found."
   byKey(key: ID!): Move!
+  "Returns moves by type"
+  byType(type: String!): [Move!]!
 }

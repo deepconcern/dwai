@@ -66,6 +66,68 @@ func (r *characterResolver) CharacterClass(ctx context.Context, obj *model.Chara
 	return characterClassModel.ToObject(), nil
 }
 
+// ClassMoves is the resolver for the classMoves field.
+func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error) {
+	var uuid pgtype.UUID
+	if err := uuid.Scan(obj.ID); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("No character with ID '%s'", uuid.String())
+	}
+
+	queries := db.New(r.DbPool)
+
+	moveCreationOptionChoices, err := queries.SelectMoveCreationOptionChoicesByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load move creation option choices for character with ID '%s': %w", uuid.String(), err)
+	}
+
+	mcocMap := make(map[string]map[int32][]string)
+	for _, mcoc := range moveCreationOptionChoices {
+		if mcocMap[mcoc.MoveKey] == nil {
+			mcocMap[mcoc.MoveKey] = make(map[int32][]string)
+		}
+		mcocMap[mcoc.MoveKey][mcoc.ChoiceIndex] = append(mcocMap[mcoc.MoveKey][mcoc.ChoiceIndex], mcoc.OptionKey)
+	}
+
+	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
+	if !ok {
+		fmt.Printf("%+v\n", characterModel)
+		return nil, fmt.Errorf("No character class with key '%s'", characterModel.CharacterClassKey)
+	}
+
+	moves := make([]*model.Move, len(characterClassModel.StartingMoves))
+	for i, moveModel := range characterClassModel.StartingMoves {
+		moves[i] = moveModel.ToObject()
+
+		// Add the choices the player made for this move's creation options, if any.
+
+		choiceMap, ok := mcocMap[moves[i].Key]
+		if !ok {
+			continue
+		}
+
+		// For each set of choices, figure out what the player picked and add it to the move's CreationOptionChoices field.
+
+		for optionIndex, option := range moves[i].CreationOptions {
+			pickedChoices, ok := choiceMap[int32(optionIndex)]
+			if !ok {
+				continue
+			}
+
+			for _, choice := range option.Choices {
+				if slices.Contains(pickedChoices, choice.Key) {
+					choice.IsPicked = true
+				}
+			}
+		}
+	}
+	return moves, nil
+}
+
 // Looks is the resolver for the looks field.
 func (r *characterResolver) Looks(ctx context.Context, obj *model.Character) ([]*model.Look, error) {
 	var uuid pgtype.UUID
@@ -97,7 +159,7 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 
 	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("No character with ID '%s'", uuid.String())
 	}
 
 	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
@@ -220,8 +282,8 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 	// Extract characters from rows
 
 	characterModels := make([]*db.Character, len(rows))
-	for _, row := range rows {
-		characterModels = append(characterModels, &db.Character{
+	for i, row := range rows {
+		characterModels[i] = &db.Character{
 			AlignmentDescription: row.AlignmentDescription,
 			AlignmentType:        row.AlignmentType,
 			CharacterClassKey:    row.CharacterClassKey,
@@ -235,7 +297,7 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 			RaceMoveKey:          row.RaceMoveKey,
 			Strength:             row.Strength,
 			Wisdom:               row.Wisdom,
-		})
+		}
 	}
 
 	// Build characters and prime the loader cache
@@ -276,7 +338,12 @@ func (r *lookResolver) LookType(ctx context.Context, obj *model.Look) (*model.Lo
 		return nil, err
 	}
 
-	return models.ToLookTypeObject(m), nil
+	lookTypeModel := (*r.LookTypes)[m.LookType]
+
+	return &model.LookType{
+		Key:  lookTypeModel.Key,
+		Name: lookTypeModel.Name,
+	}, nil
 }
 
 // AbilityScore returns AbilityScoreResolver implementation.

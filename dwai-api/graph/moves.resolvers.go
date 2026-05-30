@@ -17,8 +17,8 @@ import (
 func (r *moveQueryResolver) All(ctx context.Context, obj *model.MoveQuery) ([]*model.Move, error) {
 	moves := make([]*model.Move, 0)
 
-	for basicMove := range maps.Values(*r.BasicMoves) {
-		moves = append(moves, basicMove.ToObject())
+	for m := range maps.Values(*r.PlayerMoves) {
+		moves = append(moves, m.ToObject())
 	}
 
 	return moves, nil
@@ -26,13 +26,26 @@ func (r *moveQueryResolver) All(ctx context.Context, obj *model.MoveQuery) ([]*m
 
 // ByKey is the resolver for the byKey field.
 func (r *moveQueryResolver) ByKey(ctx context.Context, obj *model.MoveQuery, key string) (*model.Move, error) {
-	m, ok := (*r.BasicMoves)[key]
+	m, ok := (*r.PlayerMoves)[key]
 
 	if ok {
 		return m.ToObject(), nil
 	}
 
 	return nil, errors.New("No model found")
+}
+
+// ByType is the resolver for the byType field.
+func (r *moveQueryResolver) ByType(ctx context.Context, obj *model.MoveQuery, typeArg string) ([]*model.Move, error) {
+	moves := make([]*model.Move, 0)
+
+	for m := range maps.Values(*r.PlayerMoves) {
+		if m.Type == typeArg {
+			moves = append(moves, m.ToObject())
+		}
+	}
+
+	return moves, nil
 }
 
 // MoveQuery returns MoveQueryResolver implementation.

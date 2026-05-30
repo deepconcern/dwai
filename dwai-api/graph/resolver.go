@@ -13,10 +13,11 @@ import (
 // here.
 
 type Resolver struct {
-	BasicMoves       *models.MoveMap
 	CharacterClasses *models.CharacterClassMap
 	DbPool           *pgxpool.Pool
 	Equipment        *models.EquipmentMap
 	Loaders          *models.Loaders
+	LookTypes        *models.LookTypeMap
+	PlayerMoves      *models.MoveMap
 	TagDefinitions   *models.TagDefinitionMap
 }

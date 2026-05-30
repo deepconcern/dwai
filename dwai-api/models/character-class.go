@@ -52,8 +52,9 @@ func (m *ClassMoveModel) ToObject() *model.Move {
 			choices := make([]*model.CreationOptionChoice, len(group.Choices))
 			for j, choice := range group.Choices {
 				choices[j] = &model.CreationOptionChoice{
-					Key:   choice.Key,
-					Label: choice.Label,
+					IsPicked: false,
+					Key:      choice.Key,
+					Label:    choice.Label,
 				}
 			}
 			creationOptions[i] = &model.CreationOption{
@@ -128,11 +129,13 @@ func (m *CharacterClassModel) ToObject() *model.CharacterClass {
 	}
 }
 
-type LookTypeModel struct{
+type LookTypeModel struct {
 	Examples []string
-	Key  string
-	Name string
+	Key      string
+	Name     string
 }
+
+type LookTypeMap map[string]LookTypeModel
 
 func LoadCharacterClasses() *CharacterClassMap {
 	dir_path := filepath.Join("data", "classes")
@@ -170,4 +173,20 @@ func LoadCharacterClasses() *CharacterClassMap {
 
 }
 
-func LoadLookTypes() []string {
+func LoadLookTypes() *LookTypeMap {
+	characterClassMap := LoadCharacterClasses()
+
+	lookTypeMap := make(LookTypeMap)
+
+	for _, characterClass := range *characterClassMap {
+		for lookType, examples := range characterClass.Looks {
+			lookTypeMap[lookType] = LookTypeModel{
+				Key:      lookType,
+				Name:     lookType,
+				Examples: examples,
+			}
+		}
+	}
+
+	return &lookTypeMap
+}

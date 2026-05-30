@@ -10,16 +10,19 @@ import (
 )
 
 type Loaders struct {
-	CharacterLoader *dataloadgen.Loader[pgtype.UUID, *db.Character]
-	LookLoader      *dataloadgen.Loader[int32, *db.Look]
+	CharacterLoader                *dataloadgen.Loader[pgtype.UUID, *db.Character]
+	LookLoader                     *dataloadgen.Loader[int32, *db.Look]
+	MoveCreationOptionChoiceLoader *dataloadgen.Loader[int32, *db.MoveCreationOptionChoice]
 }
 
 func NewLoaders(pool *pgxpool.Pool) *Loaders {
 	cl := NewCharacterLoader(db.New(pool))
 	ll := NewLookLoader(db.New(pool))
+	mcocl := NewMoveCreationOptionChoiceLoader(db.New(pool))
 
 	return &Loaders{
-		CharacterLoader: dataloadgen.NewLoader(cl.loadCharacters, dataloadgen.WithWait(time.Millisecond)),
-		LookLoader:      dataloadgen.NewLoader(ll.loadLooks, dataloadgen.WithWait(time.Millisecond)),
+		CharacterLoader:                dataloadgen.NewLoader(cl.loadCharacters, dataloadgen.WithWait(time.Millisecond)),
+		LookLoader:                     dataloadgen.NewLoader(ll.loadLooks, dataloadgen.WithWait(time.Millisecond)),
+		MoveCreationOptionChoiceLoader: dataloadgen.NewLoader(mcocl.loadMoveCreationOptionChoices, dataloadgen.WithWait(time.Millisecond)),
 	}
 }

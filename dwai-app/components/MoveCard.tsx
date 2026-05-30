@@ -20,6 +20,7 @@ export const MoveCard: FC<MoveCardProps> = ({
   onChange,
   selectedOptions,
 }) => {
+  const isEditable = Boolean(onChange);
   const move = useFragment(MoveFragment, moveFragment);
 
   selectedOptions = selectedOptions ?? move.creationOptions.map(() => []);
@@ -41,7 +42,7 @@ export const MoveCard: FC<MoveCardProps> = ({
   }, [move]);
 
   return (
-    <div className={clsx(className, "border p-4 rounded")}>
+    <div className={clsx(className, "bg-neutral-900 border p-4 rounded")}>
       <h4 className="font-medium">{move.name}</h4>
       <div className="flex flex-col gap-2 mt-2">
         {move.replacesKey && (
@@ -83,21 +84,29 @@ export const MoveCard: FC<MoveCardProps> = ({
             <p className="text-sm text-gray-300">
               Creation option: {option.label} (pick {option.pick})
             </p>
-            <ChoiceList
-              items={option.choices.map((choice) => ({
-                key: choice.key,
-                label: choice.label,
-              }))}
-              onChange={(newSelectedChoices) =>
-                onChange?.(
-                  selectedOptions.map((s, optionIndex) =>
-                    i === optionIndex ? newSelectedChoices : s,
-                  ),
-                )
-              }
-              pick={option.pick}
-              values={selectedOptions[i]}
-            />
+            {isEditable ? (
+              <ChoiceList
+                items={option.choices.map((choice) => ({
+                  key: choice.key,
+                  label: choice.label,
+                }))}
+                onChange={(newSelectedChoices) =>
+                  onChange?.(
+                    selectedOptions.map((s, optionIndex) =>
+                      i === optionIndex ? newSelectedChoices : s,
+                    ),
+                  )
+                }
+                pick={option.pick}
+                values={selectedOptions[i]}
+              />
+            ) : (
+              <List
+                items={option.choices
+                  .filter((c) => c.isPicked)
+                  .map((c) => ({ content: c.label, key: c.key }))}
+              />
+            )}
           </div>
         ))}
       </div>

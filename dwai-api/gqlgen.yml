@@ -205,6 +205,8 @@ models:
     fields:
       characterClass:
         resolver: true
+      classMoves:
+        resolver: true
       looks:
         resolver: true
       raceMove:
@@ -249,4 +251,6 @@ models:
       all:
         resolver: true
       byKey:
+        resolver: true
+      byType:
         resolver: true

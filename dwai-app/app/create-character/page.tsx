@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import { Dropdown } from "@/components/Dropdown";
 import { ItemTextDisplay } from "@/components/ItemTextDisplay";
@@ -12,7 +12,6 @@ import { PageTitle } from "@/components/PageTitle";
 import { SectionTitle } from "@/components/SectionTitle";
 import { SelectableArea } from "@/components/SelectableArea";
 import { TextInput } from "@/components/TextInput";
-import { MoveFragment } from "@/fragments/MoveFragment";
 import { graphql, useFragment } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
@@ -144,64 +143,43 @@ export default function CreateCharacterPage() {
       ? conScore + characterClass.hpBase
       : null;
 
-  const handleAddLook = useCallback(() => {
+  const handleAddLook = () => {
     const firstType = characterClass?.lookExamples[0]?.type ?? "";
     setLooks((prev) => [...prev, { lookTypeKey: firstType, value: "" }]);
-  }, [characterClass]);
+  };
 
-  const handleAlignmentDescriptionChange = useCallback(
-    (ev: ChangeEvent<HTMLInputElement>) =>
-      setAlignmentDescription(ev.target.value),
-    [setAlignmentDescription],
-  );
+  const handleAlignmentDescriptionChange = (
+    ev: ChangeEvent<HTMLInputElement>,
+  ) => setAlignmentDescription(ev.target.value);
 
-  const handleAlignmentTemplateClick = useCallback(
-    (i: number) => () => {
-      const template = characterClass?.alignmentTemplates[i];
-      if (template) {
-        setAlignmentDescription(template.description);
-        setAlignmentType(template.alignment.toLocaleLowerCase());
-      }
-    },
-    [characterClass, setAlignmentDescription, setAlignmentType],
-  );
+  const handleAlignmentTemplateClick = (i: number) => () => {
+    const template = characterClass?.alignmentTemplates[i];
+    if (template) {
+      setAlignmentDescription(template.description);
+      setAlignmentType(template.alignment.toLocaleLowerCase());
+    }
+  };
 
-  const handleAlignmentTypeChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) => setAlignmentType(ev.target.value),
-    [setAlignmentType],
-  );
+  const handleAlignmentTypeChange = (ev: ChangeEvent<HTMLSelectElement>) =>
+    setAlignmentType(ev.target.value);
 
-  const handleCharacterClassChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) => {
-      const newKey = ev.target.value;
-      const newClass = characterClassesData?.characterClasses.all.find(
-        (c) => c.key === newKey,
-      );
-      setAbilityScores(
-        ABILITY_LABELS.map(({ ability }) => ({ ability, score: null })),
-      );
-      setAlignmentType("");
-      setAlignmentDescription("");
-      setCharacterClassKey(newKey);
-      setGearChoices(
-        newClass ? newClass.startingGear.options.map(() => []) : [],
-      );
-      setLooks([]);
-      setRaceMoveKey("");
-    },
-    [
-      characterClassesData,
-      setAbilityScores,
-      setAlignmentDescription,
-      setAlignmentType,
-      setCharacterClassKey,
-      setGearChoices,
-      setLooks,
-      setRaceMoveKey,
-    ],
-  );
+  const handleCharacterClassChange = (ev: ChangeEvent<HTMLSelectElement>) => {
+    const newKey = ev.target.value;
+    const newClass = characterClassesData?.characterClasses.all.find(
+      (c) => c.key === newKey,
+    );
+    setAbilityScores(
+      ABILITY_LABELS.map(({ ability }) => ({ ability, score: null })),
+    );
+    setAlignmentType("");
+    setAlignmentDescription("");
+    setCharacterClassKey(newKey);
+    setGearChoices(newClass ? newClass.startingGear.options.map(() => []) : []);
+    setLooks([]);
+    setRaceMoveKey("");
+  };
 
-  const handleCreate = useCallback(async () => {
+  const handleCreate = async () => {
     const abilities = abilityScores
       .filter((a) => a.score !== null)
       .map((a) => ({ ability: a.ability, score: a.score as number }));
@@ -233,44 +211,38 @@ export default function CreateCharacterPage() {
     if (data) {
       router.push(`/character/${data.characters.create.id}`);
     }
-  }, [abilityScores, createCharacter, looks, name, router]);
+  };
 
-  const handleGearChoiceChange = useCallback(
-    (choiceIndex: number, selected: number[]) => {
-      setGearChoices((choices) =>
-        choices.map((items, i) => (i === choiceIndex ? [...selected] : items)),
-      );
-    },
-    [setGearChoices],
-  );
+  const handleGearChoiceChange = (choiceIndex: number, selected: number[]) => {
+    setGearChoices((choices) =>
+      choices.map((items, i) => (i === choiceIndex ? [...selected] : items)),
+    );
+  };
 
-  const handleRemoveLook = useCallback((i: number) => {
+  const handleRemoveLook = (i: number) => {
     setLooks((prev) => prev.filter((_, idx) => idx !== i));
-  }, []);
+  };
 
-  const handleLookTypeChange = useCallback((i: number, type: string) => {
+  const handleLookTypeChange = (i: number, type: string) => {
     setLooks((prev) =>
       prev.map((l, idx) => (idx === i ? { ...l, lookTypeKey: type } : l)),
     );
-  }, []);
+  };
 
-  const handleLookValueChange = useCallback((i: number, value: string) => {
+  const handleLookValueChange = (i: number, value: string) => {
     setLooks((prev) => prev.map((l, idx) => (idx === i ? { ...l, value } : l)));
-  }, []);
+  };
 
-  const handleScoreChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) => {
-      const { ability } = ev.target.dataset;
-      if (!ability) return;
+  const handleScoreChange = (ev: ChangeEvent<HTMLSelectElement>) => {
+    const { ability } = ev.target.dataset;
+    if (!ability) return;
 
-      const score = ev.target.value ? parseInt(ev.target.value, 10) : null;
+    const score = ev.target.value ? parseInt(ev.target.value, 10) : null;
 
-      setAbilityScores((prev) =>
-        prev.map((a) => (a.ability === ability ? { ...a, score } : a)),
-      );
-    },
-    [],
-  );
+    setAbilityScores((prev) =>
+      prev.map((a) => (a.ability === ability ? { ...a, score } : a)),
+    );
+  };
 
   if (classesLoading) {
     return <div className="p-4">Loading...</div>;

@@ -1,3 +1,16 @@
+type Item {
+  id: ID!
+  label: String!
+  tags: [Tag!]!
+  template: ItemTemplate
+}
+
+type ItemTemplate {
+  key: ID!
+  label: ID!
+  tags: [Tag!]!
+}
+
 "A tag describing a property of an equipment item. Simple tags (e.g. 'close', 'worn') have no quantity; quantified tags (e.g. cost, weight, armor) carry a numeric value."
 type Tag {
   "Unique key for this tag (e.g. 'close', 'cost', 'weight')."

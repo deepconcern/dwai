@@ -97,11 +97,12 @@ func main() {
 
 	// Initialize the GraphQL server
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		BasicMoves:       models.LoadBasicMoves(),
 		CharacterClasses: models.LoadCharacterClasses(),
 		DbPool:           pool,
 		Equipment:        models.LoadEquipment(),
 		Loaders:          models.NewLoaders(pool),
+		LookTypes:        models.LoadLookTypes(),
+		PlayerMoves:      models.LoadPlayerMoves(),
 		TagDefinitions:   models.LoadTags(),
 	}}))
 

@@ -4,6 +4,7 @@ export const MoveFragment = graphql(`
   fragment MoveFragment on Move {
     creationOptions {
       choices {
+        isPicked
         key
         label
       }

@@ -47,6 +47,8 @@ type Character struct {
 	AlignmentDescription string `json:"alignmentDescription"`
 	// The character's class (e.g. Fighter, Wizard).
 	CharacterClass *CharacterClass `json:"characterClass"`
+	// Moves available to the character based on their class and choices
+	ClassMoves []*Move `json:"classMoves"`
 	// The character's current HP.
 	HitPoints int32 `json:"hitPoints"`
 	// Unique identifier for the character.
@@ -129,6 +131,8 @@ type CreationOption struct {
 
 // An option the player can choose from when taking a move or making a character creation choice.
 type CreationOptionChoice struct {
+	// Whether the player has selected this option. Null if the player has not yet made a choice for this option.
+	IsPicked bool `json:"isPicked"`
 	// Unique key for this choice.
 	Key string `json:"key"`
 	// Human-readable label for this choice (e.g. 'Flail').
@@ -264,6 +268,17 @@ type Move struct {
 	Trigger *string `json:"trigger,omitempty"`
 }
 
+type MoveCreationOptionChoice struct {
+	// The index of the creation option group within the move.
+	ChoiceIndex int32 `json:"choiceIndex"`
+	// Unique identifier for this move creation option choice.
+	ID string `json:"id"`
+	// The move this choice belongs to.
+	Move *Move `json:"move"`
+	// The key of the selected option.
+	OptionKey string `json:"optionKey"`
+}
+
 // A choice made for a move's creation option during character creation.
 type MoveCreationOptionChoiceInput struct {
 	// The index of the creation option group within the move.
@@ -280,6 +295,8 @@ type MoveQuery struct {
 	All []*Move `json:"all"`
 	// Returns a single move by key, or null if not found.
 	ByKey *Move `json:"byKey"`
+	// Returns moves by type
+	ByType []*Move `json:"byType"`
 }
 
 type Mutation struct {

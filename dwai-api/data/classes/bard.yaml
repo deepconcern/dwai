@@ -157,8 +157,7 @@ starting_gear:
         - - adventuring_gear
         - - bandages
         - - halfling_pipeleaf
-        - - label: 3 coins
-            count: 3
+        - - gold: 3
 bonds:
   - This is not my first adventure with _______________.
   - I sang stories of _______________ long before I ever met them in person.

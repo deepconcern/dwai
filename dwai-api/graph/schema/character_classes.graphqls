@@ -1,14 +1,14 @@
-"A single item in a character's starting gear. Exactly one of key, base, or label will be set to identify the item."
-type GearItem {
+"A single item choice in a class's starting gear — not yet an owned Item. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth."
+type ItemOption {
   "Quantity of a stackable resource (e.g. coins) spent as a whole unit."
   count: Int!
-  "Flavour or rules text for custom items."
+  "Flavour or rules text, resolved from the template unless overridden."
   description: String!
-  "Key of a common item in equipment.yaml. Set for plain key references."
+  "Key of the item template this option references, or 'custom'."
   key: String!
-  "Display name for custom or inherited items."
+  "Display name, resolved from the template unless overridden."
   label: String!
-  "Tags associated with the item"
+  "Tags associated with the item, merged from the template and any overrides."
   tags: [Tag!]!
 }
 
@@ -17,7 +17,7 @@ type GearOptionGroup {
   "How many choices the player picks from this group."
   pick: Int!
   "The available choices."
-  choices: [[GearItem!]!]!
+  choices: [[ItemOption!]!]!
 }
 
 "The starting gear configuration for a character class."
@@ -25,7 +25,7 @@ type StartingGear {
   "Base load capacity before applying Constitution modifier."
   loadBase: Int!
   "Items every character of this class receives automatically."
-  default: [GearItem!]!
+  default: [ItemOption!]!
   "Pick-N option groups the player chooses from during character creation."
   options: [GearOptionGroup!]!
 }

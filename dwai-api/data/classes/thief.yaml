@@ -100,8 +100,7 @@ starting_gear:
       description: A poison of your choice.
       weight: 0
       uses: 3
-    - label: 10 coins
-      count: 10
+    - gold: 10
   options:
     - pick: 1
       choices:

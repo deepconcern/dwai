@@ -12,7 +12,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { SectionTitle } from "@/components/SectionTitle";
 import { SelectableArea } from "@/components/SelectableArea";
 import { TextInput } from "@/components/TextInput";
-import { graphql, useFragment } from "@/gql";
+import { graphql } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
 
@@ -67,13 +67,13 @@ const GET_CHARACTER_CLASSES_QUERY = graphql(`
         }
         startingGear {
           default {
-            ...GearItemFragment
+            ...ItemOptionFragment
           }
           loadBase
           options {
             pick
             choices {
-              ...GearItemFragment
+              ...ItemOptionFragment
             }
           }
         }
@@ -191,6 +191,10 @@ export default function CreateCharacterPage() {
           alignmentDescription,
           alignmentType,
           characterClassKey,
+          gearOptionChoices: gearChoices.map((choiceIndices, optionIndex) => ({
+            choiceIndices,
+            optionIndex,
+          })),
           moveCreationOptionChoices: Object.keys(moveOptions).flatMap(
             (moveKey) =>
               moveOptions[moveKey].flatMap((options, choiceIndex) =>

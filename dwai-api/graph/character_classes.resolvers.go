@@ -17,7 +17,7 @@ import (
 func (r *characterClassResolver) StartingGear(ctx context.Context, obj *model.CharacterClass) (*model.StartingGear, error) {
 	c := (*r.CharacterClasses)[obj.Key]
 
-	return c.StartingGear.ToObject(r.Equipment, r.TagDefinitions), nil
+	return c.StartingGear.ToObject(r.ItemTemplates, r.TagDefinitions), nil
 }
 
 // All is the resolver for the all field.

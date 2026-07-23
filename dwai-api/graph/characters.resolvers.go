@@ -85,13 +85,9 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 		return nil, fmt.Errorf("Failed to load move creation option choices for character with ID '%s': %w", uuid.String(), err)
 	}
 
-	mcocMap := make(map[string]map[int32][]string)
-	for _, mcoc := range moveCreationOptionChoices {
-		if mcocMap[mcoc.MoveKey] == nil {
-			mcocMap[mcoc.MoveKey] = make(map[int32][]string)
-		}
-		mcocMap[mcoc.MoveKey][mcoc.ChoiceIndex] = append(mcocMap[mcoc.MoveKey][mcoc.ChoiceIndex], mcoc.OptionKey)
-	}
+	mcocMap := models.BuildMoveChoiceMap(moveCreationOptionChoices, func(c db.MoveCreationOptionChoice) (string, int32, string) {
+		return c.MoveKey, c.ChoiceIndex, c.OptionKey
+	})
 
 	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
 	if !ok {
@@ -126,6 +122,43 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 		}
 	}
 	return moves, nil
+}
+
+// Equipment is the resolver for the equipment field.
+func (r *characterResolver) Equipment(ctx context.Context, obj *model.Character) ([]*model.Item, error) {
+	var uuid pgtype.UUID
+	if err := uuid.Scan(obj.ID); err != nil {
+		return nil, fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	queries := db.New(r.DbPool)
+
+	itemRows, err := queries.SelectItemsByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load items for character with ID '%s': %w", uuid.String(), err)
+	}
+
+	itemIds := make([]int32, len(itemRows))
+	for i, row := range itemRows {
+		itemIds[i] = row.ID
+	}
+
+	tagRows, err := queries.SelectItemTagsByItems(ctx, itemIds)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load item tags for character with ID '%s': %w", uuid.String(), err)
+	}
+
+	tagsByItemId := make(map[int32][]*db.ItemTag, len(itemRows))
+	for i := range tagRows {
+		tagsByItemId[tagRows[i].ItemID] = append(tagsByItemId[tagRows[i].ItemID], &tagRows[i])
+	}
+
+	items := make([]*model.Item, len(itemRows))
+	for i := range itemRows {
+		items[i] = models.ToItemObject(&itemRows[i], tagsByItemId[itemRows[i].ID], r.ItemTemplates, r.TagDefinitions)
+	}
+
+	return items, nil
 }
 
 // Looks is the resolver for the looks field.
@@ -199,10 +232,29 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		}
 	}
 
-	characterClassModel := (*r.CharacterClasses)[input.CharacterClassKey]
+	characterClassModel, ok := (*r.CharacterClasses)[input.CharacterClassKey]
+	if !ok {
+		return nil, fmt.Errorf("No class with key '%s'", input.CharacterClassKey)
+	}
 
 	// Get initial hit points
 	hitPoints := constitution + characterClassModel.HpBase
+
+	// Resolve starting gear ahead of any inserts: the class's defaults, plus
+	// whatever the player picked from its pick-N option groups, split into
+	// items to persist and gold to add to the character row directly. Some
+	// items (e.g. the Fighter's Signature Weapon) resolve from the move
+	// creation option choices rather than a template — see
+	// StartingGearModel.ResolveItems.
+
+	moveChoiceMap := models.BuildMoveChoiceMap(input.MoveCreationOptionChoices, func(c *model.MoveCreationOptionChoiceInput) (string, int32, string) {
+		return c.MoveKey, c.ChoiceIndex, c.OptionKey
+	})
+
+	startingGear := characterClassModel.StartingGear.ResolveItems(models.StartingGearContext{
+		CharacterClass: &characterClassModel,
+		MoveChoices:    moveChoiceMap,
+	}, input.GearOptionChoices)
 
 	// Run all inserts in a single transaction.
 	tx, err := r.DbPool.Begin(ctx)
@@ -221,6 +273,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		Charisma:             charisma,
 		Constitution:         constitution,
 		Dexterity:            dexterity,
+		Gold:                 startingGear.Gold,
 		HitPoints:            hitPoints,
 		Intelligence:         intelligence,
 		Name:                 input.Name,
@@ -253,6 +306,45 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 			OptionKey:   choice.OptionKey,
 		}); err != nil {
 			return nil, fmt.Errorf("Failed to insert move creation option choice: %w", err)
+		}
+	}
+
+	// Insert starting gear items (gold was already folded into the character
+	// row above).
+
+	for _, item := range startingGear.Items {
+		var label, description pgtype.Text
+		if item.Label != nil {
+			label = pgtype.Text{String: *item.Label, Valid: true}
+		}
+		if item.Description != nil {
+			description = pgtype.Text{String: *item.Description, Valid: true}
+		}
+
+		itemId, err := queries.InsertItem(ctx, db.InsertItemParams{
+			CharacterID: characterId,
+			Count:       item.Count,
+			Description: description,
+			Key:         item.Key,
+			Label:       label,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("Failed to insert item: %w", err)
+		}
+
+		for _, tag := range item.Tags {
+			var quantity pgtype.Int4
+			if tag.Quantity != nil {
+				quantity = pgtype.Int4{Int32: *tag.Quantity, Valid: true}
+			}
+
+			if _, err = queries.InsertItemTag(ctx, db.InsertItemTagParams{
+				ItemID:   itemId,
+				Key:      tag.Key,
+				Quantity: quantity,
+			}); err != nil {
+				return nil, fmt.Errorf("Failed to insert item tag: %w", err)
+			}
 		}
 	}
 
@@ -290,6 +382,7 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 			Charisma:             row.Charisma,
 			Constitution:         row.Constitution,
 			Dexterity:            row.Dexterity,
+			Gold:                 row.Gold,
 			HitPoints:            row.HitPoints,
 			ID:                   row.ID,
 			Intelligence:         row.Intelligence,

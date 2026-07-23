@@ -15,6 +15,7 @@ type Character struct {
 	Charisma             int32
 	Constitution         int32
 	Dexterity            int32
+	Gold                 int32
 	HitPoints            int32
 	ID                   pgtype.UUID
 	Intelligence         int32
@@ -22,6 +23,22 @@ type Character struct {
 	RaceMoveKey          string
 	Strength             int32
 	Wisdom               int32
+}
+
+type Item struct {
+	CharacterID pgtype.UUID
+	Count       int32
+	Description pgtype.Text
+	ID          int32
+	Key         string
+	Label       pgtype.Text
+}
+
+type ItemTag struct {
+	ID       int32
+	ItemID   int32
+	Key      string
+	Quantity pgtype.Int4
 }
 
 type Look struct {

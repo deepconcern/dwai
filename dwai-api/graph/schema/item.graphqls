@@ -1,13 +1,25 @@
+"An item owned by a character. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth."
 type Item {
+  "Quantity of a stackable resource (e.g. coins) spent as a whole unit."
+  count: Int!
+  "Flavour or rules text, resolved from the template unless overridden."
+  description: String!
   id: ID!
+  "Key of the item template this item references, or 'custom'."
+  key: String!
+  "Display name, resolved from the template unless overridden."
   label: String!
+  "Tags associated with the item, merged from the template and any overrides."
   tags: [Tag!]!
+  "The item template this item references. Null for custom items."
   template: ItemTemplate
 }
 
+"A catalog entry that items may reference by key for their default data."
 type ItemTemplate {
+  description: String!
   key: ID!
-  label: ID!
+  label: String!
   tags: [Tag!]!
 }
 

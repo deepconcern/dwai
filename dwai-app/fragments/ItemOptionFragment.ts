@@ -1,7 +1,7 @@
 import { graphql } from "@/gql";
 
-export const GearItemFragment = graphql(`
-  fragment GearItemFragment on GearItem {
+export const ItemOptionFragment = graphql(`
+  fragment ItemOptionFragment on ItemOption {
     count
     description
     key

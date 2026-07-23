@@ -19,6 +19,7 @@ INSERT INTO characters (
         charisma,
         constitution,
         dexterity,
+        gold,
         hit_points,
         intelligence,
         name,
@@ -38,7 +39,8 @@ VALUES (
         $9,
         $10,
         $11,
-        $12
+        $12,
+        $13
     )
 RETURNING id
 `
@@ -50,6 +52,7 @@ type InsertCharacterParams struct {
 	Charisma             int32
 	Constitution         int32
 	Dexterity            int32
+	Gold                 int32
 	HitPoints            int32
 	Intelligence         int32
 	Name                 string
@@ -66,6 +69,7 @@ func (q *Queries) InsertCharacter(ctx context.Context, arg InsertCharacterParams
 		arg.Charisma,
 		arg.Constitution,
 		arg.Dexterity,
+		arg.Gold,
 		arg.HitPoints,
 		arg.Intelligence,
 		arg.Name,

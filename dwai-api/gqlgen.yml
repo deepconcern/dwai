@@ -207,6 +207,8 @@ models:
         resolver: true
       classMoves:
         resolver: true
+      equipment:
+        resolver: true
       looks:
         resolver: true
       raceMove:

@@ -15,7 +15,7 @@ import (
 type Resolver struct {
 	CharacterClasses *models.CharacterClassMap
 	DbPool           *pgxpool.Pool
-	Equipment        *models.EquipmentMap
+	ItemTemplates    *models.ItemTemplateMap
 	Loaders          *models.Loaders
 	LookTypes        *models.LookTypeMap
 	PlayerMoves      *models.MoveMap

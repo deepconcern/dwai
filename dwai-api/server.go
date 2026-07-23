@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/deepconcern/dwai/dwai-api/graph"
+	"github.com/deepconcern/dwai/dwai-api/internal/migrate"
 	"github.com/deepconcern/dwai/dwai-api/models"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5"
@@ -72,9 +73,18 @@ func main() {
 		port = defaultPort
 	}
 
-	// Init database connection (and register UUID type)
+	// Apply database migrations
 
 	database_url := os.Getenv("DATABASE_URL")
+
+	slog.Info("applying database migrations")
+	if err := migrate.Up(database_url); err != nil {
+		slog.Error("Error applying database migrations", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("database migrations up to date")
+
+	// Init database connection (and register UUID type)
 
 	dbconfig, err := pgxpool.ParseConfig(database_url)
 	if err != nil {
@@ -99,7 +109,7 @@ func main() {
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		CharacterClasses: models.LoadCharacterClasses(),
 		DbPool:           pool,
-		Equipment:        models.LoadEquipment(),
+		ItemTemplates:    models.LoadItemTemplates(),
 		Loaders:          models.NewLoaders(pool),
 		LookTypes:        models.LoadLookTypes(),
 		PlayerMoves:      models.LoadPlayerMoves(),

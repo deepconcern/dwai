@@ -18,6 +18,18 @@ export const CharacterFragment = graphql(`
     classMoves {
       ...MoveFragment
     }
+    equipment {
+      count
+      description
+      id
+      key
+      label
+      tags {
+        key
+        name
+        quantity
+      }
+    }
     hitPoints
     id
     looks {

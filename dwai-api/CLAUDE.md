@@ -106,9 +106,18 @@ Monster stat blocks in `data/monsters/` are reference material (not currently se
 | `data/spells/wizard_spells.yaml` | Wizard spell list                  | _(future `Spell` type)_        |
 | `data/spells/cleric_spells.yaml` | Cleric spell list                  | _(future `Spell` type)_        |
 | `data/monsters/*.yaml`           | Monster compendium                 | _(reference only, not seeded)_ |
-| `data/equipment.yaml`            | Items, weapons, armor, magic items | _(reference only, not seeded)_ |
+| `data/item_templates.yaml`       | Items, weapons, armor, magic items | `ItemTemplate` — referenced by key from `StartingGear`'s `ItemOption`s and from a character's owned `Item`s |
 | `data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
 | `data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
 | `data/hirelings.yaml`            | Hireling rules and types           | _(reference only)_             |
 
 Class moves (`race_moves`, `starting_moves`, `advanced_moves_*`) are seeded as `Move` records and linked to their `CharacterClass`. The `key` field on all entities uses `snake_case` derived from the name (e.g., `hack_and_slash`, `fighter`).
+
+## Database Migrations
+
+Migrations live in `sql/migrations` as `NNNN_description.up.sql` / `.down.sql` pairs, applied automatically on server startup via `golang-migrate` (see `internal/migrate`). It tracks applied versions in a `schema_migrations` table, keyed by filename.
+
+- **Migration still unmerged (in progress on a branch)**: edit the current `NNNN_*.up.sql`/`.down.sql` pair in place rather than adding a new numbered pair for every incremental change requested during the same feature.
+- **Migration already merged to `main`**: treat it as immutable. Add a new sequentially-numbered migration for further schema changes, even small ones — editing an already-merged migration desyncs any database that already applied it from what the file now says.
+
+When in doubt about which bucket a migration falls into, check whether it's only present on the current branch (`git log main.. -- sql/migrations`) or already on `main`.

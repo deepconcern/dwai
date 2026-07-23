@@ -18,6 +18,7 @@ SELECT character_class_key,
     charisma,
     constitution,
     dexterity,
+    gold,
     hit_points,
     id,
     intelligence,
@@ -36,6 +37,7 @@ type LoadCharactersRow struct {
 	Charisma             int32
 	Constitution         int32
 	Dexterity            int32
+	Gold                 int32
 	HitPoints            int32
 	ID                   pgtype.UUID
 	Intelligence         int32
@@ -61,6 +63,7 @@ func (q *Queries) LoadCharacters(ctx context.Context, dollar_1 []pgtype.UUID) ([
 			&i.Charisma,
 			&i.Constitution,
 			&i.Dexterity,
+			&i.Gold,
 			&i.HitPoints,
 			&i.ID,
 			&i.Intelligence,

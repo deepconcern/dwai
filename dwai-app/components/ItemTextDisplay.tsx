@@ -1,14 +1,14 @@
 import { FC } from "react";
 
-import { GearItemFragment } from "@/fragments/GearItemFragment";
+import { ItemOptionFragment } from "@/fragments/ItemOptionFragment";
 import { FragmentType, useFragment } from "@/gql";
 
 export type ItemTextDisplayProps = {
-  item: FragmentType<typeof GearItemFragment>;
+  item: FragmentType<typeof ItemOptionFragment>;
 };
 
 export const ItemTextDisplay: FC<ItemTextDisplayProps> = ({ item: i }) => {
-  const item = useFragment(GearItemFragment, i);
+  const item = useFragment(ItemOptionFragment, i);
 
   let text = item.label;
 

@@ -49,6 +49,10 @@ type Character struct {
 	CharacterClass *CharacterClass `json:"characterClass"`
 	// Moves available to the character based on their class and choices
 	ClassMoves []*Move `json:"classMoves"`
+	// Items owned by the character.
+	Equipment []*Item `json:"equipment"`
+	// Coins the character is carrying, tracked separately from equipment.
+	Gold int32 `json:"gold"`
 	// The character's current HP.
 	HitPoints int32 `json:"hitPoints"`
 	// Unique identifier for the character.
@@ -109,6 +113,8 @@ type CreateCharacterInput struct {
 	AlignmentDescription string `json:"alignmentDescription"`
 	// The key of the character's class (e.g. 'fighter').
 	CharacterClassKey string `json:"characterClassKey"`
+	// The player's picks from each of the class's starting-gear option groups.
+	GearOptionChoices []*GearOptionChoiceInput `json:"gearOptionChoices"`
 	// One look selection per look type.
 	Looks []*NewLookInput `json:"looks"`
 	// Choices made for moves that have creation options (e.g. Signature Weapon).
@@ -165,18 +171,12 @@ type GameQuery struct {
 	ByID *Game `json:"byId,omitempty"`
 }
 
-// A single item in a character's starting gear. Exactly one of key, base, or label will be set to identify the item.
-type GearItem struct {
-	// Quantity of a stackable resource (e.g. coins) spent as a whole unit.
-	Count int32 `json:"count"`
-	// Flavour or rules text for custom items.
-	Description string `json:"description"`
-	// Key of a common item in equipment.yaml. Set for plain key references.
-	Key string `json:"key"`
-	// Display name for custom or inherited items.
-	Label string `json:"label"`
-	// Tags associated with the item
-	Tags []*Tag `json:"tags"`
+// A player's picks from one of a class's starting-gear pick-N option groups.
+type GearOptionChoiceInput struct {
+	// Indices into options[optionIndex].choices that the player picked.
+	ChoiceIndices []int32 `json:"choiceIndices"`
+	// Index into the class's StartingGear.options.
+	OptionIndex int32 `json:"optionIndex"`
 }
 
 // A pick-N group of gear choices presented to the player during character creation.
@@ -184,7 +184,46 @@ type GearOptionGroup struct {
 	// How many choices the player picks from this group.
 	Pick int32 `json:"pick"`
 	// The available choices.
-	Choices [][]*GearItem `json:"choices"`
+	Choices [][]*ItemOption `json:"choices"`
+}
+
+// An item owned by a character. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth.
+type Item struct {
+	// Quantity of a stackable resource (e.g. coins) spent as a whole unit.
+	Count int32 `json:"count"`
+	// Flavour or rules text, resolved from the template unless overridden.
+	Description string `json:"description"`
+	ID          string `json:"id"`
+	// Key of the item template this item references, or 'custom'.
+	Key string `json:"key"`
+	// Display name, resolved from the template unless overridden.
+	Label string `json:"label"`
+	// Tags associated with the item, merged from the template and any overrides.
+	Tags []*Tag `json:"tags"`
+	// The item template this item references. Null for custom items.
+	Template *ItemTemplate `json:"template,omitempty"`
+}
+
+// A single item choice in a class's starting gear — not yet an owned Item. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth.
+type ItemOption struct {
+	// Quantity of a stackable resource (e.g. coins) spent as a whole unit.
+	Count int32 `json:"count"`
+	// Flavour or rules text, resolved from the template unless overridden.
+	Description string `json:"description"`
+	// Key of the item template this option references, or 'custom'.
+	Key string `json:"key"`
+	// Display name, resolved from the template unless overridden.
+	Label string `json:"label"`
+	// Tags associated with the item, merged from the template and any overrides.
+	Tags []*Tag `json:"tags"`
+}
+
+// A catalog entry that items may reference by key for their default data.
+type ItemTemplate struct {
+	Description string `json:"description"`
+	Key         string `json:"key"`
+	Label       string `json:"label"`
+	Tags        []*Tag `json:"tags"`
 }
 
 // A single appearance choice made for a character.
@@ -336,7 +375,7 @@ type StartingGear struct {
 	// Base load capacity before applying Constitution modifier.
 	LoadBase int32 `json:"loadBase"`
 	// Items every character of this class receives automatically.
-	Default []*GearItem `json:"default"`
+	Default []*ItemOption `json:"default"`
 	// Pick-N option groups the player chooses from during character creation.
 	Options []*GearOptionGroup `json:"options"`
 }

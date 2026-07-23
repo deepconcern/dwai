@@ -44,7 +44,10 @@ type Character {
   characterClass: CharacterClass!
   "Moves available to the character based on their class and choices"
   classMoves: [Move!]!
-  equipment: Int!
+  "Items owned by the character."
+  equipment: [Item!]!
+  "Coins the character is carrying, tracked separately from equipment."
+  gold: Int!
   "The character's current HP."
   hitPoints: Int!
   "Unique identifier for the character."
@@ -88,6 +91,8 @@ input CreateCharacterInput {
   alignmentDescription: String!
   "The key of the character's class (e.g. 'fighter')."
   characterClassKey: String!
+  "The player's picks from each of the class's starting-gear option groups."
+  gearOptionChoices: [GearOptionChoiceInput!]!
   "One look selection per look type."
   looks: [NewLookInput!]!
   "Choices made for moves that have creation options (e.g. Signature Weapon)."
@@ -114,6 +119,14 @@ input MoveCreationOptionChoiceInput {
   moveKey: String!
   "The key of the selected option."
   optionKey: String!
+}
+
+"A player's picks from one of a class's starting-gear pick-N option groups."
+input GearOptionChoiceInput {
+  "Indices into options[optionIndex].choices that the player picked."
+  choiceIndices: [Int!]!
+  "Index into the class's StartingGear.options."
+  optionIndex: Int!
 }
 
 "Namespace for character queries."

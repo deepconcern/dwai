@@ -5,6 +5,7 @@ CREATE TABLE characters (
     charisma INT NOT NULL,
     constitution INT NOT NULL,
     dexterity INT NOT NULL,
+    gold INT NOT NULL DEFAULT 0,
     hit_points INT NOT NULL,
     id UUID PRIMARY KEY DEFAULT uuidv7 (),
     intelligence INT NOT NULL,

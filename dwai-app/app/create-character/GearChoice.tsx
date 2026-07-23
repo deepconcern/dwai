@@ -1,12 +1,12 @@
 import { ItemTextDisplay } from "@/components/ItemTextDisplay";
 import { List } from "@/components/List";
 import { SelectableArea } from "@/components/SelectableArea";
-import { GearItemFragment } from "@/fragments/GearItemFragment";
+import { ItemOptionFragment } from "@/fragments/ItemOptionFragment";
 import { FragmentType } from "@/gql";
 
 export type GearChoiceProps = {
   choiceIndex: number;
-  choices: FragmentType<typeof GearItemFragment>[][];
+  choices: FragmentType<typeof ItemOptionFragment>[][];
   onChange?: (choiceIndex: number, selected: number[]) => void;
   pick: number;
   selected?: number[] | null;

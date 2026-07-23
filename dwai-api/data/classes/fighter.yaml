@@ -79,40 +79,77 @@ starting_moves:
         choices:
           - key: sword
             label: Sword
+            tags:
+              - key: weight
+                quantity: 2
           - key: axe
             label: Axe
+            tags:
+              - key: weight
+                quantity: 2
           - key: hammer
             label: Hammer
+            tags:
+              - key: weight
+                quantity: 2
           - key: spear
             label: Spear
+            tags:
+              - key: weight
+                quantity: 2
           - key: flail
             label: Flail
+            tags:
+              - key: weight
+                quantity: 2
           - key: fists
             label: Fists
+            tags:
+              - key: weight
+                quantity: 2
       - label: Range
         pick: 1
         choices:
           - key: hand
             label: Hand
+            tags:
+              - hand
           - key: close
             label: Close
+            tags:
+              - close
           - key: reach
             label: Reach
+            tags:
+              - reach
       - label: Enhancements
         pick: 2
         choices:
           - key: hooks_and_spikes
             label: Hooks and spikes
             description: +1 damage, but +1 weight.
+            tags:
+              - key: damage_bonus
+                quantity: 1
+              - key: weight
+                quantity: 1
           - key: sharp
             label: Sharp
             description: +2 piercing.
+            tags:
+              - key: piercing
+                quantity: 2
           - key: perfectly_weighted
             label: Perfectly weighted
             description: Add precise.
+            tags:
+              - precise
           - key: serrated_edges
             label: Serrated edges
             description: +1 damage.
+            tags:
+              - key: damage_bonus
+                quantity: 1
           - key: glows
             label: Glows
             description: Glows in the presence of one type of creature, your choice.
@@ -125,6 +162,9 @@ starting_moves:
           - key: well_crafted
             label: Well-crafted
             description: -1 weight.
+            tags:
+              - key: weight
+                quantity: -1
       - label: Look
         pick: 1
         choices:
@@ -149,7 +189,8 @@ starting_gear:
   load_base: 12
   default:
     - label: Signature weapon
-      description: The weapon you customized above.
+      description: Your signature weapon.
+      special: signature_weapon
     - key: dungeon_rations
       uses: 5
   options:
@@ -167,8 +208,7 @@ starting_gear:
           - key: dungeon_rations
             uses: 5
           - poultices_and_herbs
-        - - label: 22 coins
-            count: 22
+        - - gold: 22
 bonds:
   - _______________ owes me their life, whether they admit it or not.
   - I have sworn to protect _______________.

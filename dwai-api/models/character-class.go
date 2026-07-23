@@ -27,6 +27,11 @@ type MoveCreationChoiceModel struct {
 	Key         string
 	Label       string
 	Description *string
+	// Tags are the mechanical effects of picking this choice (e.g. a
+	// Signature Weapon base's weight, or an enhancement's damage bonus).
+	// Optional: choices that are purely flavour (a Look) or that don't yet
+	// have a tag-catalog equivalent (see tags.yaml) leave this nil.
+	Tags []*TagModel
 }
 
 // MoveCreationOptionGroupModel maps to the YAML creation_options[] entry.
@@ -34,6 +39,26 @@ type MoveCreationOptionGroupModel struct {
 	Label   string
 	Pick    int32
 	Choices []*MoveCreationChoiceModel
+}
+
+// BuildMoveChoiceMap groups move creation option choices — from either a
+// CreateCharacterInput or persisted db.MoveCreationOptionChoice rows — by
+// move key and creation-option group index, for looking up what a player
+// picked. keyOf extracts (moveKey, choiceIndex, optionKey) from each item so
+// callers with different row types don't need to duplicate the grouping.
+func BuildMoveChoiceMap[T any](items []T, keyOf func(T) (moveKey string, choiceIndex int32, optionKey string)) map[string]map[int32][]string {
+	choiceMap := make(map[string]map[int32][]string)
+
+	for _, item := range items {
+		moveKey, choiceIndex, optionKey := keyOf(item)
+
+		if choiceMap[moveKey] == nil {
+			choiceMap[moveKey] = make(map[int32][]string)
+		}
+		choiceMap[moveKey][choiceIndex] = append(choiceMap[moveKey][choiceIndex], optionKey)
+	}
+
+	return choiceMap
 }
 
 // ClassMoveModel extends MoveModel with creation_options used only in class files.

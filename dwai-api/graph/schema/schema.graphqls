@@ -28,6 +28,8 @@ type Mutation {
   characters: CharacterMutation!
   "Mutations for active games."
   games: GameMutation!
+  "Mutations for items owned by characters."
+  items: ItemMutation!
   "Mutations for in-game messages."
   messages: MessageMutation!
 }

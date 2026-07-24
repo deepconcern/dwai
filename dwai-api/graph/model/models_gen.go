@@ -194,6 +194,8 @@ type Item struct {
 	// Flavour or rules text, resolved from the template unless overridden.
 	Description string `json:"description"`
 	ID          string `json:"id"`
+	// Whether the character currently has this item worn (only meaningful for items with the 'worn' tag, e.g. armor).
+	IsWorn bool `json:"isWorn"`
 	// Key of the item template this item references, or 'custom'.
 	Key string `json:"key"`
 	// Display name, resolved from the template unless overridden.
@@ -202,6 +204,12 @@ type Item struct {
 	Tags []*Tag `json:"tags"`
 	// The item template this item references. Null for custom items.
 	Template *ItemTemplate `json:"template,omitempty"`
+}
+
+// Namespace for item mutations.
+type ItemMutation struct {
+	// Sets whether an item is currently worn and returns the updated item.
+	SetWorn *Item `json:"setWorn"`
 }
 
 // A single item choice in a class's starting gear — not yet an owned Item. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth.

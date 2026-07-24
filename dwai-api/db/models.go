@@ -30,6 +30,7 @@ type Item struct {
 	Count       int32
 	Description pgtype.Text
 	ID          int32
+	IsWorn      bool
 	Key         string
 	Label       pgtype.Text
 }

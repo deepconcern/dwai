@@ -5,6 +5,8 @@ type Item {
   "Flavour or rules text, resolved from the template unless overridden."
   description: String!
   id: ID!
+  "Whether the character currently has this item worn (only meaningful for items with the 'worn' tag, e.g. armor)."
+  isWorn: Boolean!
   "Key of the item template this item references, or 'custom'."
   key: String!
   "Display name, resolved from the template unless overridden."
@@ -21,6 +23,12 @@ type ItemTemplate {
   key: ID!
   label: String!
   tags: [Tag!]!
+}
+
+"Namespace for item mutations."
+type ItemMutation {
+  "Sets whether an item is currently worn and returns the updated item."
+  setWorn(id: ID!, worn: Boolean!): Item!
 }
 
 "A tag describing a property of an equipment item. Simple tags (e.g. 'close', 'worn') have no quantity; quantified tags (e.g. cost, weight, armor) carry a numeric value."

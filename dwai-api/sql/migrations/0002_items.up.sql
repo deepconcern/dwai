@@ -3,6 +3,7 @@ CREATE TABLE items (
     count INT NOT NULL DEFAULT 1,
     description TEXT,
     id SERIAL PRIMARY KEY,
+    is_worn BOOLEAN NOT NULL DEFAULT false,
     key TEXT NOT NULL DEFAULT 'custom',
     label TEXT
 );

@@ -9,7 +9,7 @@ export type EquipmentTabProps = {
 export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
   return (
     <div className="flex flex-col space-y-4">
-      <p>Gold: ??</p>
+      <p>Gold: {character.gold}</p>
       <table className="border border-collapse table-fixed">
         <thead>
           <tr>

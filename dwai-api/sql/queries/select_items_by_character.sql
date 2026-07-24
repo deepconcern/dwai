@@ -3,6 +3,7 @@ SELECT character_id,
     count,
     description,
     id,
+    is_worn,
     key,
     label
 FROM items

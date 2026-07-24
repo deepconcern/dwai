@@ -36,6 +36,7 @@ type ResolverRoot interface {
 	CharacterClassQuery() CharacterClassQueryResolver
 	CharacterMutation() CharacterMutationResolver
 	CharacterQuery() CharacterQueryResolver
+	ItemMutation() ItemMutationResolver
 	Look() LookResolver
 	LookTypeQuery() LookTypeQueryResolver
 	MoveQuery() MoveQueryResolver
@@ -137,10 +138,15 @@ type ComplexityRoot struct {
 		Count       func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		IsWorn      func(childComplexity int) int
 		Key         func(childComplexity int) int
 		Label       func(childComplexity int) int
 		Tags        func(childComplexity int) int
 		Template    func(childComplexity int) int
+	}
+
+	ItemMutation struct {
+		SetWorn func(childComplexity int, id string, worn bool) int
 	}
 
 	ItemOption struct {
@@ -226,6 +232,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		Characters func(childComplexity int) int
 		Games      func(childComplexity int) int
+		Items      func(childComplexity int) int
 		Messages   func(childComplexity int) int
 	}
 
@@ -290,6 +297,9 @@ type CharacterQueryResolver interface {
 	All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error)
 	ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error)
 }
+type ItemMutationResolver interface {
+	SetWorn(ctx context.Context, obj *model.ItemMutation, id string, worn bool) (*model.Item, error)
+}
 type LookResolver interface {
 	LookType(ctx context.Context, obj *model.Look) (*model.LookType, error)
 }
@@ -304,6 +314,7 @@ type MoveQueryResolver interface {
 type MutationResolver interface {
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
 	Games(ctx context.Context) (*model.GameMutation, error)
+	Items(ctx context.Context) (*model.ItemMutation, error)
 	Messages(ctx context.Context) (*model.MessageMutation, error)
 }
 type QueryResolver interface {
@@ -669,6 +680,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Item.ID(childComplexity), true
+	case "Item.isWorn":
+		if e.ComplexityRoot.Item.IsWorn == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Item.IsWorn(childComplexity), true
 	case "Item.key":
 		if e.ComplexityRoot.Item.Key == nil {
 			break
@@ -693,6 +710,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Item.Template(childComplexity), true
+
+	case "ItemMutation.setWorn":
+		if e.ComplexityRoot.ItemMutation.SetWorn == nil {
+			break
+		}
+
+		args, err := ec.field_ItemMutation_setWorn_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.ItemMutation.SetWorn(childComplexity, args["id"].(string), args["worn"].(bool)), true
 
 	case "ItemOption.count":
 		if e.ComplexityRoot.ItemOption.Count == nil {
@@ -997,6 +1026,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.Games(childComplexity), true
+	case "Mutation.items":
+		if e.ComplexityRoot.Mutation.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Mutation.Items(childComplexity), true
 	case "Mutation.messages":
 		if e.ComplexityRoot.Mutation.Messages == nil {
 			break
@@ -1424,6 +1459,8 @@ func (ec *executionContext) childFields_Item(ctx context.Context, field graphql.
 		return ec.fieldContext_Item_description(ctx, field)
 	case "id":
 		return ec.fieldContext_Item_id(ctx, field)
+	case "isWorn":
+		return ec.fieldContext_Item_isWorn(ctx, field)
 	case "key":
 		return ec.fieldContext_Item_key(ctx, field)
 	case "label":
@@ -1434,6 +1471,14 @@ func (ec *executionContext) childFields_Item(ctx context.Context, field graphql.
 		return ec.fieldContext_Item_template(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
+}
+
+func (ec *executionContext) childFields_ItemMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "setWorn":
+		return ec.fieldContext_ItemMutation_setWorn(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ItemMutation", field.Name)
 }
 
 func (ec *executionContext) childFields_ItemOption(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1827,6 +1872,28 @@ func (ec *executionContext) field_GameQuery_byId_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_ItemMutation_setWorn_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "worn",
+		func(ctx context.Context, v any) (bool, error) {
+			return ec.unmarshalNBoolean2bool(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["worn"] = arg1
 	return args, nil
 }
 
@@ -3361,6 +3428,29 @@ func (ec *executionContext) fieldContext_Item_id(_ context.Context, field graphq
 	return graphql.NewScalarFieldContext("Item", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Item_isWorn(ctx context.Context, field graphql.CollectedField, obj *model.Item) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Item_isWorn(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IsWorn, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Item_isWorn(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Item", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
 func (ec *executionContext) _Item_key(ctx context.Context, field graphql.CollectedField, obj *model.Item) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3467,6 +3557,50 @@ func (ec *executionContext) fieldContext_Item_template(_ context.Context, field 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_ItemTemplate(ctx, field)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ItemMutation_setWorn(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemMutation_setWorn(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.ItemMutation().SetWorn(ctx, obj, fc.Args["id"].(string), fc.Args["worn"].(bool))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Item) graphql.Marshaler {
+			return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemMutation_setWorn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ItemMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Item(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ItemMutation_setWorn_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4676,6 +4810,38 @@ func (ec *executionContext) fieldContext_Mutation_games(_ context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_GameMutation(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_items(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Mutation().Items(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ItemMutation) graphql.Marshaler {
+			return ec.marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ItemMutation(ctx, field)
 		},
 	}
 	return fc, nil
@@ -7716,6 +7882,11 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isWorn":
+			out.Values[i] = ec._Item_isWorn(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "key":
 			out.Values[i] = ec._Item_key(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7733,6 +7904,76 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "template":
 			out.Values[i] = ec._Item_template(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var itemMutationImplementors = []string{"ItemMutation"}
+
+func (ec *executionContext) _ItemMutation(ctx context.Context, sel ast.SelectionSet, obj *model.ItemMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, itemMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ItemMutation")
+		case "setWorn":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ItemMutation_setWorn(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8544,6 +8785,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "games":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_games(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "items":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_items(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -9759,6 +10007,10 @@ func (ec *executionContext) marshalNInt2ᚕint32ᚄ(ctx context.Context, sel ast
 	return ret
 }
 
+func (ec *executionContext) marshalNItem2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v model.Item) graphql.Marshaler {
+	return ec._Item(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Item) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -9783,6 +10035,20 @@ func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 		return graphql.Null
 	}
 	return ec._Item(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNItemMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v model.ItemMutation) graphql.Marshaler {
+	return ec._ItemMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v *model.ItemMutation) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ItemMutation(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*model.ItemOption) graphql.Marshaler {

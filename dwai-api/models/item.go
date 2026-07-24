@@ -47,6 +47,7 @@ func ToItemObject(row *db.Item, tagRows []*db.ItemTag, templates *ItemTemplateMa
 		Count:       row.Count,
 		Description: fields.Description,
 		ID:          strconv.Itoa(int(row.ID)),
+		IsWorn:      row.IsWorn,
 		Key:         row.Key,
 		Label:       fields.Label,
 		Tags:        fields.Tags,

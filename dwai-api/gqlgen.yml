@@ -238,6 +238,11 @@ models:
       byId:
         resolver: true
 
+  ItemMutation:
+    fields:
+      setWorn:
+        resolver: true
+
   Look:
     fields:
       lookType:

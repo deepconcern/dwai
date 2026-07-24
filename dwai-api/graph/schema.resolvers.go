@@ -22,6 +22,11 @@ func (r *mutationResolver) Games(ctx context.Context) (*model.GameMutation, erro
 	return &model.GameMutation{}, nil
 }
 
+// Items is the resolver for the items field.
+func (r *mutationResolver) Items(ctx context.Context) (*model.ItemMutation, error) {
+	return &model.ItemMutation{}, nil
+}
+
 // Messages is the resolver for the messages field.
 func (r *mutationResolver) Messages(ctx context.Context) (*model.MessageMutation, error) {
 	return &model.MessageMutation{}, nil

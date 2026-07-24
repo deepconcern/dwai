@@ -2,6 +2,9 @@ package models
 
 import (
 	"fmt"
+	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
 )
@@ -275,5 +278,73 @@ func (g *StartingGearModel) ResolveItems(ctx StartingGearContext, optionChoices 
 		}
 	}
 
+	resolved.Items = mergeIdenticalItems(resolved.Items)
+
 	return resolved
+}
+
+// mergeIdenticalItems combines resolved items that are identical in every
+// field except Count into a single row with their counts summed — e.g. two
+// "healing_potion" picks from the same choice slot become one item with
+// Count: 2 instead of two separate rows, so the character's inventory has
+// one line with a quantity rather than a duplicate row per pick. Order of
+// first appearance is preserved.
+func mergeIdenticalItems(items []ResolvedStartingItem) []ResolvedStartingItem {
+	type identity struct {
+		Key         string
+		Label       string
+		Description string
+		Tags        string
+	}
+
+	order := make([]identity, 0, len(items))
+	byIdentity := make(map[identity]*ResolvedStartingItem, len(items))
+
+	for _, item := range items {
+		id := identity{
+			Key:         item.Key,
+			Label:       stringOrEmpty(item.Label),
+			Description: stringOrEmpty(item.Description),
+			Tags:        canonicalTagString(item.Tags),
+		}
+
+		if existing, ok := byIdentity[id]; ok {
+			existing.Count += item.Count
+			continue
+		}
+
+		itemCopy := item
+		byIdentity[id] = &itemCopy
+		order = append(order, id)
+	}
+
+	merged := make([]ResolvedStartingItem, len(order))
+	for i, id := range order {
+		merged[i] = *byIdentity[id]
+	}
+
+	return merged
+}
+
+func stringOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// canonicalTagString encodes a tag set order-independently, so two items
+// with the same tags built in a different order (e.g. from
+// mergeTagsAdditive's non-deterministic map iteration) still compare equal.
+func canonicalTagString(tags []*TagModel) string {
+	parts := make([]string, len(tags))
+	for i, t := range tags {
+		quantity := ""
+		if t.Quantity != nil {
+			quantity = strconv.Itoa(int(*t.Quantity))
+		}
+		parts[i] = t.Key + "=" + quantity
+	}
+	slices.Sort(parts)
+	return strings.Join(parts, ",")
 }

@@ -16,6 +16,7 @@ SELECT character_id,
     count,
     description,
     id,
+    is_worn,
     key,
     label
 FROM items
@@ -36,6 +37,7 @@ func (q *Queries) SelectItemsByCharacter(ctx context.Context, dollar_1 pgtype.UU
 			&i.Count,
 			&i.Description,
 			&i.ID,
+			&i.IsWorn,
 			&i.Key,
 			&i.Label,
 		); err != nil {

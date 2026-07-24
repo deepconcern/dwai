@@ -30,6 +30,7 @@ export const CharacterFragment = graphql(`
         quantity
       }
     }
+    gold
     hitPoints
     id
     looks {

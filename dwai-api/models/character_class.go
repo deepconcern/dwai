@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -162,30 +162,32 @@ type LookTypeModel struct {
 
 type LookTypeMap map[string]LookTypeModel
 
-func LoadCharacterClasses() *CharacterClassMap {
+func LoadCharacterClasses() (*CharacterClassMap, error) {
 	dir_path := filepath.Join("data", "classes")
 
 	// Load all the files in the directory
 
 	entries, err := os.ReadDir(dir_path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("read %s: %w", dir_path, err)
 	}
 
 	// Read each file and store in map
 	characterClassMap := make(CharacterClassMap)
 
 	for _, entry := range entries {
-		content, err := os.ReadFile(filepath.Join(dir_path, entry.Name()))
+		path := filepath.Join(dir_path, entry.Name())
+
+		content, err := os.ReadFile(path)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("read %s: %w", path, err)
 		}
 
 		var characterClassData CharacterClassModel
 
 		err = yaml.Unmarshal(content, &characterClassData)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("parse %s: %w", path, err)
 		}
 
 		// Add the key based off of the file name
@@ -194,13 +196,12 @@ func LoadCharacterClasses() *CharacterClassMap {
 		characterClassMap[characterClassData.Key] = characterClassData
 	}
 
-	return &characterClassMap
-
+	return &characterClassMap, nil
 }
 
-func LoadLookTypes() *LookTypeMap {
-	characterClassMap := LoadCharacterClasses()
-
+// NewLookTypeMap collects every look type used by any class, so look types
+// come from the already-loaded class data rather than re-reading the files.
+func NewLookTypeMap(characterClassMap *CharacterClassMap) *LookTypeMap {
 	lookTypeMap := make(LookTypeMap)
 
 	for _, characterClass := range *characterClassMap {

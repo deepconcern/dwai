@@ -15,11 +15,12 @@ type SpecialItemContext struct {
 }
 
 // specialItemFields is what a special item resolver produces: the item's
-// final label/description/tags. Unlike the standard path, these are final,
-// not overrides — a special item has no template to defer to.
+// final label/description/type/tags. Unlike the standard path, these are
+// final, not overrides — a special item has no template to defer to.
 type specialItemFields struct {
 	Label       string
 	Description string
+	Type        string
 	Tags        []*TagModel
 }
 
@@ -87,6 +88,7 @@ func resolveSignatureWeapon(ctx SpecialItemContext, item *ItemOptionModel) speci
 	return specialItemFields{
 		Label:       label,
 		Description: strings.TrimSpace(description.String()),
+		Type:        "weapon",
 		Tags:        mergeTagsAdditive(tagSources...),
 	}
 }

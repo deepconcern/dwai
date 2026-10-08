@@ -33,6 +33,7 @@ type Item struct {
 	IsWorn      bool
 	Key         string
 	Label       pgtype.Text
+	Type        pgtype.Text
 }
 
 type ItemTag struct {

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -48,19 +48,19 @@ func (m *MoveModel) ToObject() *model.Move {
 
 type MoveMap map[string]*MoveModel
 
-func LoadPlayerMoves() *MoveMap {
+func LoadPlayerMoves() (*MoveMap, error) {
 	path := filepath.Join("data", "player_moves.yaml")
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("read %s: %w", path, err)
 	}
 
 	var moveData []*MoveModel
 
 	err = yaml.Unmarshal(content, &moveData)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
 
 	moveMap := make(MoveMap)
@@ -69,5 +69,5 @@ func LoadPlayerMoves() *MoveMap {
 		moveMap[move.Key] = move
 	}
 
-	return &moveMap
+	return &moveMap, nil
 }

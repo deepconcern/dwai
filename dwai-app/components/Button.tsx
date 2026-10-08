@@ -9,7 +9,7 @@ export const Button: FC<ButtonProps> = ({ className, ...rest }) => (
   <button
     className={clsx(
       className,
-      "bg-blue-500 hover:bg-blue-600 inline-block py-2 px-4 rounded text-white",
+      "bg-blue-500 disabled:bg-gray-800 hover:bg-blue-600 inline-block py-2 px-4 rounded text-white",
     )}
     {...rest}
   />

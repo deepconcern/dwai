@@ -12,8 +12,8 @@ import (
 )
 
 const insertItem = `-- name: InsertItem :one
-INSERT INTO items (character_id, count, description, key, label)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO items (character_id, count, description, key, label, type)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id
 `
 
@@ -23,6 +23,7 @@ type InsertItemParams struct {
 	Description pgtype.Text
 	Key         string
 	Label       pgtype.Text
+	Type        pgtype.Text
 }
 
 func (q *Queries) InsertItem(ctx context.Context, arg InsertItemParams) (int32, error) {
@@ -32,6 +33,7 @@ func (q *Queries) InsertItem(ctx context.Context, arg InsertItemParams) (int32, 
 		arg.Description,
 		arg.Key,
 		arg.Label,
+		arg.Type,
 	)
 	var id int32
 	err := row.Scan(&id)

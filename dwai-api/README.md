@@ -10,6 +10,7 @@ Will also read from `.env` files.
 DATABASE_URL=postgres://user:password@localhost:5432/dwai
 HOST=0.0.0.0   # optional, defaults to 0.0.0.0
 PORT=5000      # optional, defaults to 5000
+LOG_LEVEL=info # optional: debug, info, warn, or error
 ```
 
 ## Setup

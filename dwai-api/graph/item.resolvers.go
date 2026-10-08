@@ -29,12 +29,12 @@ func (r *itemMutationResolver) SetWorn(ctx context.Context, obj *model.ItemMutat
 		IsWorn: worn,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to set worn state for item with ID '%d': %w", itemId, err)
+		return nil, fmt.Errorf("failed to set worn state for item with ID '%d': %w", itemId, err)
 	}
 
 	tagRows, err := queries.SelectItemTagsByItems(ctx, []int32{row.ID})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load item tags for item with ID '%d': %w", row.ID, err)
+		return nil, fmt.Errorf("failed to load item tags for item with ID '%d': %w", row.ID, err)
 	}
 
 	tags := make([]*db.ItemTag, len(tagRows))

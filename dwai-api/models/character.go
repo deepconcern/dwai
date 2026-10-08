@@ -56,7 +56,7 @@ func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID
 	if err != nil {
 		errors := make([]error, len(keys))
 		for i := range errors {
-			errors[i] = fmt.Errorf("Failed to load character with ID '%s': %w", keys[i].String(), err)
+			errors[i] = fmt.Errorf("failed to load character with ID '%s': %w", keys[i].String(), err)
 		}
 		return nil, errors
 	}
@@ -89,7 +89,7 @@ func (l *lookLoader) loadLooks(ctx context.Context, keys []int32) ([]*db.Look, [
 	if err != nil {
 		errors := make([]error, len(keys))
 		for i := range errors {
-			errors[i] = fmt.Errorf("Failed to load look with ID '%d': %w", keys[i], err)
+			errors[i] = fmt.Errorf("failed to load look with ID '%d': %w", keys[i], err)
 		}
 		return nil, errors
 	}
@@ -112,7 +112,7 @@ func (m *moveCreationOptionChoiceLoader) loadMoveCreationOptionChoices(ctx conte
 	if err != nil {
 		errors := make([]error, len(keys))
 		for i := range errors {
-			errors[i] = fmt.Errorf("Failed to load move creation option choice with ID '%d': %w", keys[i], err)
+			errors[i] = fmt.Errorf("failed to load move creation option choice with ID '%d': %w", keys[i], err)
 		}
 		return nil, errors
 	}

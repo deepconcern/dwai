@@ -7,7 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint",
+    "test": "bun test",
+    "typecheck": "next typegen && tsc --noEmit -p tsconfig.typecheck.json"
   },
   "dependencies": {
     "@apollo/client": "^4.1.9",
@@ -25,12 +29,13 @@
     "@parcel/watcher": "^2.5.6",
     "@tailwindcss/postcss": "^4",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/bun": "^1.4.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4",
     "typescript": "^6.0.3"
   },

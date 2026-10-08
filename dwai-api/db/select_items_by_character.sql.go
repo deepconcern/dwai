@@ -18,7 +18,8 @@ SELECT character_id,
     id,
     is_worn,
     key,
-    label
+    label,
+    type
 FROM items
 WHERE character_id = $1::uuid
 `
@@ -40,6 +41,7 @@ func (q *Queries) SelectItemsByCharacter(ctx context.Context, dollar_1 pgtype.UU
 			&i.IsWorn,
 			&i.Key,
 			&i.Label,
+			&i.Type,
 		); err != nil {
 			return nil, err
 		}

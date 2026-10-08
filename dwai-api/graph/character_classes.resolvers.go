@@ -38,7 +38,7 @@ func (r *characterClassQueryResolver) ByKey(ctx context.Context, obj *model.Char
 		return c.ToObject(), nil
 	}
 
-	return nil, errors.New("No model found")
+	return nil, errors.New("no model found")
 }
 
 // CharacterClass returns CharacterClassResolver implementation.

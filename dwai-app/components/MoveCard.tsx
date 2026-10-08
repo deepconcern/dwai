@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { FC, useMemo } from "react";
 
 import { MoveFragment } from "@/fragments/MoveFragment";
-import { FragmentType, useFragment } from "@/gql";
+import { FragmentType, unmaskFragment } from "@/gql";
 
 import { ChoiceList } from "./ChoiceList";
 import { List } from "./List";
@@ -21,8 +21,9 @@ export const MoveCard: FC<MoveCardProps> = ({
   selectedOptions,
 }) => {
   const isEditable = Boolean(onChange);
-  const move = useFragment(MoveFragment, moveFragment);
+  const move = unmaskFragment(MoveFragment, moveFragment);
 
+  // eslint-disable-next-line react-hooks/immutability
   selectedOptions = selectedOptions ?? move.creationOptions.map(() => []);
 
   const rollResults = useMemo(() => {

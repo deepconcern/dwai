@@ -19,16 +19,7 @@ export const CharacterFragment = graphql(`
       ...MoveFragment
     }
     equipment {
-      count
-      description
-      id
-      key
-      label
-      tags {
-        key
-        name
-        quantity
-      }
+      ...ItemFragment
     }
     gold
     hitPoints

@@ -32,7 +32,7 @@ func (r *moveQueryResolver) ByKey(ctx context.Context, obj *model.MoveQuery, key
 		return m.ToObject(), nil
 	}
 
-	return nil, errors.New("No model found")
+	return nil, errors.New("no model found")
 }
 
 // ByType is the resolver for the byType field.

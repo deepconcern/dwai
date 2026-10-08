@@ -27,6 +27,11 @@ func ToItemObject(row *db.Item, tagRows []*db.ItemTag, templates *ItemTemplateMa
 		description = &row.Description.String
 	}
 
+	var itemType *string
+	if row.Type.Valid {
+		itemType = &row.Type.String
+	}
+
 	tags := make([]*TagModel, len(tagRows))
 	for i, t := range tagRows {
 		var quantity *int32
@@ -36,7 +41,7 @@ func ToItemObject(row *db.Item, tagRows []*db.ItemTag, templates *ItemTemplateMa
 		tags[i] = &TagModel{Key: t.Key, Quantity: quantity}
 	}
 
-	fields := resolveItemFields(label, description, tags, itemTemplate, td)
+	fields := resolveItemFields(label, description, itemType, tags, itemTemplate, td)
 
 	var templateObj *model.ItemTemplate
 	if itemTemplate != nil {
@@ -52,5 +57,6 @@ func ToItemObject(row *db.Item, tagRows []*db.ItemTag, templates *ItemTemplateMa
 		Label:       fields.Label,
 		Tags:        fields.Tags,
 		Template:    templateObj,
+		Type:        fields.Type,
 	}
 }

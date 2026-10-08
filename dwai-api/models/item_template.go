@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -86,19 +86,19 @@ func (m *ItemTemplateModel) ToObject(td *TagDefinitionMap) *model.ItemTemplate {
 
 type ItemTemplateMap map[string]*ItemTemplateModel
 
-func LoadItemTemplates() *ItemTemplateMap {
+func LoadItemTemplates() (*ItemTemplateMap, error) {
 	path := filepath.Join("data", "item_templates.yaml")
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("read %s: %w", path, err)
 	}
 
 	var itemTemplateData []*ItemTemplateModel
 
 	err = yaml.Unmarshal(content, &itemTemplateData)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
 
 	itemTemplateMap := make(ItemTemplateMap)
@@ -107,14 +107,15 @@ func LoadItemTemplates() *ItemTemplateMap {
 		itemTemplateMap[item.Key] = item
 	}
 
-	return &itemTemplateMap
+	return &itemTemplateMap, nil
 }
 
-// resolvedItemFields is the final label, description, and tag set for an item
-// after merging per-instance overrides on top of an optional template.
+// resolvedItemFields is the final label, description, type, and tag set for
+// an item after merging per-instance overrides on top of an optional template.
 type resolvedItemFields struct {
 	Label       string
 	Description string
+	Type        string
 	Tags        []*model.Tag
 }
 
@@ -125,7 +126,7 @@ type resolvedItemFields struct {
 // by ItemOptionModel (class starting gear, not persisted) and ItemModel (a
 // character's owned equipment, persisted) since both follow the same
 // template-plus-overrides shape.
-func resolveItemFields(label, description *string, tags []*TagModel, t *ItemTemplateModel, td *TagDefinitionMap) resolvedItemFields {
+func resolveItemFields(label, description, itemType *string, tags []*TagModel, t *ItemTemplateModel, td *TagDefinitionMap) resolvedItemFields {
 	resolvedDescription := ""
 	if description != nil {
 		resolvedDescription = *description
@@ -138,6 +139,13 @@ func resolveItemFields(label, description *string, tags []*TagModel, t *ItemTemp
 		resolvedLabel = *label
 	} else if t != nil {
 		resolvedLabel = t.Name
+	}
+
+	resolvedType := ""
+	if itemType != nil {
+		resolvedType = *itemType
+	} else if t != nil {
+		resolvedType = t.Type
 	}
 
 	var templateTags []*TagModel
@@ -154,6 +162,7 @@ func resolveItemFields(label, description *string, tags []*TagModel, t *ItemTemp
 	return resolvedItemFields{
 		Label:       resolvedLabel,
 		Description: resolvedDescription,
+		Type:        resolvedType,
 		Tags:        tagObjects,
 	}
 }

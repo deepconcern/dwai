@@ -7,13 +7,16 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"slices"
 	"strconv"
 
 	"github.com/deepconcern/dwai/dwai-api/db"
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -60,7 +63,7 @@ func (r *characterResolver) CharacterClass(ctx context.Context, obj *model.Chara
 
 	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
 	if !ok {
-		return nil, fmt.Errorf("No class with key '%s'", characterModel.CharacterClassKey)
+		return nil, fmt.Errorf("no class with key '%s'", characterModel.CharacterClassKey)
 	}
 
 	return characterClassModel.ToObject(), nil
@@ -75,14 +78,14 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 
 	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("No character with ID '%s'", uuid.String())
+		return nil, fmt.Errorf("no character with ID '%s': %w", uuid.String(), err)
 	}
 
 	queries := db.New(r.DbPool)
 
 	moveCreationOptionChoices, err := queries.SelectMoveCreationOptionChoicesByCharacter(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load move creation option choices for character with ID '%s': %w", uuid.String(), err)
+		return nil, fmt.Errorf("failed to load move creation option choices for character with ID '%s': %w", uuid.String(), err)
 	}
 
 	mcocMap := models.BuildMoveChoiceMap(moveCreationOptionChoices, func(c db.MoveCreationOptionChoice) (string, int32, string) {
@@ -91,8 +94,7 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 
 	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
 	if !ok {
-		fmt.Printf("%+v\n", characterModel)
-		return nil, fmt.Errorf("No character class with key '%s'", characterModel.CharacterClassKey)
+		return nil, fmt.Errorf("no character class with key '%s'", characterModel.CharacterClassKey)
 	}
 
 	moves := make([]*model.Move, len(characterClassModel.StartingMoves))
@@ -135,7 +137,7 @@ func (r *characterResolver) Equipment(ctx context.Context, obj *model.Character)
 
 	itemRows, err := queries.SelectItemsByCharacter(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load items for character with ID '%s': %w", uuid.String(), err)
+		return nil, fmt.Errorf("failed to load items for character with ID '%s': %w", uuid.String(), err)
 	}
 
 	itemIds := make([]int32, len(itemRows))
@@ -145,7 +147,7 @@ func (r *characterResolver) Equipment(ctx context.Context, obj *model.Character)
 
 	tagRows, err := queries.SelectItemTagsByItems(ctx, itemIds)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load item tags for character with ID '%s': %w", uuid.String(), err)
+		return nil, fmt.Errorf("failed to load item tags for character with ID '%s': %w", uuid.String(), err)
 	}
 
 	tagsByItemId := make(map[int32][]*db.ItemTag, len(itemRows))
@@ -172,7 +174,7 @@ func (r *characterResolver) Looks(ctx context.Context, obj *model.Character) ([]
 
 	rows, err := queries.SelectLooksByCharacter(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load looks for character with ID '%s': %w", uuid.String(), err)
+		return nil, fmt.Errorf("failed to load looks for character with ID '%s': %w", uuid.String(), err)
 	}
 
 	looks := make([]*model.Look, len(rows))
@@ -192,20 +194,19 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 
 	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("No character with ID '%s'", uuid.String())
+		return nil, fmt.Errorf("no character with ID '%s': %w", uuid.String(), err)
 	}
 
 	characterClassModel, ok := (*r.CharacterClasses)[characterModel.CharacterClassKey]
 	if !ok {
-		fmt.Printf("%+v\n", characterModel)
-		return nil, fmt.Errorf("No character class with key '%s'", characterModel.CharacterClassKey)
+		return nil, fmt.Errorf("no character class with key '%s'", characterModel.CharacterClassKey)
 	}
 
 	raceMoveIndex := slices.IndexFunc(characterClassModel.RaceMoves, func(rm *models.ClassMoveModel) bool {
 		return rm.Key == characterModel.RaceMoveKey
 	})
 	if raceMoveIndex == -1 {
-		return nil, fmt.Errorf("No race move with key '%s'", characterModel.RaceMoveKey)
+		return nil, fmt.Errorf("no race move with key '%s'", characterModel.RaceMoveKey)
 	}
 
 	return characterClassModel.RaceMoves[raceMoveIndex].ToObject(), nil
@@ -234,7 +235,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 
 	characterClassModel, ok := (*r.CharacterClasses)[input.CharacterClassKey]
 	if !ok {
-		return nil, fmt.Errorf("No class with key '%s'", input.CharacterClassKey)
+		return nil, fmt.Errorf("no class with key '%s'", input.CharacterClassKey)
 	}
 
 	// Get initial hit points
@@ -259,9 +260,14 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 	// Run all inserts in a single transaction.
 	tx, err := r.DbPool.Begin(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to begin transaction: %w", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		// Rollback after a successful commit returns ErrTxClosed; anything else is a real failure.
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to roll back character creation", "error", err)
+		}
+	}()
 
 	queries := db.New(tx)
 
@@ -282,7 +288,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		Wisdom:               wisdom,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to insert character: %w", err)
+		return nil, fmt.Errorf("failed to insert character: %w", err)
 	}
 
 	// Insert looks.
@@ -293,7 +299,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 			LookType:    look.LookTypeKey,
 			Value:       look.Value,
 		}); err != nil {
-			return nil, fmt.Errorf("Failed to insert look: %w", err)
+			return nil, fmt.Errorf("failed to insert look: %w", err)
 		}
 	}
 
@@ -305,7 +311,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 			MoveKey:     choice.MoveKey,
 			OptionKey:   choice.OptionKey,
 		}); err != nil {
-			return nil, fmt.Errorf("Failed to insert move creation option choice: %w", err)
+			return nil, fmt.Errorf("failed to insert move creation option choice: %w", err)
 		}
 	}
 
@@ -313,12 +319,15 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 	// row above).
 
 	for _, item := range startingGear.Items {
-		var label, description pgtype.Text
+		var label, description, itemType pgtype.Text
 		if item.Label != nil {
 			label = pgtype.Text{String: *item.Label, Valid: true}
 		}
 		if item.Description != nil {
 			description = pgtype.Text{String: *item.Description, Valid: true}
+		}
+		if item.Type != nil {
+			itemType = pgtype.Text{String: *item.Type, Valid: true}
 		}
 
 		itemId, err := queries.InsertItem(ctx, db.InsertItemParams{
@@ -327,9 +336,10 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 			Description: description,
 			Key:         item.Key,
 			Label:       label,
+			Type:        itemType,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("Failed to insert item: %w", err)
+			return nil, fmt.Errorf("failed to insert item: %w", err)
 		}
 
 		for _, tag := range item.Tags {
@@ -343,18 +353,18 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 				Key:      tag.Key,
 				Quantity: quantity,
 			}); err != nil {
-				return nil, fmt.Errorf("Failed to insert item tag: %w", err)
+				return nil, fmt.Errorf("failed to insert item tag: %w", err)
 			}
 		}
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("Failed to commit transaction: %w", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, characterId)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load character with ID '%s' after creation: %w", characterId, err)
+		return nil, fmt.Errorf("failed to load character with ID '%s' after creation: %w", characterId, err)
 	}
 
 	return models.ToCharacterObject(characterModel), nil

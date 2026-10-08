@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,19 +17,19 @@ type TagDefinition struct {
 
 type TagDefinitionMap map[string]*TagDefinition
 
-func LoadTags() *TagDefinitionMap {
+func LoadTags() (*TagDefinitionMap, error) {
 	path := filepath.Join("data", "tags.yaml")
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("read %s: %w", path, err)
 	}
 
 	var tagData []*TagDefinition
 
 	err = yaml.Unmarshal(content, &tagData)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
 
 	tagMap := make(TagDefinitionMap)
@@ -38,5 +38,5 @@ func LoadTags() *TagDefinitionMap {
 		tagMap[tag.Key] = tag
 	}
 
-	return &tagMap
+	return &tagMap, nil
 }

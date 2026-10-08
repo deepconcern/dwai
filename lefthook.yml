@@ -1,0 +1,40 @@
+# Git hooks. Install with `lefthook install` after cloning.
+# Each command only runs when matching files are staged/pushed.
+
+pre-commit:
+  parallel: true
+  commands:
+    api-format:
+      root: "dwai-api/"
+      glob: "*.go"
+      run: golangci-lint fmt {staged_files}
+      stage_fixed: true
+    app-format:
+      root: "dwai-app/"
+      glob: "*.{css,js,json,md,mjs,ts,tsx}"
+      run: bunx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+
+    # Go is linted per package, so lint the whole module if any Go file changed.
+    api-lint:
+      root: "dwai-api/"
+      glob: "*.go"
+      run: golangci-lint run ./...
+    app-lint:
+      root: "dwai-app/"
+      glob: "*.{js,mjs,ts,tsx}"
+      run: bunx eslint --no-warn-ignored {staged_files}
+    app-typecheck:
+      root: "dwai-app/"
+      glob: "*.{ts,tsx}"
+      run: bun run typecheck
+
+pre-push:
+  parallel: true
+  commands:
+    api-test:
+      root: "dwai-api/"
+      run: go test ./...
+    app-test:
+      root: "dwai-app/"
+      run: bun test

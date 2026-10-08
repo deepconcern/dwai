@@ -7,6 +7,13 @@ const config: CodegenConfig = {
   generates: {
     "gql/": {
       preset: "client",
+      presetConfig: {
+        fragmentMasking: {
+          // Default name is `useFragment`, which eslint-plugin-react-hooks
+          // treats as a hook (it's not one) purely because of the name.
+          unmaskFunctionName: "unmaskFragment",
+        },
+      },
       plugins: [],
     },
   },

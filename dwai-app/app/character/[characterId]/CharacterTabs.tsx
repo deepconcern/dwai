@@ -52,7 +52,7 @@ export const CharacterTabs: FC<CharacterTabsProps> = ({
         tab: "equipment",
       },
     ],
-    [character],
+    [basicMoves, character, specialMoves],
   );
 
   return (

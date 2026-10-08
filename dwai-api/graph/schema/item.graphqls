@@ -15,6 +15,8 @@ type Item {
   tags: [Tag!]!
   "The item template this item references. Null for custom items."
   template: ItemTemplate
+  "Category of item (e.g. 'weapon', 'armor', 'shield'), resolved from the template unless overridden. Empty if unset."
+  type: String!
 }
 
 "A catalog entry that items may reference by key for their default data."

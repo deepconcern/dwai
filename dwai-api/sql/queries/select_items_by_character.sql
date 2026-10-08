@@ -5,6 +5,7 @@ SELECT character_id,
     id,
     is_worn,
     key,
-    label
+    label,
+    type
 FROM items
 WHERE character_id = $1::uuid;

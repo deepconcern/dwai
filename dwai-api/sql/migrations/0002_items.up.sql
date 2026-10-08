@@ -5,7 +5,8 @@ CREATE TABLE items (
     id SERIAL PRIMARY KEY,
     is_worn BOOLEAN NOT NULL DEFAULT false,
     key TEXT NOT NULL DEFAULT 'custom',
-    label TEXT
+    label TEXT,
+    type TEXT
 );
 CREATE TABLE item_tags (
     id SERIAL PRIMARY KEY,

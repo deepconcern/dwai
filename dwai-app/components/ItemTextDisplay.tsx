@@ -1,14 +1,14 @@
 import { FC } from "react";
 
 import { ItemOptionFragment } from "@/fragments/ItemOptionFragment";
-import { FragmentType, useFragment } from "@/gql";
+import { FragmentType, unmaskFragment } from "@/gql";
 
 export type ItemTextDisplayProps = {
   item: FragmentType<typeof ItemOptionFragment>;
 };
 
 export const ItemTextDisplay: FC<ItemTextDisplayProps> = ({ item: i }) => {
-  const item = useFragment(ItemOptionFragment, i);
+  const item = unmaskFragment(ItemOptionFragment, i);
 
   let text = item.label;
 

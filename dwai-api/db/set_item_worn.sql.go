@@ -13,7 +13,7 @@ const setItemWorn = `-- name: SetItemWorn :one
 UPDATE items
 SET is_worn = $2
 WHERE id = $1
-RETURNING character_id, count, description, id, is_worn, key, label
+RETURNING character_id, count, description, id, is_worn, key, label, type
 `
 
 type SetItemWornParams struct {
@@ -32,6 +32,7 @@ func (q *Queries) SetItemWorn(ctx context.Context, arg SetItemWornParams) (Item,
 		&i.IsWorn,
 		&i.Key,
 		&i.Label,
+		&i.Type,
 	)
 	return i, err
 }

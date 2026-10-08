@@ -204,6 +204,8 @@ type Item struct {
 	Tags []*Tag `json:"tags"`
 	// The item template this item references. Null for custom items.
 	Template *ItemTemplate `json:"template,omitempty"`
+	// Category of item (e.g. 'weapon', 'armor', 'shield'), resolved from the template unless overridden. Empty if unset.
+	Type string `json:"type"`
 }
 
 // Namespace for item mutations.

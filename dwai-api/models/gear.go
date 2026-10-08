@@ -57,6 +57,11 @@ type ItemOptionModel struct {
 	Special string `yaml:"special"`
 
 	Tags []*TagModel `yaml:"tags"`
+
+	// Type is the item's category (e.g. "weapon", "armor", "shield"), used
+	// for client-side logic — for keyed items it overrides the template's
+	// type; for custom items it's the sole source of truth.
+	Type *string `yaml:"type"`
 }
 
 func (g *ItemOptionModel) ToObject(t *ItemTemplateModel, td *TagDefinitionMap) *model.ItemOption {
@@ -82,7 +87,7 @@ func (g *ItemOptionModel) ToObject(t *ItemTemplateModel, td *TagDefinitionMap) *
 		key = t.Key
 	}
 
-	fields := resolveItemFields(g.Label, g.Description, g.Tags, t, td)
+	fields := resolveItemFields(g.Label, g.Description, g.Type, g.Tags, t, td)
 
 	return &model.ItemOption{
 		Count:       count,
@@ -189,6 +194,7 @@ type ResolvedStartingItem struct {
 	Key         string
 	Label       *string
 	Tags        []*TagModel
+	Type        *string
 }
 
 // ResolveStartingGearItem turns a single ItemOptionModel into a
@@ -203,10 +209,7 @@ func ResolveStartingGearItem(ctx StartingGearContext, item *ItemOptionModel) Res
 	}
 
 	if hook, ok := specialItemResolvers[item.Special]; ok {
-		fields := hook(SpecialItemContext{
-			CharacterClass: ctx.CharacterClass,
-			MoveChoices:    ctx.MoveChoices,
-		}, item)
+		fields := hook(SpecialItemContext(ctx), item)
 
 		return ResolvedStartingItem{
 			Count:       count,
@@ -214,6 +217,7 @@ func ResolveStartingGearItem(ctx StartingGearContext, item *ItemOptionModel) Res
 			Key:         "custom",
 			Label:       &fields.Label,
 			Tags:        fields.Tags,
+			Type:        &fields.Type,
 		}
 	}
 
@@ -228,6 +232,7 @@ func ResolveStartingGearItem(ctx StartingGearContext, item *ItemOptionModel) Res
 		Key:         key,
 		Label:       item.Label,
 		Tags:        item.Tags,
+		Type:        item.Type,
 	}
 }
 
@@ -294,6 +299,7 @@ func mergeIdenticalItems(items []ResolvedStartingItem) []ResolvedStartingItem {
 		Key         string
 		Label       string
 		Description string
+		Type        string
 		Tags        string
 	}
 
@@ -305,6 +311,7 @@ func mergeIdenticalItems(items []ResolvedStartingItem) []ResolvedStartingItem {
 			Key:         item.Key,
 			Label:       stringOrEmpty(item.Label),
 			Description: stringOrEmpty(item.Description),
+			Type:        stringOrEmpty(item.Type),
 			Tags:        canonicalTagString(item.Tags),
 		}
 

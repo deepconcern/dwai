@@ -143,6 +143,7 @@ type ComplexityRoot struct {
 		Label       func(childComplexity int) int
 		Tags        func(childComplexity int) int
 		Template    func(childComplexity int) int
+		Type        func(childComplexity int) int
 	}
 
 	ItemMutation struct {
@@ -710,6 +711,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Item.Template(childComplexity), true
+	case "Item.type":
+		if e.ComplexityRoot.Item.Type == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Item.Type(childComplexity), true
 
 	case "ItemMutation.setWorn":
 		if e.ComplexityRoot.ItemMutation.SetWorn == nil {
@@ -1469,6 +1476,8 @@ func (ec *executionContext) childFields_Item(ctx context.Context, field graphql.
 		return ec.fieldContext_Item_tags(ctx, field)
 	case "template":
 		return ec.fieldContext_Item_template(ctx, field)
+	case "type":
+		return ec.fieldContext_Item_type(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
 }
@@ -3559,6 +3568,29 @@ func (ec *executionContext) fieldContext_Item_template(_ context.Context, field 
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Item_type(ctx context.Context, field graphql.CollectedField, obj *model.Item) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Item_type(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Item_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Item", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _ItemMutation_setWorn(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
@@ -7904,6 +7936,11 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "template":
 			out.Values[i] = ec._Item_template(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._Item_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

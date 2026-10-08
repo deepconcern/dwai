@@ -20,7 +20,7 @@ import (
 
 // Up applies any pending migrations to the database at databaseURL (a
 // "postgres://..." connection string, e.g. os.Getenv("DATABASE_URL")).
-func Up(databaseURL string) error {
+func Up(databaseURL string) (err error) {
 	pgx5URL, err := toPgx5URL(databaseURL)
 	if err != nil {
 		return fmt.Errorf("parse database url: %w", err)
@@ -35,7 +35,10 @@ func Up(databaseURL string) error {
 	if err != nil {
 		return fmt.Errorf("init migrator: %w", err)
 	}
-	defer m.Close()
+	defer func() {
+		srcErr, dbErr := m.Close()
+		err = errors.Join(err, srcErr, dbErr)
+	}()
 
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("apply migrations: %w", err)

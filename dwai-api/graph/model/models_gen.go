@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/google/uuid"
 )
 
 // A type representing a character's ability score, including the base score and the derived modifier.
@@ -145,32 +143,6 @@ type CreationOptionChoice struct {
 	Label string `json:"label"`
 }
 
-// An active game session linking a character to a scenario.
-type Game struct {
-	// Unique identifier for the game.
-	ID string `json:"id"`
-	// Human-readable name for this game session.
-	Name string `json:"name"`
-	// ID of the character playing in this game.
-	CharacterID string `json:"characterId"`
-	// Key of the scenario being played.
-	ScenarioKey string `json:"scenarioKey"`
-}
-
-// Namespace for game mutations.
-type GameMutation struct {
-	// Creates a new game session and returns it.
-	Create *Game `json:"create"`
-}
-
-// Namespace for game queries.
-type GameQuery struct {
-	// Returns all games.
-	All []*Game `json:"all"`
-	// Returns a single game by ID, or null if not found.
-	ByID *Game `json:"byId,omitempty"`
-}
-
 // A player's picks from one of a class's starting-gear pick-N option groups.
 type GearOptionChoiceInput struct {
 	// Indices into options[optionIndex].choices that the player picked.
@@ -263,30 +235,6 @@ type LookType struct {
 	Examples []string `json:"examples"`
 }
 
-// A message in the game's conversation history.
-type Message struct {
-	// Unique identifier for the message.
-	ID uuid.UUID `json:"id"`
-	// Who sent the message (e.g. the player's character name or 'assistant').
-	Author string `json:"author"`
-	// The message text.
-	Content string `json:"content"`
-	// When the message was sent.
-	Datetime string `json:"datetime"`
-}
-
-// Namespace for message mutations.
-type MessageMutation struct {
-	// Sends a player message and returns the resulting assistant reply.
-	Send *Message `json:"send"`
-}
-
-// Namespace for message queries.
-type MessageQuery struct {
-	// Returns all messages in the current game's conversation.
-	All []*Message `json:"all"`
-}
-
 // An action or ability a character can perform, as defined by the Dungeon World ruleset.
 type Move struct {
 	// Creation options the player must choose when taking this move, if any.
@@ -360,24 +308,6 @@ type NewLookInput struct {
 }
 
 type Query struct {
-}
-
-// A pre-written adventure scenario that can be played.
-type Scenario struct {
-	// Unique key for this scenario.
-	Key string `json:"key"`
-	// Human-readable scenario title.
-	Name string `json:"name"`
-	// A short summary of the scenario's premise.
-	Description string `json:"description"`
-}
-
-// Namespace for scenario queries.
-type ScenarioQuery struct {
-	// Returns all available scenarios.
-	All []*Scenario `json:"all"`
-	// Returns a single scenario by key, or null if not found.
-	ByKey *Scenario `json:"byKey,omitempty"`
 }
 
 // The starting gear configuration for a character class.

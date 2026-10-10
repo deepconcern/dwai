@@ -15,7 +15,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
-	"github.com/google/uuid"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -113,22 +112,6 @@ type ComplexityRoot struct {
 		Label    func(childComplexity int) int
 	}
 
-	Game struct {
-		CharacterID func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Name        func(childComplexity int) int
-		ScenarioKey func(childComplexity int) int
-	}
-
-	GameMutation struct {
-		Create func(childComplexity int, characterID string, name string, scenarioKey string) int
-	}
-
-	GameQuery struct {
-		All  func(childComplexity int) int
-		ByID func(childComplexity int, id string) int
-	}
-
 	GearOptionGroup struct {
 		Choices func(childComplexity int) int
 		Pick    func(childComplexity int) int
@@ -186,21 +169,6 @@ type ComplexityRoot struct {
 		All func(childComplexity int) int
 	}
 
-	Message struct {
-		Author   func(childComplexity int) int
-		Content  func(childComplexity int) int
-		Datetime func(childComplexity int) int
-		ID       func(childComplexity int) int
-	}
-
-	MessageMutation struct {
-		Send func(childComplexity int, content string) int
-	}
-
-	MessageQuery struct {
-		All func(childComplexity int) int
-	}
-
 	Move struct {
 		CreationOptions func(childComplexity int) int
 		Description     func(childComplexity int) int
@@ -232,31 +200,15 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		Characters func(childComplexity int) int
-		Games      func(childComplexity int) int
 		Items      func(childComplexity int) int
-		Messages   func(childComplexity int) int
 	}
 
 	Query struct {
 		APIVersion       func(childComplexity int) int
 		CharacterClasses func(childComplexity int) int
 		Characters       func(childComplexity int) int
-		Games            func(childComplexity int) int
 		LookTypes        func(childComplexity int) int
-		Messages         func(childComplexity int) int
 		Moves            func(childComplexity int) int
-		Scenarios        func(childComplexity int) int
-	}
-
-	Scenario struct {
-		Description func(childComplexity int) int
-		Key         func(childComplexity int) int
-		Name        func(childComplexity int) int
-	}
-
-	ScenarioQuery struct {
-		All   func(childComplexity int) int
-		ByKey func(childComplexity int, key string) int
 	}
 
 	StartingGear struct {
@@ -314,19 +266,14 @@ type MoveQueryResolver interface {
 }
 type MutationResolver interface {
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
-	Games(ctx context.Context) (*model.GameMutation, error)
 	Items(ctx context.Context) (*model.ItemMutation, error)
-	Messages(ctx context.Context) (*model.MessageMutation, error)
 }
 type QueryResolver interface {
 	APIVersion(ctx context.Context) (string, error)
 	CharacterClasses(ctx context.Context) (*model.CharacterClassQuery, error)
 	Characters(ctx context.Context) (*model.CharacterQuery, error)
-	Games(ctx context.Context) (*model.GameQuery, error)
 	LookTypes(ctx context.Context) (*model.LookTypeQuery, error)
-	Messages(ctx context.Context) (*model.MessageQuery, error)
 	Moves(ctx context.Context) (*model.MoveQuery, error)
-	Scenarios(ctx context.Context) (*model.ScenarioQuery, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -595,61 +542,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CreationOptionChoice.Label(childComplexity), true
 
-	case "Game.characterId":
-		if e.ComplexityRoot.Game.CharacterID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Game.CharacterID(childComplexity), true
-	case "Game.id":
-		if e.ComplexityRoot.Game.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Game.ID(childComplexity), true
-	case "Game.name":
-		if e.ComplexityRoot.Game.Name == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Game.Name(childComplexity), true
-	case "Game.scenarioKey":
-		if e.ComplexityRoot.Game.ScenarioKey == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Game.ScenarioKey(childComplexity), true
-
-	case "GameMutation.create":
-		if e.ComplexityRoot.GameMutation.Create == nil {
-			break
-		}
-
-		args, err := ec.field_GameMutation_create_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.GameMutation.Create(childComplexity, args["characterId"].(string), args["name"].(string), args["scenarioKey"].(string)), true
-
-	case "GameQuery.all":
-		if e.ComplexityRoot.GameQuery.All == nil {
-			break
-		}
-
-		return e.ComplexityRoot.GameQuery.All(childComplexity), true
-	case "GameQuery.byId":
-		if e.ComplexityRoot.GameQuery.ByID == nil {
-			break
-		}
-
-		args, err := ec.field_GameQuery_byId_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.GameQuery.ByID(childComplexity, args["id"].(string)), true
-
 	case "GearOptionGroup.choices":
 		if e.ComplexityRoot.GearOptionGroup.Choices == nil {
 			break
@@ -844,50 +736,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.LookTypeQuery.All(childComplexity), true
 
-	case "Message.author":
-		if e.ComplexityRoot.Message.Author == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Message.Author(childComplexity), true
-	case "Message.content":
-		if e.ComplexityRoot.Message.Content == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Message.Content(childComplexity), true
-	case "Message.datetime":
-		if e.ComplexityRoot.Message.Datetime == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Message.Datetime(childComplexity), true
-	case "Message.id":
-		if e.ComplexityRoot.Message.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Message.ID(childComplexity), true
-
-	case "MessageMutation.send":
-		if e.ComplexityRoot.MessageMutation.Send == nil {
-			break
-		}
-
-		args, err := ec.field_MessageMutation_send_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.MessageMutation.Send(childComplexity, args["content"].(string)), true
-
-	case "MessageQuery.all":
-		if e.ComplexityRoot.MessageQuery.All == nil {
-			break
-		}
-
-		return e.ComplexityRoot.MessageQuery.All(childComplexity), true
-
 	case "Move.creationOptions":
 		if e.ComplexityRoot.Move.CreationOptions == nil {
 			break
@@ -1027,24 +875,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.Characters(childComplexity), true
-	case "Mutation.games":
-		if e.ComplexityRoot.Mutation.Games == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Mutation.Games(childComplexity), true
 	case "Mutation.items":
 		if e.ComplexityRoot.Mutation.Items == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Mutation.Items(childComplexity), true
-	case "Mutation.messages":
-		if e.ComplexityRoot.Mutation.Messages == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Mutation.Messages(childComplexity), true
 
 	case "Query.apiVersion":
 		if e.ComplexityRoot.Query.APIVersion == nil {
@@ -1064,12 +900,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Characters(childComplexity), true
-	case "Query.games":
-		if e.ComplexityRoot.Query.Games == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.Games(childComplexity), true
 
 	case "Query.lookTypes":
 		if e.ComplexityRoot.Query.LookTypes == nil {
@@ -1077,61 +907,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.LookTypes(childComplexity), true
-	case "Query.messages":
-		if e.ComplexityRoot.Query.Messages == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.Messages(childComplexity), true
 	case "Query.moves":
 		if e.ComplexityRoot.Query.Moves == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Query.Moves(childComplexity), true
-	case "Query.scenarios":
-		if e.ComplexityRoot.Query.Scenarios == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.Scenarios(childComplexity), true
-
-	case "Scenario.description":
-		if e.ComplexityRoot.Scenario.Description == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Scenario.Description(childComplexity), true
-	case "Scenario.key":
-		if e.ComplexityRoot.Scenario.Key == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Scenario.Key(childComplexity), true
-	case "Scenario.name":
-		if e.ComplexityRoot.Scenario.Name == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Scenario.Name(childComplexity), true
-
-	case "ScenarioQuery.all":
-		if e.ComplexityRoot.ScenarioQuery.All == nil {
-			break
-		}
-
-		return e.ComplexityRoot.ScenarioQuery.All(childComplexity), true
-	case "ScenarioQuery.byKey":
-		if e.ComplexityRoot.ScenarioQuery.ByKey == nil {
-			break
-		}
-
-		args, err := ec.field_ScenarioQuery_byKey_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.ScenarioQuery.ByKey(childComplexity, args["key"].(string)), true
 
 	case "StartingGear.default":
 		if e.ComplexityRoot.StartingGear.Default == nil {
@@ -1258,7 +1039,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/games.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/messages.graphqls" "schema/moves.graphqls" "schema/scenarios.graphqls" "schema/schema.graphqls"
+//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1272,12 +1053,9 @@ func sourceData(filename string) string {
 var sources = []*ast.Source{
 	{Name: "schema/character_classes.graphqls", Input: sourceData("schema/character_classes.graphqls"), BuiltIn: false},
 	{Name: "schema/characters.graphqls", Input: sourceData("schema/characters.graphqls"), BuiltIn: false},
-	{Name: "schema/games.graphqls", Input: sourceData("schema/games.graphqls"), BuiltIn: false},
 	{Name: "schema/item.graphqls", Input: sourceData("schema/item.graphqls"), BuiltIn: false},
 	{Name: "schema/look_types.graphqls", Input: sourceData("schema/look_types.graphqls"), BuiltIn: false},
-	{Name: "schema/messages.graphqls", Input: sourceData("schema/messages.graphqls"), BuiltIn: false},
 	{Name: "schema/moves.graphqls", Input: sourceData("schema/moves.graphqls"), BuiltIn: false},
-	{Name: "schema/scenarios.graphqls", Input: sourceData("schema/scenarios.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1416,38 +1194,6 @@ func (ec *executionContext) childFields_CreationOptionChoice(ctx context.Context
 	return nil, fmt.Errorf("no field named %q was found under type CreationOptionChoice", field.Name)
 }
 
-func (ec *executionContext) childFields_Game(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "id":
-		return ec.fieldContext_Game_id(ctx, field)
-	case "name":
-		return ec.fieldContext_Game_name(ctx, field)
-	case "characterId":
-		return ec.fieldContext_Game_characterId(ctx, field)
-	case "scenarioKey":
-		return ec.fieldContext_Game_scenarioKey(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
-}
-
-func (ec *executionContext) childFields_GameMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "create":
-		return ec.fieldContext_GameMutation_create(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type GameMutation", field.Name)
-}
-
-func (ec *executionContext) childFields_GameQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "all":
-		return ec.fieldContext_GameQuery_all(ctx, field)
-	case "byId":
-		return ec.fieldContext_GameQuery_byId(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type GameQuery", field.Name)
-}
-
 func (ec *executionContext) childFields_GearOptionGroup(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "pick":
@@ -1562,36 +1308,6 @@ func (ec *executionContext) childFields_LookTypeQuery(ctx context.Context, field
 	return nil, fmt.Errorf("no field named %q was found under type LookTypeQuery", field.Name)
 }
 
-func (ec *executionContext) childFields_Message(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "id":
-		return ec.fieldContext_Message_id(ctx, field)
-	case "author":
-		return ec.fieldContext_Message_author(ctx, field)
-	case "content":
-		return ec.fieldContext_Message_content(ctx, field)
-	case "datetime":
-		return ec.fieldContext_Message_datetime(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
-}
-
-func (ec *executionContext) childFields_MessageMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "send":
-		return ec.fieldContext_MessageMutation_send(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type MessageMutation", field.Name)
-}
-
-func (ec *executionContext) childFields_MessageQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "all":
-		return ec.fieldContext_MessageQuery_all(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type MessageQuery", field.Name)
-}
-
 func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "creationOptions":
@@ -1634,28 +1350,6 @@ func (ec *executionContext) childFields_MoveQuery(ctx context.Context, field gra
 		return ec.fieldContext_MoveQuery_byType(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type MoveQuery", field.Name)
-}
-
-func (ec *executionContext) childFields_Scenario(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "key":
-		return ec.fieldContext_Scenario_key(ctx, field)
-	case "name":
-		return ec.fieldContext_Scenario_name(ctx, field)
-	case "description":
-		return ec.fieldContext_Scenario_description(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type Scenario", field.Name)
-}
-
-func (ec *executionContext) childFields_ScenarioQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "all":
-		return ec.fieldContext_ScenarioQuery_all(ctx, field)
-	case "byKey":
-		return ec.fieldContext_ScenarioQuery_byKey(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type ScenarioQuery", field.Name)
 }
 
 func (ec *executionContext) childFields_StartingGear(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1840,50 +1534,6 @@ func (ec *executionContext) field_CharacterQuery_byId_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_GameMutation_create_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNString2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["characterId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "name",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNString2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["name"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "scenarioKey",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNString2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["scenarioKey"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_GameQuery_byId_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_ItemMutation_setWorn_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1903,20 +1553,6 @@ func (ec *executionContext) field_ItemMutation_setWorn_args(ctx context.Context,
 		return nil, err
 	}
 	args["worn"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_MessageMutation_send_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "content",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNString2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["content"] = arg0
 	return args, nil
 }
 
@@ -1959,20 +1595,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_ScenarioQuery_byKey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "key",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["key"] = arg0
 	return args, nil
 }
 
@@ -3103,216 +2725,6 @@ func (ec *executionContext) fieldContext_CreationOptionChoice_label(_ context.Co
 	return graphql.NewScalarFieldContext("CreationOptionChoice", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _Game_id(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Game_id(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNID2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Game_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Game", field, false, false, errors.New("field of type ID does not have child fields"))
-}
-
-func (ec *executionContext) _Game_name(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Game_name(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Name, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Game_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Game", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Game_characterId(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Game_characterId(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.CharacterID, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Game_characterId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Game", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Game_scenarioKey(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Game_scenarioKey(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ScenarioKey, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Game_scenarioKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Game", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _GameMutation_create(ctx context.Context, field graphql.CollectedField, obj *model.GameMutation) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_GameMutation_create(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Create, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Game) graphql.Marshaler {
-			return ec.marshalNGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_GameMutation_create(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "GameMutation",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Game(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_GameMutation_create_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _GameQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.GameQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_GameQuery_all(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.All, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Game) graphql.Marshaler {
-			return ec.marshalNGame2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_GameQuery_all(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "GameQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Game(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _GameQuery_byId(ctx context.Context, field graphql.CollectedField, obj *model.GameQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_GameQuery_byId(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ByID, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Game) graphql.Marshaler {
-			return ec.marshalOGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx, selections, v)
-		},
-		true,
-		false,
-	)
-}
-func (ec *executionContext) fieldContext_GameQuery_byId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "GameQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Game(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_GameQuery_byId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _GearOptionGroup_pick(ctx context.Context, field graphql.CollectedField, obj *model.GearOptionGroup) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4087,173 +3499,6 @@ func (ec *executionContext) fieldContext_LookTypeQuery_all(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Message_id(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-			return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Message_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type UUID does not have child fields"))
-}
-
-func (ec *executionContext) _Message_author(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Message_author(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Author, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Message_author(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Message_content(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Message_content(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Content, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Message_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Message_datetime(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Message_datetime(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Datetime, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNDateTime2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Message_datetime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type DateTime does not have child fields"))
-}
-
-func (ec *executionContext) _MessageMutation_send(ctx context.Context, field graphql.CollectedField, obj *model.MessageMutation) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_MessageMutation_send(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Send, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Message) graphql.Marshaler {
-			return ec.marshalNMessage2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessage(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_MessageMutation_send(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MessageMutation",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Message(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_MessageMutation_send_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MessageQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.MessageQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_MessageQuery_all(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.All, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Message) graphql.Marshaler {
-			return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_MessageQuery_all(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MessageQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Message(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Move_creationOptions(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4815,38 +4060,6 @@ func (ec *executionContext) fieldContext_Mutation_characters(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_games(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_games(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Mutation().Games(ctx)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.GameMutation) graphql.Marshaler {
-			return ec.marshalNGameMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameMutation(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Mutation_games(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_GameMutation(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_items(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4874,38 +4087,6 @@ func (ec *executionContext) fieldContext_Mutation_items(_ context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_ItemMutation(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_messages(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Mutation().Messages(ctx)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.MessageMutation) graphql.Marshaler {
-			return ec.marshalNMessageMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageMutation(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Mutation_messages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_MessageMutation(ctx, field)
 		},
 	}
 	return fc, nil
@@ -4998,38 +4179,6 @@ func (ec *executionContext) fieldContext_Query_characters(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_games(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_games(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().Games(ctx)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.GameQuery) graphql.Marshaler {
-			return ec.marshalNGameQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameQuery(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Query_games(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_GameQuery(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_lookTypes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5062,38 +4211,6 @@ func (ec *executionContext) fieldContext_Query_lookTypes(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_messages(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().Messages(ctx)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.MessageQuery) graphql.Marshaler {
-			return ec.marshalNMessageQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageQuery(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Query_messages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_MessageQuery(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_moves(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5121,38 +4238,6 @@ func (ec *executionContext) fieldContext_Query_moves(_ context.Context, field gr
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_MoveQuery(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_scenarios(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_scenarios(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().Scenarios(ctx)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.ScenarioQuery) graphql.Marshaler {
-			return ec.marshalNScenarioQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenarioQuery(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Query_scenarios(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_ScenarioQuery(ctx, field)
 		},
 	}
 	return fc, nil
@@ -5230,150 +4315,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields___Schema(ctx, field)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Scenario_key(ctx context.Context, field graphql.CollectedField, obj *model.Scenario) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Scenario_key(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Key, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNID2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Scenario_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Scenario", field, false, false, errors.New("field of type ID does not have child fields"))
-}
-
-func (ec *executionContext) _Scenario_name(ctx context.Context, field graphql.CollectedField, obj *model.Scenario) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Scenario_name(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Name, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Scenario_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Scenario", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _Scenario_description(ctx context.Context, field graphql.CollectedField, obj *model.Scenario) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Scenario_description(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Description, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
-			return ec.marshalNString2string(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Scenario_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("Scenario", field, false, false, errors.New("field of type String does not have child fields"))
-}
-
-func (ec *executionContext) _ScenarioQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.ScenarioQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_ScenarioQuery_all(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.All, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Scenario) graphql.Marshaler {
-			return ec.marshalNScenario2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenarioᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_ScenarioQuery_all(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ScenarioQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Scenario(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ScenarioQuery_byKey(ctx context.Context, field graphql.CollectedField, obj *model.ScenarioQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_ScenarioQuery_byKey(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.ByKey, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Scenario) graphql.Marshaler {
-			return ec.marshalOScenario2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenario(ctx, selections, v)
-		},
-		true,
-		false,
-	)
-}
-func (ec *executionContext) fieldContext_ScenarioQuery_byKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ScenarioQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Scenario(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_ScenarioQuery_byKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -7710,140 +6651,6 @@ func (ec *executionContext) _CreationOptionChoice(ctx context.Context, sel ast.S
 	return out
 }
 
-var gameImplementors = []string{"Game"}
-
-func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj *model.Game) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, gameImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Game")
-		case "id":
-			out.Values[i] = ec._Game_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Game_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "characterId":
-			out.Values[i] = ec._Game_characterId(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "scenarioKey":
-			out.Values[i] = ec._Game_scenarioKey(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var gameMutationImplementors = []string{"GameMutation"}
-
-func (ec *executionContext) _GameMutation(ctx context.Context, sel ast.SelectionSet, obj *model.GameMutation) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, gameMutationImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("GameMutation")
-		case "create":
-			out.Values[i] = ec._GameMutation_create(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var gameQueryImplementors = []string{"GameQuery"}
-
-func (ec *executionContext) _GameQuery(ctx context.Context, sel ast.SelectionSet, obj *model.GameQuery) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, gameQueryImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("GameQuery")
-		case "all":
-			out.Values[i] = ec._GameQuery_all(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "byId":
-			out.Values[i] = ec._GameQuery_byId(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var gearOptionGroupImplementors = []string{"GearOptionGroup"}
 
 func (ec *executionContext) _GearOptionGroup(ctx context.Context, sel ast.SelectionSet, obj *model.GearOptionGroup) graphql.Marshaler {
@@ -8390,138 +7197,6 @@ func (ec *executionContext) _LookTypeQuery(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var messageImplementors = []string{"Message"}
-
-func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, obj *model.Message) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, messageImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Message")
-		case "id":
-			out.Values[i] = ec._Message_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "author":
-			out.Values[i] = ec._Message_author(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "content":
-			out.Values[i] = ec._Message_content(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "datetime":
-			out.Values[i] = ec._Message_datetime(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var messageMutationImplementors = []string{"MessageMutation"}
-
-func (ec *executionContext) _MessageMutation(ctx context.Context, sel ast.SelectionSet, obj *model.MessageMutation) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, messageMutationImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("MessageMutation")
-		case "send":
-			out.Values[i] = ec._MessageMutation_send(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var messageQueryImplementors = []string{"MessageQuery"}
-
-func (ec *executionContext) _MessageQuery(ctx context.Context, sel ast.SelectionSet, obj *model.MessageQuery) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, messageQueryImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("MessageQuery")
-		case "all":
-			out.Values[i] = ec._MessageQuery_all(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var moveImplementors = []string{"Move"}
 
 func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj *model.Move) graphql.Marshaler {
@@ -8819,23 +7494,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "games":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_games(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "items":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_items(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "messages":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_messages(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8948,28 +7609,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "games":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_games(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "lookTypes":
 			field := field
 
@@ -8980,28 +7619,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_lookTypes(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "messages":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_messages(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9036,28 +7653,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "scenarios":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_scenarios(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -9066,96 +7661,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var scenarioImplementors = []string{"Scenario"}
-
-func (ec *executionContext) _Scenario(ctx context.Context, sel ast.SelectionSet, obj *model.Scenario) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, scenarioImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Scenario")
-		case "key":
-			out.Values[i] = ec._Scenario_key(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Scenario_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "description":
-			out.Values[i] = ec._Scenario_description(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var scenarioQueryImplementors = []string{"ScenarioQuery"}
-
-func (ec *executionContext) _ScenarioQuery(ctx context.Context, sel ast.SelectionSet, obj *model.ScenarioQuery) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, scenarioQueryImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ScenarioQuery")
-		case "all":
-			out.Values[i] = ec._ScenarioQuery_all(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "byKey":
-			out.Values[i] = ec._ScenarioQuery_byKey(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9866,76 +8371,6 @@ func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepc
 	return ec._CreationOptionChoice(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNDateTime2string(ctx context.Context, v any) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNDateTime2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) marshalNGame2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Game) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx context.Context, sel ast.SelectionSet, v *model.Game) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Game(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNGameMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameMutation(ctx context.Context, sel ast.SelectionSet, v model.GameMutation) graphql.Marshaler {
-	return ec._GameMutation(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGameMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameMutation(ctx context.Context, sel ast.SelectionSet, v *model.GameMutation) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._GameMutation(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNGameQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameQuery(ctx context.Context, sel ast.SelectionSet, v model.GameQuery) graphql.Marshaler {
-	return ec._GameQuery(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGameQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGameQuery(ctx context.Context, sel ast.SelectionSet, v *model.GameQuery) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._GameQuery(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.GearOptionChoiceInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
@@ -10226,60 +8661,6 @@ func (ec *executionContext) marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._LookTypeQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Message) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNMessage2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessage(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessage(ctx context.Context, sel ast.SelectionSet, v *model.Message) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Message(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNMessageMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageMutation(ctx context.Context, sel ast.SelectionSet, v model.MessageMutation) graphql.Marshaler {
-	return ec._MessageMutation(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMessageMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageMutation(ctx context.Context, sel ast.SelectionSet, v *model.MessageMutation) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._MessageMutation(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNMessageQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageQuery(ctx context.Context, sel ast.SelectionSet, v model.MessageQuery) graphql.Marshaler {
-	return ec._MessageQuery(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMessageQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMessageQuery(ctx context.Context, sel ast.SelectionSet, v *model.MessageQuery) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._MessageQuery(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNMove2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v model.Move) graphql.Marshaler {
 	return ec._Move(ctx, sel, &v)
 }
@@ -10362,46 +8743,6 @@ func (ec *executionContext) unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconc
 func (ec *executionContext) unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInput(ctx context.Context, v any) (*model.NewLookInput, error) {
 	res, err := ec.unmarshalInputNewLookInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNScenario2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenarioᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Scenario) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNScenario2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenario(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNScenario2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenario(ctx context.Context, sel ast.SelectionSet, v *model.Scenario) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Scenario(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNScenarioQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenarioQuery(ctx context.Context, sel ast.SelectionSet, v model.ScenarioQuery) graphql.Marshaler {
-	return ec._ScenarioQuery(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNScenarioQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenarioQuery(ctx context.Context, sel ast.SelectionSet, v *model.ScenarioQuery) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._ScenarioQuery(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStartingGear2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v model.StartingGear) graphql.Marshaler {
@@ -10488,22 +8829,6 @@ func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋd
 		return graphql.Null
 	}
 	return ec._Tag(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
-	res, err := graphql.UnmarshalUUID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalUUID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -10677,13 +9002,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOGame2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGame(ctx context.Context, sel ast.SelectionSet, v *model.Game) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Game(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
 	if v == nil {
 		return nil, nil
@@ -10707,13 +9025,6 @@ func (ec *executionContext) marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcern�
 		return graphql.Null
 	}
 	return ec._ItemTemplate(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOScenario2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐScenario(ctx context.Context, sel ast.SelectionSet, v *model.Scenario) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Scenario(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

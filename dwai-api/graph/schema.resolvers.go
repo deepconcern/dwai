@@ -17,19 +17,9 @@ func (r *mutationResolver) Characters(ctx context.Context) (*model.CharacterMuta
 	return &model.CharacterMutation{}, nil
 }
 
-// Games is the resolver for the games field.
-func (r *mutationResolver) Games(ctx context.Context) (*model.GameMutation, error) {
-	return &model.GameMutation{}, nil
-}
-
 // Items is the resolver for the items field.
 func (r *mutationResolver) Items(ctx context.Context) (*model.ItemMutation, error) {
 	return &model.ItemMutation{}, nil
-}
-
-// Messages is the resolver for the messages field.
-func (r *mutationResolver) Messages(ctx context.Context) (*model.MessageMutation, error) {
-	return &model.MessageMutation{}, nil
 }
 
 // APIVersion is the resolver for the apiVersion field.
@@ -53,29 +43,14 @@ func (r *queryResolver) Characters(ctx context.Context) (*model.CharacterQuery, 
 	return &model.CharacterQuery{}, nil
 }
 
-// Games is the resolver for the games field.
-func (r *queryResolver) Games(ctx context.Context) (*model.GameQuery, error) {
-	return &model.GameQuery{}, nil
-}
-
 // LookTypes is the resolver for the lookTypes field.
 func (r *queryResolver) LookTypes(ctx context.Context) (*model.LookTypeQuery, error) {
 	return &model.LookTypeQuery{}, nil
 }
 
-// Messages is the resolver for the messages field.
-func (r *queryResolver) Messages(ctx context.Context) (*model.MessageQuery, error) {
-	return &model.MessageQuery{}, nil
-}
-
 // Moves is the resolver for the moves field.
 func (r *queryResolver) Moves(ctx context.Context) (*model.MoveQuery, error) {
 	return &model.MoveQuery{}, nil
-}
-
-// Scenarios is the resolver for the scenarios field.
-func (r *queryResolver) Scenarios(ctx context.Context) (*model.ScenarioQuery, error) {
-	return &model.ScenarioQuery{}, nil
 }
 
 // Mutation returns MutationResolver implementation.

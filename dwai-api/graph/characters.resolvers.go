@@ -13,11 +13,13 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/deepconcern/dwai/dwai-api/db"
 	"github.com/deepconcern/dwai/dwai-api/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/models"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Modifier is the resolver for the modifier field.
@@ -233,9 +235,26 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		}
 	}
 
+	// Validate everything up front, reporting each problem as its own error so
+	// the client can show them all at once.
+	var characterClassPtr *models.CharacterClassModel
 	characterClassModel, ok := (*r.CharacterClasses)[input.CharacterClassKey]
-	if !ok {
-		return nil, fmt.Errorf("no class with key '%s'", input.CharacterClassKey)
+	if ok {
+		characterClassPtr = &characterClassModel
+	}
+
+	if validationErrors := models.ValidateCreateCharacterInput(input, characterClassPtr, r.LookTypes); len(validationErrors) > 0 {
+		for _, ve := range validationErrors {
+			graphql.AddError(ctx, &gqlerror.Error{
+				Message: ve.Message,
+				Path:    graphql.GetPath(ctx),
+				Extensions: map[string]any{
+					"code":  models.ValidationErrorCode,
+					"field": ve.Field,
+				},
+			})
+		}
+		return nil, nil
 	}
 
 	// Get initial hit points

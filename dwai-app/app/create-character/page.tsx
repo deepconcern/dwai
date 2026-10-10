@@ -1,5 +1,6 @@
 "use client";
 
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
@@ -12,22 +13,19 @@ import { PageTitle } from "@/components/PageTitle";
 import { SectionTitle } from "@/components/SectionTitle";
 import { SelectableArea } from "@/components/SelectableArea";
 import { TextInput } from "@/components/TextInput";
-import { graphql } from "@/gql";
+import { MoveFragment } from "@/fragments/MoveFragment";
+import { graphql, unmaskFragment } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
 
 import { GearChoice } from "./GearChoice";
-
-const ABILITY_LABELS: { ability: Ability; label: string }[] = [
-  { ability: "STRENGTH", label: "Strength" },
-  { ability: "DEXTERITY", label: "Dexterity" },
-  { ability: "CONSTITUTION", label: "Constitution" },
-  { ability: "INTELLIGENCE", label: "Intelligence" },
-  { ability: "WISDOM", label: "Wisdom" },
-  { ability: "CHARISMA", label: "Charisma" },
-];
-
-const ATTRIBUTE_SCORES = [16, 15, 13, 12, 9, 8];
+import {
+  ABILITY_LABELS,
+  ALIGNMENTS,
+  CharacterClassRules,
+  STARTING_ABILITY_SCORES,
+  validateCharacter,
+} from "./validateCharacter";
 
 function calculateModifier(score: number): number {
   if (score > 17) return 3;
@@ -123,6 +121,9 @@ export default function CreateCharacterPage() {
   }>({});
   const [name, setName] = useState("");
   const [raceMoveKey, setRaceMoveKey] = useState("");
+  // Errors only show after the first submit attempt, then update live.
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [serverErrors, setServerErrors] = useState<string[]>([]);
 
   const { data: characterClassesData, loading: classesLoading } = useQuery(
     GET_CHARACTER_CLASSES_QUERY,
@@ -142,6 +143,32 @@ export default function CreateCharacterPage() {
     characterClass && typeof conScore === "number"
       ? conScore + characterClass.hpBase
       : null;
+
+  const classRules: CharacterClassRules | null = characterClass
+    ? {
+        gearGroups: characterClass.startingGear.options,
+        startingMoves: characterClass.startingMoves.map((m) =>
+          unmaskFragment(MoveFragment, m),
+        ),
+      }
+    : null;
+
+  const validationErrors = validateCharacter(
+    {
+      abilityScores,
+      alignmentDescription,
+      alignmentType,
+      gearChoices,
+      looks,
+      moveOptions,
+      name,
+      raceMoveKey,
+    },
+    classRules,
+  );
+  const visibleErrors = hasSubmitted
+    ? [...validationErrors, ...serverErrors]
+    : [];
 
   const handleAddLook = () => {
     const firstType = characterClass?.lookExamples[0]?.type ?? "";
@@ -180,37 +207,54 @@ export default function CreateCharacterPage() {
   };
 
   const handleCreate = async () => {
+    setHasSubmitted(true);
+    setServerErrors([]);
+
+    if (validationErrors.length > 0) return;
+
     const abilities = abilityScores
       .filter((a) => a.score !== null)
       .map((a) => ({ ability: a.ability, score: a.score as number }));
 
-    const { data } = await createCharacter({
-      variables: {
-        input: {
-          abilities,
-          alignmentDescription,
-          alignmentType,
-          characterClassKey,
-          gearOptionChoices: gearChoices.map((choiceIndices, optionIndex) => ({
-            choiceIndices,
-            optionIndex,
-          })),
-          moveCreationOptionChoices: Object.keys(moveOptions).flatMap(
-            (moveKey) =>
-              moveOptions[moveKey].flatMap((options, choiceIndex) =>
-                options.flatMap((optionKey) => ({
-                  choiceIndex,
-                  moveKey,
-                  optionKey,
-                })),
-              ),
-          ),
-          raceMoveKey,
-          looks,
-          name,
+    let data;
+    try {
+      ({ data } = await createCharacter({
+        variables: {
+          input: {
+            abilities,
+            alignmentDescription,
+            alignmentType,
+            characterClassKey,
+            gearOptionChoices: gearChoices.map(
+              (choiceIndices, optionIndex) => ({
+                choiceIndices,
+                optionIndex,
+              }),
+            ),
+            moveCreationOptionChoices: Object.keys(moveOptions).flatMap(
+              (moveKey) =>
+                moveOptions[moveKey].flatMap((options, choiceIndex) =>
+                  options.flatMap((optionKey) => ({
+                    choiceIndex,
+                    moveKey,
+                    optionKey,
+                  })),
+                ),
+            ),
+            raceMoveKey,
+            looks,
+            name,
+          },
         },
-      },
-    });
+      }));
+    } catch (error) {
+      setServerErrors(
+        CombinedGraphQLErrors.is(error)
+          ? error.errors.map((e) => e.message)
+          : ["Something went wrong creating the character. Try again."],
+      );
+      return;
+    }
 
     if (data) {
       router.push(`/character/${data.characters.create.id}`);
@@ -368,7 +412,7 @@ export default function CreateCharacterPage() {
               <section>
                 <SectionTitle title="Ability Scores" />
                 <p className="text-xs text-gray-500 mb-3">
-                  Assign each value once: {ATTRIBUTE_SCORES.join(", ")}
+                  Assign each value once: {STARTING_ABILITY_SCORES.join(", ")}
                 </p>
                 <div className="space-y-2">
                   {abilityScores.map(({ ability, score }) => (
@@ -377,7 +421,7 @@ export default function CreateCharacterPage() {
                       <Dropdown
                         className="flex-1"
                         data-ability={ability}
-                        items={ATTRIBUTE_SCORES.map((s) => ({
+                        items={STARTING_ABILITY_SCORES.map((s) => ({
                           disabled: abilityScores.some(
                             (a) => a.ability !== ability && a.score === s,
                           ),
@@ -419,12 +463,10 @@ export default function CreateCharacterPage() {
                 <div className="flex gap-3 px-4 py-3 rounded border cursor-pointer transition-colors">
                   <Dropdown
                     className="flex-1"
-                    items={["chaotic", "evil", "good", "lawful", "neutral"].map(
-                      (a) => ({
-                        label: capitalize(a),
-                        value: a,
-                      }),
-                    )}
+                    items={ALIGNMENTS.map((a) => ({
+                      label: capitalize(a),
+                      value: a,
+                    }))}
                     onChange={handleAlignmentTypeChange}
                     placeholder="-"
                     value={alignmentType}
@@ -503,7 +545,20 @@ export default function CreateCharacterPage() {
               </div>
             </section>
 
-            <div className="flex justify-center pt-4">
+            <div className="flex flex-col items-center gap-4 pt-4">
+              {visibleErrors.length > 0 && (
+                <div
+                  className="border border-red-700 bg-red-950 px-4 py-3 rounded text-sm w-full"
+                  role="alert"
+                >
+                  <p className="font-medium mb-1">
+                    Fix the following before creating your character:
+                  </p>
+                  <List
+                    items={visibleErrors.map((e) => ({ content: e, key: e }))}
+                  />
+                </div>
+              )}
               <button
                 type="submit"
                 className="bg-blue-600 text-white px-8 py-2 rounded hover:bg-blue-700 transition-colors"

@@ -171,10 +171,17 @@ func main() {
 	}}))
 
 	// Resolver errors are sent to the client without being logged, so log
-	// them here along with the field that failed.
+	// them here along with the field that failed. Invalid input is the
+	// client's problem, not the server's, so it's logged at a lower level.
 	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
 		presented := graphql.DefaultErrorPresenter(ctx, err)
-		slog.ErrorContext(ctx, "graphql error", "path", presented.Path.String(), "error", err)
+
+		level := slog.LevelError
+		if presented.Extensions["code"] == models.ValidationErrorCode {
+			level = slog.LevelWarn
+		}
+
+		slog.Log(ctx, level, "graphql error", "path", presented.Path.String(), "error", err)
 		return presented
 	})
 	srv.SetRecoverFunc(func(ctx context.Context, p any) error {

@@ -2,23 +2,22 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-09-26)
+## Status (2026-10-10)
 
-- **Done**: Go API migration; Next.js frontend migration; character creation (class, race, looks, alignment, stats, move creation options, starting gear); a read-only character sheet (basic info, moves, equipment).
-- **In progress** (`player-equipment` branch, 2 commits ahead of `main`, not pushed): item `type` end to end (migration `0002`, sqlc, GraphQL, frontend fragment); computing armor, shield, and weapons on the sheet; the character page split into server and client components; kebab-case → snake_case renames of Go files.
-- **Not started**: everything below the current milestone. The `Game` / `Message` / `Scenario` schema is left over from the pre-Go prototype and has no field resolvers; the `create-game` and `game/[gameId]` pages are empty.
+- **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
+- **Next**: Milestone 2 (Test Foundation).
 
 ---
 
 ## Phase 1 — Human Play
 
-### 1. Wrap Up Character Creation ← current
+### 1. Wrap Up Character Creation ✓
 
-- [ ] Commit the `player-equipment` work and merge it to `main`
-- [ ] Remove or stub out the legacy `Game` / `Message` / `Scenario` schema and the empty pages (campaigns will replace them)
-- [ ] Creation form validation (stat array fully assigned, all required picks made) with clear errors
+- [x] Commit the `player-equipment` work and merge it to `main`
+- [x] Remove or stub out the legacy `Game` / `Message` / `Scenario` schema and the empty pages (campaigns will replace them)
+- [x] Creation form validation (stat array fully assigned, all required picks made) with clear errors
 
-### 2. Test Foundation
+### 2. Test Foundation ← current
 
 Make adding tests cheap before the rules logic grows.
 

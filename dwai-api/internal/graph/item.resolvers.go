@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/deepconcern/dwai/dwai-api/db"
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
-	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/models"
 )
 
 // SetWorn is the resolver for the setWorn field.

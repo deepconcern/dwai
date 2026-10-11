@@ -2,12 +2,12 @@ package models
 
 import (
 	"fmt"
+	"io/fs"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/data"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/goccy/go-yaml"
 )
 
@@ -87,9 +87,9 @@ func (m *ItemTemplateModel) ToObject(td *TagDefinitionMap) *model.ItemTemplate {
 type ItemTemplateMap map[string]*ItemTemplateModel
 
 func LoadItemTemplates() (*ItemTemplateMap, error) {
-	path := filepath.Join("data", "item_templates.yaml")
+	path := "item_templates.yaml"
 
-	content, err := os.ReadFile(path)
+	content, err := fs.ReadFile(data.FS, path)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", path, err)
 	}

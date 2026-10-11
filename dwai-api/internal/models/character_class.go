@@ -2,11 +2,12 @@ package models
 
 import (
 	"fmt"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"strings"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/data"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/goccy/go-yaml"
 )
 
@@ -163,11 +164,11 @@ type LookTypeModel struct {
 type LookTypeMap map[string]LookTypeModel
 
 func LoadCharacterClasses() (*CharacterClassMap, error) {
-	dir_path := filepath.Join("data", "classes")
+	dir_path := "classes"
 
 	// Load all the files in the directory
 
-	entries, err := os.ReadDir(dir_path)
+	entries, err := fs.ReadDir(data.FS, dir_path)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", dir_path, err)
 	}
@@ -178,7 +179,7 @@ func LoadCharacterClasses() (*CharacterClassMap, error) {
 	for _, entry := range entries {
 		path := filepath.Join(dir_path, entry.Name())
 
-		content, err := os.ReadFile(path)
+		content, err := fs.ReadFile(data.FS, path)
 		if err != nil {
 			return nil, fmt.Errorf("read %s: %w", path, err)
 		}

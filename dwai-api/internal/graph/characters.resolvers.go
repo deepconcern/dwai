@@ -14,9 +14,9 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/deepconcern/dwai/dwai-api/db"
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
-	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"

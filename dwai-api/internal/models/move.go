@@ -2,10 +2,10 @@ package models
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/fs"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/data"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/goccy/go-yaml"
 )
 
@@ -49,9 +49,9 @@ func (m *MoveModel) ToObject() *model.Move {
 type MoveMap map[string]*MoveModel
 
 func LoadPlayerMoves() (*MoveMap, error) {
-	path := filepath.Join("data", "player_moves.yaml")
+	path := "player_moves.yaml"
 
-	content, err := os.ReadFile(path)
+	content, err := fs.ReadFile(data.FS, path)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", path, err)
 	}

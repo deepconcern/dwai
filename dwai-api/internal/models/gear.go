@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
 
 // ItemOptionModel represents a single item in a class's starting gear — a

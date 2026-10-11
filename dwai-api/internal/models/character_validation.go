@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
 
 // ValidationErrorCode is the GraphQL error extension code for invalid input.

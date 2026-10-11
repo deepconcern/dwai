@@ -1,11 +1,10 @@
-package main
+package server
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"runtime/debug"
 	"time"
 
@@ -15,20 +14,15 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/deepconcern/dwai/dwai-api/graph"
-	"github.com/deepconcern/dwai/dwai-api/internal/migrate"
-	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph"
+	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
-
-const defaultHost = "0.0.0.0"
-const defaultPort = "5000"
 
 type responseWriter struct {
 	http.ResponseWriter
@@ -40,10 +34,10 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.ResponseWriter.WriteHeader(code)
 }
 
-// LoggingMiddleware logs one line per request once it completes. GraphQL
+// loggingMiddleware logs one line per request once it completes. GraphQL
 // errors are returned with a 200 status, so they're logged by the server's
 // error presenter instead.
-func LoggingMiddleware(next http.Handler) http.Handler {
+func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := &responseWriter{
 			ResponseWriter: w,
@@ -70,104 +64,16 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// newLogger builds the default logger, using LOG_LEVEL (debug, info, warn,
-// error) if set.
-func newLogger() *slog.Logger {
-	var level slog.Level
-	if s := os.Getenv("LOG_LEVEL"); s != "" {
-		if err := level.UnmarshalText([]byte(s)); err != nil {
-			slog.Warn("invalid LOG_LEVEL, defaulting to info", "value", s)
-		}
-	}
-
-	return slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
-}
-
-// fatal logs an error and exits.
-func fatal(msg string, err error) {
-	slog.Error(msg, "error", err)
-	os.Exit(1)
-}
-
-func main() {
-	// Load the environment
-	if err := godotenv.Load(); err != nil {
-		fatal("failed to load .env file", err)
-	}
-
-	slog.SetDefault(newLogger())
-
-	// Get configuration
-
-	host := os.Getenv("HOST")
-	if host == "" {
-		host = defaultHost
-	}
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
-	// Apply database migrations
-
-	database_url := os.Getenv("DATABASE_URL")
-
-	slog.Info("applying database migrations")
-	if err := migrate.Up(database_url); err != nil {
-		fatal("failed to apply database migrations", err)
-	}
-	slog.Info("database migrations up to date")
-
-	// Init database connection (and register UUID type)
-
-	dbconfig, err := pgxpool.ParseConfig(database_url)
-	if err != nil {
-		fatal("failed to parse database config", err)
-	}
-
-	dbconfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		pgxuuid.Register(conn.TypeMap())
-		return nil
-	}
-
-	pool, err := pgxpool.NewWithConfig(context.Background(), dbconfig)
-	if err != nil {
-		fatal("failed to connect to database", err)
-	}
-	defer pool.Close()
-
-	// Load game data
-
-	characterClasses, err := models.LoadCharacterClasses()
-	if err != nil {
-		fatal("failed to load character classes", err)
-	}
-
-	itemTemplates, err := models.LoadItemTemplates()
-	if err != nil {
-		fatal("failed to load item templates", err)
-	}
-
-	playerMoves, err := models.LoadPlayerMoves()
-	if err != nil {
-		fatal("failed to load player moves", err)
-	}
-
-	tagDefinitions, err := models.LoadTags()
-	if err != nil {
-		fatal("failed to load tags", err)
-	}
-
+func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 	// Initialize the GraphQL server
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		CharacterClasses: characterClasses,
+		CharacterClasses: gameData.CharacterClassMap,
 		DbPool:           pool,
-		ItemTemplates:    itemTemplates,
+		ItemTemplates:    gameData.ItemTemplateMap,
 		Loaders:          models.NewLoaders(pool),
-		LookTypes:        models.NewLookTypeMap(characterClasses),
-		PlayerMoves:      playerMoves,
-		TagDefinitions:   tagDefinitions,
+		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),
+		PlayerMoves:      gameData.MoveMap,
+		TagDefinitions:   gameData.TagDefinitionMap,
 	}}))
 
 	// Resolver errors are sent to the client without being logged, so log
@@ -214,10 +120,25 @@ func main() {
 	mux.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
 	mux.Handle("/graphql", srv)
 
-	handler := LoggingMiddleware(cors.Default().Handler(mux))
+	return loggingMiddleware(cors.Default().Handler(mux))
 
-	// Run the server
+}
 
-	slog.Info("server started", "playground", fmt.Sprintf("http://%s:%s/playground", host, port))
-	fatal("server stopped", http.ListenAndServe(host+":"+port, handler))
+func NewPool(ctx context.Context, database_uri string) (*pgxpool.Pool, error) {
+	dbconfig, err := pgxpool.ParseConfig(database_uri)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse database config: %w", err)
+	}
+
+	dbconfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxuuid.Register(conn.TypeMap())
+		return nil
+	}
+
+	pool, err := pgxpool.NewWithConfig(ctx, dbconfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	return pool, nil
 }

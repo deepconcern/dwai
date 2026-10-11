@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/deepconcern/dwai/dwai-api/db"
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 

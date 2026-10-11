@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/deepconcern/dwai/dwai-api/db"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vikstrous/dataloadgen"

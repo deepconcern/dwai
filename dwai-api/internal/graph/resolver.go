@@ -3,7 +3,7 @@ package graph
 //go:generate go tool gqlgen generate
 
 import (
-	"github.com/deepconcern/dwai/dwai-api/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

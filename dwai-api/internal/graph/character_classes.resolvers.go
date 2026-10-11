@@ -10,7 +10,7 @@ import (
 	"errors"
 	"maps"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
 
 // StartingGear is the resolver for the startingGear field.

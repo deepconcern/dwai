@@ -19,7 +19,7 @@ import (
 )
 
 // Up applies any pending migrations to the database at databaseURL (a
-// "postgres://..." connection string, e.g. os.Getenv("DATABASE_URL")).
+// "postgres://..." connection string, e.g. os.Getenv("DATABASE_URI")).
 func Up(databaseURL string) (err error) {
 	pgx5URL, err := toPgx5URL(databaseURL)
 	if err != nil {

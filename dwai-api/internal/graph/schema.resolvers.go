@@ -9,7 +9,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
 
 // Characters is the resolver for the characters field.

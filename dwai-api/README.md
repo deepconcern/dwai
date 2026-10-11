@@ -7,7 +7,7 @@ GraphQL API for the Dungeon World AI app, built with Go and gqlgen, backed by Po
 Will also read from `.env` files.
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/dwai
+DATABASE_URI=postgres://user:password@localhost:5432/dwai
 HOST=0.0.0.0   # optional, defaults to 0.0.0.0
 PORT=5000      # optional, defaults to 5000
 LOG_LEVEL=info # optional: debug, info, warn, or error
@@ -32,7 +32,7 @@ anywhere will desync that database from the migration files.
 
 For manual rollback during local development, install the
 [golang-migrate CLI](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
-and point it at `sql/migrations` and `$DATABASE_URL`.
+and point it at `sql/migrations` and `$DATABASE_URI`.
 
 ## Run
 

@@ -3,8 +3,8 @@ package models
 import (
 	"strconv"
 
-	"github.com/deepconcern/dwai/dwai-api/db"
-	"github.com/deepconcern/dwai/dwai-api/graph/model"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
+	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
 
 // ToItemObject builds an owned Item from its database row, its tag override

@@ -50,20 +50,20 @@ type moveCreationOptionChoiceLoader struct {
 	queries *db.Queries
 }
 
-func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID) ([]*db.Character, []error) {
-	// Database query for all keys
+// The fetch functions return results keyed by ID: the queries' `= ANY(...)`
+// returns rows in no particular order, and dataloadgen's mapped loaders
+// line results up with the requested keys (and report missing keys as
+// dataloadgen.ErrNotFound).
+
+func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID) (map[pgtype.UUID]*db.Character, error) {
 	rows, err := c.queries.LoadCharacters(ctx, keys)
 	if err != nil {
-		errors := make([]error, len(keys))
-		for i := range errors {
-			errors[i] = fmt.Errorf("failed to load character with ID '%s': %w", keys[i].String(), err)
-		}
-		return nil, errors
+		return nil, fmt.Errorf("failed to load characters: %w", err)
 	}
 
-	characters := make([]*db.Character, 0)
+	characters := make(map[pgtype.UUID]*db.Character, len(rows))
 	for _, row := range rows {
-		characters = append(characters, &db.Character{
+		characters[row.ID] = &db.Character{
 			AlignmentDescription: row.AlignmentDescription,
 			AlignmentType:        row.AlignmentType,
 			CharacterClassKey:    row.CharacterClassKey,
@@ -78,25 +78,21 @@ func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID
 			RaceMoveKey:          row.RaceMoveKey,
 			Strength:             row.Strength,
 			Wisdom:               row.Wisdom,
-		})
+		}
 	}
 
 	return characters, nil
 }
 
-func (l *lookLoader) loadLooks(ctx context.Context, keys []int32) ([]*db.Look, []error) {
+func (l *lookLoader) loadLooks(ctx context.Context, keys []int32) (map[int32]*db.Look, error) {
 	rows, err := l.queries.LoadLooks(ctx, keys)
 	if err != nil {
-		errors := make([]error, len(keys))
-		for i := range errors {
-			errors[i] = fmt.Errorf("failed to load look with ID '%d': %w", keys[i], err)
-		}
-		return nil, errors
+		return nil, fmt.Errorf("failed to load looks: %w", err)
 	}
 
-	looks := make([]*db.Look, len(rows))
-	for i, row := range rows {
-		looks[i] = &db.Look{
+	looks := make(map[int32]*db.Look, len(rows))
+	for _, row := range rows {
+		looks[row.ID] = &db.Look{
 			CharacterID: row.CharacterID,
 			ID:          row.ID,
 			LookType:    row.LookType,
@@ -107,19 +103,15 @@ func (l *lookLoader) loadLooks(ctx context.Context, keys []int32) ([]*db.Look, [
 	return looks, nil
 }
 
-func (m *moveCreationOptionChoiceLoader) loadMoveCreationOptionChoices(ctx context.Context, keys []int32) ([]*db.MoveCreationOptionChoice, []error) {
+func (m *moveCreationOptionChoiceLoader) loadMoveCreationOptionChoices(ctx context.Context, keys []int32) (map[int32]*db.MoveCreationOptionChoice, error) {
 	rows, err := m.queries.LoadMoveCreationOptionChoices(ctx, keys)
 	if err != nil {
-		errors := make([]error, len(keys))
-		for i := range errors {
-			errors[i] = fmt.Errorf("failed to load move creation option choice with ID '%d': %w", keys[i], err)
-		}
-		return nil, errors
+		return nil, fmt.Errorf("failed to load move creation option choices: %w", err)
 	}
 
-	choices := make([]*db.MoveCreationOptionChoice, len(rows))
-	for i, row := range rows {
-		choices[i] = &db.MoveCreationOptionChoice{
+	choices := make(map[int32]*db.MoveCreationOptionChoice, len(rows))
+	for _, row := range rows {
+		choices[row.ID] = &db.MoveCreationOptionChoice{
 			CharacterID: row.CharacterID,
 			ChoiceIndex: row.ChoiceIndex,
 			ID:          row.ID,

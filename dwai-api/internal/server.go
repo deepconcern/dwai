@@ -70,7 +70,6 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		CharacterClasses: gameData.CharacterClassMap,
 		DbPool:           pool,
 		ItemTemplates:    gameData.ItemTemplateMap,
-		Loaders:          models.NewLoaders(pool),
 		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),
 		PlayerMoves:      gameData.MoveMap,
 		TagDefinitions:   gameData.TagDefinitionMap,
@@ -118,7 +117,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		}
 	})
 	mux.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
-	mux.Handle("/graphql", srv)
+	mux.Handle("/graphql", models.LoadersMiddleware(pool, srv))
 
 	return loggingMiddleware(cors.Default().Handler(mux))
 

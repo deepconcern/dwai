@@ -6,31 +6,29 @@ Go GraphQL API (gqlgen) backed by PostgreSQL (sqlc + pgx). Game rules and concep
 
 Generated code is committed. Never hand-edit it — change the source and regenerate.
 
-| Source                               | Generated                                      | Command                                   |
-| ------------------------------------ | ---------------------------------------------- | ----------------------------------------- |
-| `graph/schema/*.graphqls`            | `graph/generated.go`, `graph/model/models_gen.go`, resolver stubs | `go tool gqlgen generate` |
-| `sql/migrations/*.up.sql` + `sql/queries/*.sql` | `db/*.go`                           | `sqlc generate`                           |
-
-gqlgen v0.17.90 (via `golang.org/x/tools` v0.43) can't load packages under Go 1.27 — it deletes its outputs and exits 1 with no message. Until those dependencies are upgraded, run it as `GOTOOLCHAIN=go1.25.0 go tool gqlgen generate`.
+| Source                                          | Generated                                                                           | Command                   |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------- |
+| `internal/graph/schema/*.graphqls`              | `internal/graph/generated.go`, `internal/graph/model/models_gen.go`, resolver stubs | `go tool gqlgen generate` |
+| `sql/migrations/*.up.sql` + `sql/queries/*.sql` | `db/*.go`                                                                           | `sqlc generate`           |
 
 After a schema change, restart the API so `dwai-app` can regenerate its types from it.
 
 ## Game Data Files
 
-YAML files in `data/` are loaded at startup; they are not stored in the database. Characters store only the keys they reference (class, race move, item template, etc.).
+YAML files in `internal/data/` are loaded at startup; they are not stored in the database. Characters store only the keys they reference (class, race move, item template, etc.).
 
-| File(s)                          | Loads                              | GraphQL type                   |
-| -------------------------------- | ---------------------------------- | ------------------------------ |
-| `data/classes/*.yaml`            | Character classes with all moves   | `CharacterClass`, `Move`       |
-| `data/player_moves.yaml`         | Shared player moves                | `Move` (type: `"basic"` / `"special"`) |
-| `data/item_templates.yaml`       | Items, weapons, armor, magic items | `ItemTemplate` — referenced by key from `StartingGear`'s `ItemOption`s and from a character's owned `Item`s |
-| `data/tags.yaml`                 | Item tag definitions               | `Tag`                          |
-| `data/spells/wizard_spells.yaml` | Wizard spell list                  | _(future `Spell` type)_        |
-| `data/spells/cleric_spells.yaml` | Cleric spell list                  | _(future `Spell` type)_        |
-| `data/monsters/*.yaml`           | Monster compendium                 | _(reference only)_             |
-| `data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
-| `data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
-| `data/hirelings.yaml`            | Hireling rules and types           | _(reference only)_             |
+| File(s)                                   | Loads                              | GraphQL type                   |
+| ----------------------------------------- | ---------------------------------- | ------------------------------ |
+| `internal/data/classes/*.yaml`            | Character classes with all moves   | `CharacterClass`, `Move`       |
+| `internal/data/player_moves.yaml`         | Shared player moves                | `Move` (type: `"basic"` / `"special"`) |
+| `internal/data/item_templates.yaml`       | Items, weapons, armor, magic items | `ItemTemplate` — referenced by key from `StartingGear`'s `ItemOption`s and from a character's owned `Item`s |
+| `internal/data/tags.yaml`                 | Item tag definitions               | `Tag`                          |
+| `internal/data/spells/wizard_spells.yaml` | Wizard spell list                  | _(future `Spell` type)_        |
+| `internal/data/spells/cleric_spells.yaml` | Cleric spell list                  | _(future `Spell` type)_        |
+| `internal/data/monsters/*.yaml`           | Monster compendium                 | _(reference only)_             |
+| `internal/data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
+| `internal/data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
+| `internal/data/hirelings.yaml`            | Hireling rules and types           | _(reference only)_             |
 
 The `key` field on all entities uses `snake_case` derived from the name (e.g., `hack_and_slash`, `fighter`).
 
@@ -67,3 +65,10 @@ Migrations live in `sql/migrations` as `NNNN_description.up.sql` / `.down.sql` p
 - **Migration already merged to `main`**: treat it as immutable. Add a new sequentially-numbered migration for further schema changes, even small ones — editing an already-merged migration desyncs any database that already applied it from what the file now says.
 
 When in doubt about which bucket a migration falls into, check whether it's only present on the current branch (`git log main.. -- sql/migrations`) or already on `main`.
+
+## Testing
+
+- **Test the public API from an external test package.** Test files declare `package <pkg>_test` (e.g. `package models_test`) in the same directory as the code, and import the package like any other caller. Don't write `package <pkg>` tests: they couple tests to internals, and they cause import cycles with shared fixture packages.
+- **Unexported code**: prefer testing it through the exported function that uses it. When a direct test is worth it, expose it in the package's `export_test.go` (e.g. `var MergeIdenticalItems = mergeIdenticalItems`); that file is `package <pkg>` and only compiled during tests.
+- **Shared fixtures** live in a `<pkg>test` subpackage (like `net/http/httptest`), e.g. `internal/models/modelstest`, so both unit and integration tests can use them. `_test.go` files can't be imported from other packages.
+- **Integration tests** live in `internal/graph` (`package graph_test`) behind the `//go:build integration` tag, and send real GraphQL requests through the server handler. `internal/testutil` starts one Postgres container per test package (testcontainers-go, needs Docker) and gives each test its own copy of a migrated template database, so tests can run in parallel. Run them with `go test -tags integration ./internal/graph/`.

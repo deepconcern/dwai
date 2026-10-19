@@ -1,8 +1,9 @@
 # Repo-wide checks. The git hooks (lefthook.yml) run the same tools on staged files only.
 
-.PHONY: check fmt fmt-api fmt-app lint lint-api lint-app test test-api test-app typecheck
+.PHONY: check fmt fmt-api fmt-app lint lint-api lint-app test test-api test-app test-integration typecheck
 
-check: lint typecheck test
+# check also runs the API integration tests, which need Docker (see dwai-api/README.md).
+check: lint typecheck test test-integration
 
 fmt: fmt-api fmt-app
 
@@ -27,6 +28,10 @@ test: test-api test-app
 
 test-api:
 	cd dwai-api && go test ./...
+
+# Needs Docker: starts a throwaway Postgres container.
+test-integration:
+	cd dwai-api && go test -tags integration ./internal/graph/
 
 test-app:
 	cd dwai-app && bun run test

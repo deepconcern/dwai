@@ -2,10 +2,10 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-10-10)
+## Status (2026-10-19)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
-- **Next**: Milestone 2 (Test Foundation).
+- **In progress**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). Remaining: optionally, a Playwright smoke test.
 
 ---
 
@@ -21,11 +21,11 @@ Each milestone is one or more branches merged to `main`. A milestone is done whe
 
 Make adding tests cheap before the rules logic grows.
 
-- [ ] API integration tests: a real Postgres (a dedicated test database or testcontainers-go), migrations applied, requests sent through the gqlgen handler
-- [ ] Cover character creation end to end, including starting-gear resolution and merging
-- [ ] Unit tests for pure rules logic (item field resolution, ability modifiers)
+- [x] API integration tests: a real Postgres (a dedicated test database or testcontainers-go), migrations applied, requests sent through the gqlgen handler
+- [x] Cover character creation end to end, including starting-gear resolution and merging
+- [x] Unit tests for pure rules logic (item field resolution, ability modifiers)
 - [x] One command runs everything (`make check`) and git hooks run format/lint/typecheck/tests
-- [ ] Integration tests run from `make check` (or a separate `make test-integration` if they need Postgres)
+- [x] Integration tests run from `make check` (or a separate `make test-integration` if they need Postgres)
 - [ ] Optional: a Playwright smoke test that creates a character through the UI
 
 ### 3. Character Sheet (State Management)

@@ -1,5 +1,10 @@
 version: "2"
 
+# Lint the integration tests too (they're behind a build tag).
+run:
+  build-tags:
+    - integration
+
 # Default linters (errcheck, govet, ineffassign, staticcheck, unused). Files
 # with a "Code generated ... DO NOT EDIT." header (gqlgen, sqlc) are skipped.
 linters:

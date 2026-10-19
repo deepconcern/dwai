@@ -20,35 +20,12 @@ import (
 	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/vikstrous/dataloadgen"
 )
 
 // Modifier is the resolver for the modifier field.
 func (r *abilityScoreResolver) Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error) {
-	if obj.Score < 4 {
-		return -3, nil
-	}
-
-	if obj.Score < 6 {
-		return -2, nil
-	}
-
-	if obj.Score < 9 {
-		return -1, nil
-	}
-
-	if obj.Score < 13 {
-		return 0, nil
-	}
-
-	if obj.Score < 16 {
-		return 1, nil
-	}
-
-	if obj.Score < 18 {
-		return 2, nil
-	}
-
-	return 3, nil
+	return models.AbilityModifier(obj.Score), nil
 }
 
 // CharacterClass is the resolver for the characterClass field.
@@ -58,7 +35,7 @@ func (r *characterResolver) CharacterClass(ctx context.Context, obj *model.Chara
 		return nil, fmt.Errorf("invalid UUID: %w", err)
 	}
 
-	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	characterModel, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +55,7 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 		return nil, fmt.Errorf("invalid UUID: %w", err)
 	}
 
-	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	characterModel, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, uuid)
 	if err != nil {
 		return nil, fmt.Errorf("no character with ID '%s': %w", uuid.String(), err)
 	}
@@ -194,7 +171,7 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 		return nil, fmt.Errorf("invalid UUID: %w", err)
 	}
 
-	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	characterModel, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, uuid)
 	if err != nil {
 		return nil, fmt.Errorf("no character with ID '%s': %w", uuid.String(), err)
 	}
@@ -381,7 +358,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	characterModel, err := r.Loaders.CharacterLoader.Load(ctx, characterId)
+	characterModel, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, characterId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load character with ID '%s' after creation: %w", characterId, err)
 	}
@@ -425,8 +402,9 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 	// Build characters and prime the loader cache
 
 	characters := make([]*model.Character, len(characterModels))
+	loaders := models.LoadersFor(ctx)
 	for i, characterModel := range characterModels {
-		r.Loaders.CharacterLoader.Prime(characterModel.ID, characterModel)
+		loaders.CharacterLoader.Prime(characterModel.ID, characterModel)
 		characters[i] = models.ToCharacterObject(characterModel)
 	}
 
@@ -440,8 +418,11 @@ func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQ
 		return nil, fmt.Errorf("invalid UUID: %w", err)
 	}
 
-	m, err := r.Loaders.CharacterLoader.Load(ctx, uuid)
+	m, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, uuid)
 	if err != nil {
+		if errors.Is(err, dataloadgen.ErrNotFound) {
+			return nil, fmt.Errorf("character with ID '%s' not found", id)
+		}
 		return nil, err
 	}
 
@@ -455,7 +436,7 @@ func (r *lookResolver) LookType(ctx context.Context, obj *model.Look) (*model.Lo
 		return nil, fmt.Errorf("invalid look ID: %w", err)
 	}
 
-	m, err := r.Loaders.LookLoader.Load(ctx, int32(id))
+	m, err := models.LoadersFor(ctx).LookLoader.Load(ctx, int32(id))
 	if err != nil {
 		return nil, err
 	}

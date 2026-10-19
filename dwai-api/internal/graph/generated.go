@@ -1511,7 +1511,7 @@ func (ec *executionContext) field_CharacterMutation_create_args(ctx context.Cont
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (model.CreateCharacterInput, error) {
-			return ec.unmarshalNCreateCharacterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreateCharacterInput(ctx, v)
+			return ec.unmarshalNCreateCharacterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreateCharacterInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -1675,7 +1675,7 @@ func (ec *executionContext) _AbilityScore_ability(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v model.Ability) graphql.Marshaler {
-			return ec.marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx, selections, v)
+			return ec.marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbility(ctx, selections, v)
 		},
 		true,
 		true,
@@ -1790,7 +1790,7 @@ func (ec *executionContext) _Character_abilities(ctx context.Context, field grap
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.AbilityScore) graphql.Marshaler {
-			return ec.marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx, selections, v)
+			return ec.marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -1868,7 +1868,7 @@ func (ec *executionContext) _Character_characterClass(ctx context.Context, field
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterClass) graphql.Marshaler {
-			return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx, selections, v)
+			return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClass(ctx, selections, v)
 		},
 		true,
 		true,
@@ -1900,7 +1900,7 @@ func (ec *executionContext) _Character_classMoves(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -1932,7 +1932,7 @@ func (ec *executionContext) _Character_equipment(ctx context.Context, field grap
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Item) graphql.Marshaler {
-			return ec.marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemᚄ(ctx, selections, v)
+			return ec.marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2033,7 +2033,7 @@ func (ec *executionContext) _Character_looks(ctx context.Context, field graphql.
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Look) graphql.Marshaler {
-			return ec.marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookᚄ(ctx, selections, v)
+			return ec.marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2088,7 +2088,7 @@ func (ec *executionContext) _Character_raceMove(ctx context.Context, field graph
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx, selections, v)
+			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2120,7 +2120,7 @@ func (ec *executionContext) _CharacterClass_alignmentTemplates(ctx context.Conte
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
-			return ec.marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx, selections, v)
+			return ec.marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2244,7 +2244,7 @@ func (ec *executionContext) _CharacterClass_lookExamples(ctx context.Context, fi
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.LookExample) graphql.Marshaler {
-			return ec.marshalNLookExample2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookExampleᚄ(ctx, selections, v)
+			return ec.marshalNLookExample2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookExampleᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2299,7 +2299,7 @@ func (ec *executionContext) _CharacterClass_raceMoves(ctx context.Context, field
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2331,7 +2331,7 @@ func (ec *executionContext) _CharacterClass_startingMoves(ctx context.Context, f
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2363,7 +2363,7 @@ func (ec *executionContext) _CharacterClass_startingGear(ctx context.Context, fi
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.StartingGear) graphql.Marshaler {
-			return ec.marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx, selections, v)
+			return ec.marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐStartingGear(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2395,7 +2395,7 @@ func (ec *executionContext) _CharacterClassQuery_all(ctx context.Context, field 
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.CharacterClass) graphql.Marshaler {
-			return ec.marshalNCharacterClass2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClassᚄ(ctx, selections, v)
+			return ec.marshalNCharacterClass2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClassᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2428,7 +2428,7 @@ func (ec *executionContext) _CharacterClassQuery_byKey(ctx context.Context, fiel
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterClass) graphql.Marshaler {
-			return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx, selections, v)
+			return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClass(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2472,7 +2472,7 @@ func (ec *executionContext) _CharacterMutation_create(ctx context.Context, field
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
-			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2515,7 +2515,7 @@ func (ec *executionContext) _CharacterQuery_all(ctx context.Context, field graph
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Character) graphql.Marshaler {
-			return ec.marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterᚄ(ctx, selections, v)
+			return ec.marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2548,7 +2548,7 @@ func (ec *executionContext) _CharacterQuery_byId(ctx context.Context, field grap
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
-			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2591,7 +2591,7 @@ func (ec *executionContext) _CreationOption_choices(ctx context.Context, field g
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.CreationOptionChoice) graphql.Marshaler {
-			return ec.marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx, selections, v)
+			return ec.marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2761,7 +2761,7 @@ func (ec *executionContext) _GearOptionGroup_choices(ctx context.Context, field 
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v [][]*model.ItemOption) graphql.Marshaler {
-			return ec.marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx, selections, v)
+			return ec.marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOptionᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2931,7 +2931,7 @@ func (ec *executionContext) _Item_tags(ctx context.Context, field graphql.Collec
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
+			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -2963,7 +2963,7 @@ func (ec *executionContext) _Item_template(ctx context.Context, field graphql.Co
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.ItemTemplate) graphql.Marshaler {
-			return ec.marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemTemplate(ctx, selections, v)
+			return ec.marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplate(ctx, selections, v)
 		},
 		true,
 		false,
@@ -3019,7 +3019,7 @@ func (ec *executionContext) _ItemMutation_setWorn(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Item) graphql.Marshaler {
-			return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx, selections, v)
+			return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItem(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3154,7 +3154,7 @@ func (ec *executionContext) _ItemOption_tags(ctx context.Context, field graphql.
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
+			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3255,7 +3255,7 @@ func (ec *executionContext) _ItemTemplate_tags(ctx context.Context, field graphq
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
+			return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3310,7 +3310,7 @@ func (ec *executionContext) _Look_lookType(ctx context.Context, field graphql.Co
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.LookType) graphql.Marshaler {
-			return ec.marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx, selections, v)
+			return ec.marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookType(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3480,7 +3480,7 @@ func (ec *executionContext) _LookTypeQuery_all(ctx context.Context, field graphq
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.LookType) graphql.Marshaler {
-			return ec.marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeᚄ(ctx, selections, v)
+			return ec.marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookTypeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3512,7 +3512,7 @@ func (ec *executionContext) _Move_creationOptions(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.CreationOption) graphql.Marshaler {
-			return ec.marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionᚄ(ctx, selections, v)
+			return ec.marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3866,7 +3866,7 @@ func (ec *executionContext) _MoveCreationOptionChoice_move(ctx context.Context, 
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx, selections, v)
+			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3921,7 +3921,7 @@ func (ec *executionContext) _MoveQuery_all(ctx context.Context, field graphql.Co
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3954,7 +3954,7 @@ func (ec *executionContext) _MoveQuery_byKey(ctx context.Context, field graphql.
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx, selections, v)
+			return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3998,7 +3998,7 @@ func (ec *executionContext) _MoveQuery_byType(ctx context.Context, field graphql
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
-			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4041,7 +4041,7 @@ func (ec *executionContext) _Mutation_characters(ctx context.Context, field grap
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterMutation) graphql.Marshaler {
-			return ec.marshalNCharacterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterMutation(ctx, selections, v)
+			return ec.marshalNCharacterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterMutation(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4073,7 +4073,7 @@ func (ec *executionContext) _Mutation_items(ctx context.Context, field graphql.C
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.ItemMutation) graphql.Marshaler {
-			return ec.marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx, selections, v)
+			return ec.marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemMutation(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4128,7 +4128,7 @@ func (ec *executionContext) _Query_characterClasses(ctx context.Context, field g
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterClassQuery) graphql.Marshaler {
-			return ec.marshalNCharacterClassQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClassQuery(ctx, selections, v)
+			return ec.marshalNCharacterClassQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClassQuery(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4160,7 +4160,7 @@ func (ec *executionContext) _Query_characters(ctx context.Context, field graphql
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CharacterQuery) graphql.Marshaler {
-			return ec.marshalNCharacterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterQuery(ctx, selections, v)
+			return ec.marshalNCharacterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterQuery(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4192,7 +4192,7 @@ func (ec *executionContext) _Query_lookTypes(ctx context.Context, field graphql.
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.LookTypeQuery) graphql.Marshaler {
-			return ec.marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeQuery(ctx, selections, v)
+			return ec.marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookTypeQuery(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4224,7 +4224,7 @@ func (ec *executionContext) _Query_moves(ctx context.Context, field graphql.Coll
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.MoveQuery) graphql.Marshaler {
-			return ec.marshalNMoveQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveQuery(ctx, selections, v)
+			return ec.marshalNMoveQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveQuery(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4355,7 +4355,7 @@ func (ec *executionContext) _StartingGear_default(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.ItemOption) graphql.Marshaler {
-			return ec.marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx, selections, v)
+			return ec.marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOptionᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -4387,7 +4387,7 @@ func (ec *executionContext) _StartingGear_options(ctx context.Context, field gra
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.GearOptionGroup) graphql.Marshaler {
-			return ec.marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx, selections, v)
+			return ec.marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -5554,7 +5554,7 @@ func (ec *executionContext) unmarshalInputAbilityScoreInput(ctx context.Context,
 		switch k {
 		case "ability":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ability"))
-			data, err := ec.unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx, v)
+			data, err := ec.unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbility(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5591,7 +5591,7 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 		switch k {
 		case "abilities":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("abilities"))
-			data, err := ec.unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx, v)
+			data, err := ec.unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5619,21 +5619,21 @@ func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Conte
 			it.CharacterClassKey = data
 		case "gearOptionChoices":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gearOptionChoices"))
-			data, err := ec.unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx, v)
+			data, err := ec.unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.GearOptionChoices = data
 		case "looks":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("looks"))
-			data, err := ec.unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInputᚄ(ctx, v)
+			data, err := ec.unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐNewLookInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Looks = data
 		case "moveCreationOptionChoices":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moveCreationOptionChoices"))
-			data, err := ec.unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx, v)
+			data, err := ec.unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8114,21 +8114,21 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx context.Context, v any) (model.Ability, error) {
+func (ec *executionContext) unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbility(ctx context.Context, v any) (model.Ability, error) {
 	var res model.Ability
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbility(ctx context.Context, sel ast.SelectionSet, v model.Ability) graphql.Marshaler {
+func (ec *executionContext) marshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbility(ctx context.Context, sel ast.SelectionSet, v model.Ability) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AbilityScore) graphql.Marshaler {
+func (ec *executionContext) marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AbilityScore) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScore(ctx, sel, v[i])
+		return ec.marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScore(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8140,7 +8140,7 @@ func (ec *executionContext) marshalNAbilityScore2ᚕᚖgithubᚗcomᚋdeepconcer
 	return ret
 }
 
-func (ec *executionContext) marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScore(ctx context.Context, sel ast.SelectionSet, v *model.AbilityScore) graphql.Marshaler {
+func (ec *executionContext) marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScore(ctx context.Context, sel ast.SelectionSet, v *model.AbilityScore) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8150,14 +8150,14 @@ func (ec *executionContext) marshalNAbilityScore2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._AbilityScore(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx context.Context, v any) ([]*model.AbilityScoreInput, error) {
+func (ec *executionContext) unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreInputᚄ(ctx context.Context, v any) ([]*model.AbilityScoreInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.AbilityScoreInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -8165,16 +8165,16 @@ func (ec *executionContext) unmarshalNAbilityScoreInput2ᚕᚖgithubᚗcomᚋdee
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAbilityScoreInput(ctx context.Context, v any) (*model.AbilityScoreInput, error) {
+func (ec *executionContext) unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbilityScoreInput(ctx context.Context, v any) (*model.AbilityScoreInput, error) {
 	res, err := ec.unmarshalInputAbilityScoreInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
+func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNAlignmentTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAlignmentTemplate(ctx, sel, v[i])
+		return ec.marshalNAlignmentTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplate(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8186,7 +8186,7 @@ func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepc
 	return ret
 }
 
-func (ec *executionContext) marshalNAlignmentTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐAlignmentTemplate(ctx context.Context, sel ast.SelectionSet, v *model.AlignmentTemplate) graphql.Marshaler {
+func (ec *executionContext) marshalNAlignmentTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplate(ctx context.Context, sel ast.SelectionSet, v *model.AlignmentTemplate) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8212,15 +8212,15 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCharacter2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v model.Character) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacter2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v model.Character) graphql.Marshaler {
 	return ec._Character(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Character) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Character) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx, sel, v[i])
+		return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8232,7 +8232,7 @@ func (ec *executionContext) marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcern�
 	return ret
 }
 
-func (ec *executionContext) marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v *model.Character) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v *model.Character) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8242,15 +8242,15 @@ func (ec *executionContext) marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdw
 	return ec._Character(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCharacterClass2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx context.Context, sel ast.SelectionSet, v model.CharacterClass) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterClass2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClass(ctx context.Context, sel ast.SelectionSet, v model.CharacterClass) graphql.Marshaler {
 	return ec._CharacterClass(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCharacterClass2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClassᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CharacterClass) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterClass2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClassᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CharacterClass) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx, sel, v[i])
+		return ec.marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClass(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8262,7 +8262,7 @@ func (ec *executionContext) marshalNCharacterClass2ᚕᚖgithubᚗcomᚋdeepconc
 	return ret
 }
 
-func (ec *executionContext) marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClass(ctx context.Context, sel ast.SelectionSet, v *model.CharacterClass) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClass(ctx context.Context, sel ast.SelectionSet, v *model.CharacterClass) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8272,11 +8272,11 @@ func (ec *executionContext) marshalNCharacterClass2ᚖgithubᚗcomᚋdeepconcern
 	return ec._CharacterClass(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCharacterClassQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClassQuery(ctx context.Context, sel ast.SelectionSet, v model.CharacterClassQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterClassQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClassQuery(ctx context.Context, sel ast.SelectionSet, v model.CharacterClassQuery) graphql.Marshaler {
 	return ec._CharacterClassQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCharacterClassQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterClassQuery(ctx context.Context, sel ast.SelectionSet, v *model.CharacterClassQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterClassQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterClassQuery(ctx context.Context, sel ast.SelectionSet, v *model.CharacterClassQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8286,11 +8286,11 @@ func (ec *executionContext) marshalNCharacterClassQuery2ᚖgithubᚗcomᚋdeepco
 	return ec._CharacterClassQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCharacterMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterMutation(ctx context.Context, sel ast.SelectionSet, v model.CharacterMutation) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterMutation(ctx context.Context, sel ast.SelectionSet, v model.CharacterMutation) graphql.Marshaler {
 	return ec._CharacterMutation(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCharacterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterMutation(ctx context.Context, sel ast.SelectionSet, v *model.CharacterMutation) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterMutation(ctx context.Context, sel ast.SelectionSet, v *model.CharacterMutation) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8300,11 +8300,11 @@ func (ec *executionContext) marshalNCharacterMutation2ᚖgithubᚗcomᚋdeepconc
 	return ec._CharacterMutation(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCharacterQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterQuery(ctx context.Context, sel ast.SelectionSet, v model.CharacterQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterQuery(ctx context.Context, sel ast.SelectionSet, v model.CharacterQuery) graphql.Marshaler {
 	return ec._CharacterQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCharacterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCharacterQuery(ctx context.Context, sel ast.SelectionSet, v *model.CharacterQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNCharacterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterQuery(ctx context.Context, sel ast.SelectionSet, v *model.CharacterQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8314,16 +8314,16 @@ func (ec *executionContext) marshalNCharacterQuery2ᚖgithubᚗcomᚋdeepconcern
 	return ec._CharacterQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNCreateCharacterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreateCharacterInput(ctx context.Context, v any) (model.CreateCharacterInput, error) {
+func (ec *executionContext) unmarshalNCreateCharacterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreateCharacterInput(ctx context.Context, v any) (model.CreateCharacterInput, error) {
 	res, err := ec.unmarshalInputCreateCharacterInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOption) graphql.Marshaler {
+func (ec *executionContext) marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOption) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOption(ctx, sel, v[i])
+		return ec.marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOption(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8335,7 +8335,7 @@ func (ec *executionContext) marshalNCreationOption2ᚕᚖgithubᚗcomᚋdeepconc
 	return ret
 }
 
-func (ec *executionContext) marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOption(ctx context.Context, sel ast.SelectionSet, v *model.CreationOption) graphql.Marshaler {
+func (ec *executionContext) marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOption(ctx context.Context, sel ast.SelectionSet, v *model.CreationOption) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8345,11 +8345,11 @@ func (ec *executionContext) marshalNCreationOption2ᚖgithubᚗcomᚋdeepconcern
 	return ec._CreationOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOptionChoice) graphql.Marshaler {
+func (ec *executionContext) marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionChoiceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CreationOptionChoice) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoice(ctx, sel, v[i])
+		return ec.marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionChoice(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8361,7 +8361,7 @@ func (ec *executionContext) marshalNCreationOptionChoice2ᚕᚖgithubᚗcomᚋde
 	return ret
 }
 
-func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐCreationOptionChoice(ctx context.Context, sel ast.SelectionSet, v *model.CreationOptionChoice) graphql.Marshaler {
+func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCreationOptionChoice(ctx context.Context, sel ast.SelectionSet, v *model.CreationOptionChoice) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8371,14 +8371,14 @@ func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepc
 	return ec._CreationOptionChoice(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.GearOptionChoiceInput, error) {
+func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.GearOptionChoiceInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.GearOptionChoiceInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNGearOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionChoiceInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNGearOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionChoiceInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -8386,16 +8386,16 @@ func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcom�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionChoiceInput(ctx context.Context, v any) (*model.GearOptionChoiceInput, error) {
+func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionChoiceInput(ctx context.Context, v any) (*model.GearOptionChoiceInput, error) {
 	res, err := ec.unmarshalInputGearOptionChoiceInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GearOptionGroup) graphql.Marshaler {
+func (ec *executionContext) marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GearOptionGroup) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroup(ctx, sel, v[i])
+		return ec.marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionGroup(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8407,7 +8407,7 @@ func (ec *executionContext) marshalNGearOptionGroup2ᚕᚖgithubᚗcomᚋdeepcon
 	return ret
 }
 
-func (ec *executionContext) marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐGearOptionGroup(ctx context.Context, sel ast.SelectionSet, v *model.GearOptionGroup) graphql.Marshaler {
+func (ec *executionContext) marshalNGearOptionGroup2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionGroup(ctx context.Context, sel ast.SelectionSet, v *model.GearOptionGroup) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8479,15 +8479,15 @@ func (ec *executionContext) marshalNInt2ᚕint32ᚄ(ctx context.Context, sel ast
 	return ret
 }
 
-func (ec *executionContext) marshalNItem2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v model.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v model.Item) graphql.Marshaler {
 	return ec._Item(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Item) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx, sel, v[i])
+		return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItem(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8499,7 +8499,7 @@ func (ec *executionContext) marshalNItem2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwai
 	return ret
 }
 
-func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v *model.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v *model.Item) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8509,11 +8509,11 @@ func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 	return ec._Item(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNItemMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v model.ItemMutation) graphql.Marshaler {
+func (ec *executionContext) marshalNItemMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v model.ItemMutation) graphql.Marshaler {
 	return ec._ItemMutation(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v *model.ItemMutation) graphql.Marshaler {
+func (ec *executionContext) marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemMutation(ctx context.Context, sel ast.SelectionSet, v *model.ItemMutation) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8523,11 +8523,11 @@ func (ec *executionContext) marshalNItemMutation2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._ItemMutation(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*model.ItemOption) graphql.Marshaler {
+func (ec *executionContext) marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOptionᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*model.ItemOption) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx, sel, v[i])
+		return ec.marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOptionᚄ(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8539,11 +8539,11 @@ func (ec *executionContext) marshalNItemOption2ᚕᚕᚖgithubᚗcomᚋdeepconce
 	return ret
 }
 
-func (ec *executionContext) marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ItemOption) graphql.Marshaler {
+func (ec *executionContext) marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ItemOption) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOption(ctx, sel, v[i])
+		return ec.marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOption(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8555,7 +8555,7 @@ func (ec *executionContext) marshalNItemOption2ᚕᚖgithubᚗcomᚋdeepconcern�
 	return ret
 }
 
-func (ec *executionContext) marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemOption(ctx context.Context, sel ast.SelectionSet, v *model.ItemOption) graphql.Marshaler {
+func (ec *executionContext) marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemOption(ctx context.Context, sel ast.SelectionSet, v *model.ItemOption) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8565,11 +8565,11 @@ func (ec *executionContext) marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋd
 	return ec._ItemOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Look) graphql.Marshaler {
+func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Look) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNLook2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLook(ctx, sel, v[i])
+		return ec.marshalNLook2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLook(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8581,7 +8581,7 @@ func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwai
 	return ret
 }
 
-func (ec *executionContext) marshalNLook2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLook(ctx context.Context, sel ast.SelectionSet, v *model.Look) graphql.Marshaler {
+func (ec *executionContext) marshalNLook2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLook(ctx context.Context, sel ast.SelectionSet, v *model.Look) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8591,11 +8591,11 @@ func (ec *executionContext) marshalNLook2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 	return ec._Look(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLookExample2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookExampleᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LookExample) graphql.Marshaler {
+func (ec *executionContext) marshalNLookExample2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookExampleᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LookExample) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookExample(ctx, sel, v[i])
+		return ec.marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookExample(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8607,7 +8607,7 @@ func (ec *executionContext) marshalNLookExample2ᚕᚖgithubᚗcomᚋdeepconcern
 	return ret
 }
 
-func (ec *executionContext) marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookExample(ctx context.Context, sel ast.SelectionSet, v *model.LookExample) graphql.Marshaler {
+func (ec *executionContext) marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookExample(ctx context.Context, sel ast.SelectionSet, v *model.LookExample) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8617,15 +8617,15 @@ func (ec *executionContext) marshalNLookExample2ᚖgithubᚗcomᚋdeepconcernᚋ
 	return ec._LookExample(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLookType2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v model.LookType) graphql.Marshaler {
+func (ec *executionContext) marshalNLookType2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v model.LookType) graphql.Marshaler {
 	return ec._LookType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LookType) graphql.Marshaler {
+func (ec *executionContext) marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LookType) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx, sel, v[i])
+		return ec.marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookType(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8637,7 +8637,7 @@ func (ec *executionContext) marshalNLookType2ᚕᚖgithubᚗcomᚋdeepconcernᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v *model.LookType) graphql.Marshaler {
+func (ec *executionContext) marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookType(ctx context.Context, sel ast.SelectionSet, v *model.LookType) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8647,11 +8647,11 @@ func (ec *executionContext) marshalNLookType2ᚖgithubᚗcomᚋdeepconcernᚋdwa
 	return ec._LookType(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLookTypeQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeQuery(ctx context.Context, sel ast.SelectionSet, v model.LookTypeQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNLookTypeQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookTypeQuery(ctx context.Context, sel ast.SelectionSet, v model.LookTypeQuery) graphql.Marshaler {
 	return ec._LookTypeQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐLookTypeQuery(ctx context.Context, sel ast.SelectionSet, v *model.LookTypeQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookTypeQuery(ctx context.Context, sel ast.SelectionSet, v *model.LookTypeQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8661,15 +8661,15 @@ func (ec *executionContext) marshalNLookTypeQuery2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._LookTypeQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMove2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v model.Move) graphql.Marshaler {
+func (ec *executionContext) marshalNMove2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v model.Move) graphql.Marshaler {
 	return ec._Move(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Move) graphql.Marshaler {
+func (ec *executionContext) marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Move) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx, sel, v[i])
+		return ec.marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8681,7 +8681,7 @@ func (ec *executionContext) marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwai
 	return ret
 }
 
-func (ec *executionContext) marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v *model.Move) graphql.Marshaler {
+func (ec *executionContext) marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v *model.Move) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8691,14 +8691,14 @@ func (ec *executionContext) marshalNMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋ
 	return ec._Move(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.MoveCreationOptionChoiceInput, error) {
+func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveCreationOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.MoveCreationOptionChoiceInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.MoveCreationOptionChoiceInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -8706,16 +8706,16 @@ func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚕᚖgithub
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx context.Context, v any) (*model.MoveCreationOptionChoiceInput, error) {
+func (ec *executionContext) unmarshalNMoveCreationOptionChoiceInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveCreationOptionChoiceInput(ctx context.Context, v any) (*model.MoveCreationOptionChoiceInput, error) {
 	res, err := ec.unmarshalInputMoveCreationOptionChoiceInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNMoveQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveQuery(ctx context.Context, sel ast.SelectionSet, v model.MoveQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNMoveQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveQuery(ctx context.Context, sel ast.SelectionSet, v model.MoveQuery) graphql.Marshaler {
 	return ec._MoveQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMoveQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐMoveQuery(ctx context.Context, sel ast.SelectionSet, v *model.MoveQuery) graphql.Marshaler {
+func (ec *executionContext) marshalNMoveQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveQuery(ctx context.Context, sel ast.SelectionSet, v *model.MoveQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8725,14 +8725,14 @@ func (ec *executionContext) marshalNMoveQuery2ᚖgithubᚗcomᚋdeepconcernᚋdw
 	return ec._MoveQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInputᚄ(ctx context.Context, v any) ([]*model.NewLookInput, error) {
+func (ec *executionContext) unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐNewLookInputᚄ(ctx context.Context, v any) ([]*model.NewLookInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.NewLookInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐNewLookInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -8740,16 +8740,16 @@ func (ec *executionContext) unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconc
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐNewLookInput(ctx context.Context, v any) (*model.NewLookInput, error) {
+func (ec *executionContext) unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐNewLookInput(ctx context.Context, v any) (*model.NewLookInput, error) {
 	res, err := ec.unmarshalInputNewLookInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStartingGear2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v model.StartingGear) graphql.Marshaler {
+func (ec *executionContext) marshalNStartingGear2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v model.StartingGear) graphql.Marshaler {
 	return ec._StartingGear(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v *model.StartingGear) graphql.Marshaler {
+func (ec *executionContext) marshalNStartingGear2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v *model.StartingGear) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -8805,11 +8805,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTag(ctx, sel, v[i])
+		return ec.marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTag(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -8821,7 +8821,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwai�
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐTag(ctx context.Context, sel ast.SelectionSet, v *model.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTag(ctx context.Context, sel ast.SelectionSet, v *model.Tag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -9020,7 +9020,7 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋgraphᚋmodelᚐItemTemplate(ctx context.Context, sel ast.SelectionSet, v *model.ItemTemplate) graphql.Marshaler {
+func (ec *executionContext) marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplate(ctx context.Context, sel ast.SelectionSet, v *model.ItemTemplate) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

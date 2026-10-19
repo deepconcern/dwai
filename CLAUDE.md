@@ -15,16 +15,17 @@ The API is the single source of truth for game rules and data. The frontend cons
 
 ## Local Development
 
-1. PostgreSQL 18+ (migrations use `uuidv7()`), with `DATABASE_URL` set for the API.
-2. `dwai-api`: `go run .` — applies migrations on startup and serves GraphQL at `http://localhost:5000/graphql` (playground at `/playground`).
+1. PostgreSQL 18+ (migrations use `uuidv7()`), with `DATABASE_URI` set for the API.
+2. `dwai-api`: `go run ./cmd/server` — applies migrations on startup and serves GraphQL at `http://localhost:5000/graphql` (playground at `/playground`).
 3. `dwai-app`: `bun install`, `bun run codegen` (API must be running), `bun dev` — serves `http://localhost:3000`. `NEXT_PUBLIC_GRAPHQL_URI` in `.env.local` points at the API.
+4. Docker, for the API integration tests (`make test-integration`, also run by `make check`). They start their own Postgres container, so they don't need `DATABASE_URI`.
 
 ## Workflow
 
 - One branch per roadmap milestone (or a coherent slice of one), merged to `main` when its "done when" criteria in `ROADMAP.md` are met. Update `ROADMAP.md` in the same branch.
 - New features ship with tests for the behavior they add.
-- Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats, lints, and typechecks staged files; pre-push runs both test suites. Requires `lefthook` and `golangci-lint` on `PATH`.
-- `make check` runs lint, typecheck, and tests for both apps; `make fmt` formats both. Run `make check` before considering work done.
+- Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats, lints, and typechecks staged files; pre-push runs both unit test suites (not the integration tests, so pushing doesn't need Docker). Requires `lefthook` and `golangci-lint` on `PATH`.
+- `make check` runs lint, typecheck, and tests for both apps, plus the API integration tests; `make fmt` formats both. Run `make check` before considering work done.
 
 ## Dungeon World — Domain Model
 

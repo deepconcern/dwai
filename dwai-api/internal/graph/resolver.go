@@ -16,7 +16,6 @@ type Resolver struct {
 	CharacterClasses *models.CharacterClassMap
 	DbPool           *pgxpool.Pool
 	ItemTemplates    *models.ItemTemplateMap
-	Loaders          *models.Loaders
 	LookTypes        *models.LookTypeMap
 	PlayerMoves      *models.MoveMap
 	TagDefinitions   *models.TagDefinitionMap

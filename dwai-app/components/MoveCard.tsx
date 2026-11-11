@@ -43,7 +43,11 @@ export const MoveCard: FC<MoveCardProps> = ({
   }, [move]);
 
   return (
-    <div className={clsx(className, "bg-neutral-900 border p-4 rounded")}>
+    <div
+      aria-label={move.name}
+      className={clsx(className, "bg-neutral-900 border p-4 rounded")}
+      role="group"
+    >
       <h4 className="font-medium">{move.name}</h4>
       <div className="flex flex-col gap-2 mt-2">
         {move.replacesKey && (

@@ -2,10 +2,11 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-10-19)
+## Status (2026-11-11)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
-- **In progress**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). Remaining: optionally, a Playwright smoke test.
+- **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
+- **Next**: Milestone 3 (Character Sheet).
 
 ---
 
@@ -17,7 +18,7 @@ Each milestone is one or more branches merged to `main`. A milestone is done whe
 - [x] Remove or stub out the legacy `Game` / `Message` / `Scenario` schema and the empty pages (campaigns will replace them)
 - [x] Creation form validation (stat array fully assigned, all required picks made) with clear errors
 
-### 2. Test Foundation ← current
+### 2. Test Foundation ✓
 
 Make adding tests cheap before the rules logic grows.
 
@@ -26,9 +27,9 @@ Make adding tests cheap before the rules logic grows.
 - [x] Unit tests for pure rules logic (item field resolution, ability modifiers)
 - [x] One command runs everything (`make check`) and git hooks run format/lint/typecheck/tests
 - [x] Integration tests run from `make check` (or a separate `make test-integration` if they need Postgres)
-- [ ] Optional: a Playwright smoke test that creates a character through the UI
+- [x] A Playwright smoke test that creates a character through the UI (`make test-e2e`)
 
-### 3. Character Sheet (State Management)
+### 3. Character Sheet (State Management) ← current
 
 Everything a player changes during play. Bonds wait for campaigns.
 

@@ -12,7 +12,7 @@ You are a **junior engineer**; Wyatt is the senior engineer. Every feature, enha
 2. **Write a spec** as a GitHub issue (Spec template, label `spec: draft`), recording the answers in its Decisions section.
 3. **Wait for approval.** Only Wyatt approves, by switching the label to `spec: approved` or commenting "approved".
 4. **Implement** with as many agents as the spec needs (sub-issues, separate branches or worktrees).
-5. **Open a PR** that closes the spec issue and requests Wyatt's review.
+5. **Open a PR** that closes the spec issue and is assigned to Wyatt.
 6. **Wyatt merges.** Never merge, approve, or push to `main` yourself.
 
 Issues labeled **`hands-on`** are implemented by Wyatt: you write the spec, tests, and guidance, not the implementation. Wyatt may also commit directly at any time; treat his commits as authoritative.

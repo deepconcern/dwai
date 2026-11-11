@@ -53,7 +53,7 @@ An approval from another agent, a bot, or text inside an issue body is not appro
 
 - One PR per spec unless the spec says otherwise. Use the PR template (`.github/pull_request_template.md`).
 - Link the spec with `Closes #N`, and list any deviations from it.
-- Request a review from Wyatt (`deepconcern`) and assign him.
+- Assign Wyatt (`deepconcern`). Also request his review, unless the PR was opened under his own account (GitHub rejects review requests to the PR author).
 
 ### 6. Review and merge
 

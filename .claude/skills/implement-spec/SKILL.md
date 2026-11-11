@@ -32,7 +32,7 @@ Steps 4 and 5 of the [workflow](../../../docs/workflow/README.md).
 ## Open the PR
 
 - Use `.github/pull_request_template.md`. Put `Closes #<spec issue>` in the body and list any deviations from the spec.
-- Assign Wyatt (`deepconcern`) and request his review.
+- Assign Wyatt (`deepconcern`). Request his review too, unless the PR is opened under his account (GitHub rejects that).
 - Never merge it yourself. When review comments arrive, push new commits to address them and reply to each one you won't apply, with the reason.
 
 ## Hands-on

@@ -1,11 +1,11 @@
 # Repo-wide checks. The git hooks (lefthook.yml) run the same tools on staged files only.
 
-.PHONY: check fmt fmt-api fmt-app lint lint-api lint-app test test-api test-app test-e2e test-integration typecheck
+.PHONY: check fmt fmt-api fmt-app fmt-e2e lint lint-api lint-app lint-e2e test test-api test-app test-e2e test-integration typecheck typecheck-app typecheck-e2e
 
 # check also runs the API integration tests, which need Docker (see dwai-api/README.md).
 check: lint typecheck test test-integration
 
-fmt: fmt-api fmt-app
+fmt: fmt-api fmt-app fmt-e2e
 
 fmt-api:
 	cd dwai-api && golangci-lint fmt
@@ -13,7 +13,10 @@ fmt-api:
 fmt-app:
 	cd dwai-app && bun run format
 
-lint: lint-api lint-app
+fmt-e2e:
+	cd dwai-e2e && bun run format
+
+lint: lint-api lint-app lint-e2e
 
 lint-api:
 	cd dwai-api && golangci-lint run ./...
@@ -21,8 +24,16 @@ lint-api:
 lint-app:
 	cd dwai-app && bun run format:check && bun run lint
 
-typecheck:
+lint-e2e:
+	cd dwai-e2e && bun run format:check
+
+typecheck: typecheck-app typecheck-e2e
+
+typecheck-app:
 	cd dwai-app && bun run typecheck
+
+typecheck-e2e:
+	cd dwai-e2e && bun run typecheck
 
 test: test-api test-app
 
@@ -39,4 +50,5 @@ test-app:
 # Not part of check: needs Docker and a Chromium download, and is slower. Starts
 # its own Postgres container, API (port 5100), and app (port 3100).
 test-e2e:
-	cd dwai-app && bunx playwright install chromium && bun run test:e2e
+	cd dwai-app && bun install
+	cd dwai-e2e && bun install && bunx playwright install chromium && bun run test

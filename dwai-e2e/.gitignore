@@ -1,0 +1,7 @@
+# Playwright output
+/playwright-report/
+/test-results/
+
+# The e2e API server, built by playwright.config.ts
+/.bin/
+/node_modules

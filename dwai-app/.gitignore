@@ -11,10 +11,7 @@
 !.yarn/versions
 
 # testing
-/.e2e-bin/
 /coverage
-/playwright-report/
-/test-results/
 
 # next.js
 /.next/

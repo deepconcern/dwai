@@ -1,6 +1,6 @@
 # Copilot Instructions
 
-The source of truth for all agents in this repo is [`AGENTS.md`](../AGENTS.md) at the root, plus [`dwai-api/AGENTS.md`](../dwai-api/AGENTS.md) and [`dwai-app/AGENTS.md`](../dwai-app/AGENTS.md). Read them before working. This file only summarizes what matters most, so don't add rules here that aren't also in `AGENTS.md`.
+The source of truth for all agents in this repo is [`AGENTS.md`](../AGENTS.md) at the root, plus [`dwai-api/AGENTS.md`](../dwai-api/AGENTS.md), [`dwai-app/AGENTS.md`](../dwai-app/AGENTS.md), and [`dwai-e2e/AGENTS.md`](../dwai-e2e/AGENTS.md). Read them before working. This file only summarizes what matters most, so don't add rules here that aren't also in `AGENTS.md`.
 
 - **Workflow:** you are a junior engineer and Wyatt (`deepconcern`) is the senior. For new work: ask questions first, write a spec as a GitHub issue (`spec: draft`), and implement only after Wyatt labels it `spec: approved`. Deliver a PR that closes the issue. Only Wyatt merges. Issues labeled `hands-on` are implemented by Wyatt; you write tests and guidance only. See [docs/workflow](../docs/workflow/README.md).
 - **Game rules:** read [docs/game](../docs/game/README.md) before touching anything that models Dungeon World. Rules are computed in the Go API, never only in the frontend.

@@ -26,6 +26,7 @@ export const GearChoice: React.FC<GearChoiceProps> = ({
         <SelectableArea
           data-items-index={itemIndex}
           key={itemIndex}
+          label={`Gear group ${choiceIndex + 1}, option ${itemIndex + 1}`}
           onDeselect={() => {
             if (!selected) return;
 

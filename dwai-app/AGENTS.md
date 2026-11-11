@@ -6,23 +6,23 @@ Next.js frontend. Read the root [`AGENTS.md`](../AGENTS.md) first for the workfl
 
 Run from `dwai-app/` with Bun:
 
-| Command | Does |
-| ------- | ---- |
-| `bun install` | Install dependencies |
-| `bun run codegen` | Regenerate `gql/` from the running API's schema |
-| `bun dev` | Dev server at `http://localhost:3000` |
-| `bun run test` | Unit tests (`bun test`, files named `*.test.ts`) |
-| `bun run lint` / `bun run typecheck` / `bun run format` | Lint / typecheck / format |
+| Command                                                 | Does                                             |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| `bun install`                                           | Install dependencies                             |
+| `bun run codegen`                                       | Regenerate `gql/` from the running API's schema  |
+| `bun dev`                                               | Dev server at `http://localhost:3000`            |
+| `bun run test`                                          | Unit tests (`bun test`, files named `*.test.ts`) |
+| `bun run lint` / `bun run typecheck` / `bun run format` | Lint / typecheck / format                        |
 
 ## Layout
 
-| Path | Holds |
-| ---- | ----- |
-| `app/` | App Router pages; page-specific components sit next to their page |
-| `components/` | Shared UI components |
-| `fragments/` | Shared GraphQL fragments |
-| `gql/` | Generated GraphQL types (never edit) |
-| `lib/` | Helpers (Apollo client, small utilities) |
+| Path          | Holds                                                             |
+| ------------- | ----------------------------------------------------------------- |
+| `app/`        | App Router pages; page-specific components sit next to their page |
+| `components/` | Shared UI components                                              |
+| `fragments/`  | Shared GraphQL fragments                                          |
+| `gql/`        | Generated GraphQL types (never edit)                              |
+| `lib/`        | Helpers (Apollo client, small utilities)                          |
 
 ## Coding Style
 

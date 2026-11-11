@@ -47,6 +47,7 @@ Step-by-step procedures, in [`.claude/skills/`](.claude/skills/) (Claude Code an
 | ---- | ---------- |
 | `dwai-api/` | GraphQL API: Go, gqlgen, sqlc, PostgreSQL. Also owns the game data YAML. See [`dwai-api/AGENTS.md`](dwai-api/AGENTS.md). |
 | `dwai-app/` | Web frontend: Next.js, React, Apollo Client, Tailwind. Uses Bun. See [`dwai-app/AGENTS.md`](dwai-app/AGENTS.md). |
+| `dwai-e2e/` | Playwright browser tests that drive the app against the real API. Uses Bun. See [`dwai-e2e/AGENTS.md`](dwai-e2e/AGENTS.md). |
 | `docs/` | Agent-agnostic documentation (game rules, app domain, workflow) |
 | `.claude/skills/` | Agent skills (procedures), shared by Claude Code and Copilot |
 | `.github/` | Copilot instructions, issue and PR templates |
@@ -58,18 +59,19 @@ The API is the single source of truth for game rules and data. The frontend cons
 1. PostgreSQL 18+ (migrations use `uuidv7()`), with `DATABASE_URI` set for the API.
 2. `dwai-api`: `go run ./cmd/server` applies migrations on startup and serves GraphQL at `http://localhost:5000/graphql` (playground at `/playground`).
 3. `dwai-app`: `bun install`, `bun run codegen` (API must be running), `bun dev` serves `http://localhost:3000`. `NEXT_PUBLIC_GRAPHQL_URI` in `.env.local` points at the API.
-4. Docker, for the API integration tests (`make test-integration`, also run by `make check`). They start their own Postgres container, so they don't need `DATABASE_URI`.
+4. Docker, for the API integration tests (`make test-integration`, also run by `make check`). They start their own Postgres container, so they don't need `DATABASE_URI`. The Playwright tests (`make test-e2e`) need Docker too.
 
 ## Commands
 
 | Command (repo root) | Does |
 | ------------------- | ---- |
-| `make check` | Lint, typecheck, and unit tests for both apps, plus the API integration tests (needs Docker). Run before considering work done. |
-| `make fmt` | Format both apps |
+| `make check` | Lint, typecheck, and unit tests for the apps, plus the API integration tests (needs Docker). Run before considering work done. |
+| `make fmt` | Format all packages |
 | `make test` | Unit tests for both apps (no Docker) |
+| `make test-e2e` | Playwright browser tests (needs Docker and a Chromium download; not part of `make check`) |
 | `make test-integration` | API integration tests only |
 
-Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats, lints, and typechecks staged files; pre-push runs both unit test suites. They need `lefthook` and `golangci-lint` on `PATH`. If you can't run a check in your environment (for example no Docker), say so in the PR rather than claiming it passed.
+Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats, lints, and typechecks staged files; pre-push runs both unit test suites (not the Playwright tests). They need `lefthook` and `golangci-lint` on `PATH`. If you can't run a check in your environment (for example no Docker), say so in the PR rather than claiming it passed.
 
 ## Conventions
 

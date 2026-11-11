@@ -3,7 +3,7 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useId, useState } from "react";
 
 import { Dropdown } from "@/components/Dropdown";
 import { ItemTextDisplay } from "@/components/ItemTextDisplay";
@@ -107,6 +107,7 @@ type LookEntry = { lookTypeKey: string; value: string };
 
 export default function CreateCharacterPage() {
   const router = useRouter();
+  const idPrefix = useId();
 
   const [abilityScores, setAbilityScores] = useState<AbilityScoreEntry[]>(
     ABILITY_LABELS.map(({ ability }) => ({ ability, score: null })),
@@ -311,16 +312,28 @@ export default function CreateCharacterPage() {
         {/* Name + Class */}
         <div className="flex gap-4">
           <div className="flex-2">
-            <label className="block text-sm font-medium mb-1">Name</label>
+            <label
+              className="block text-sm font-medium mb-1"
+              htmlFor={`${idPrefix}-name`}
+            >
+              Name
+            </label>
             <TextInput
               className="w-full"
+              id={`${idPrefix}-name`}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Class</label>
+            <label
+              className="block text-sm font-medium mb-1"
+              htmlFor={`${idPrefix}-class`}
+            >
+              Class
+            </label>
             <Dropdown
+              id={`${idPrefix}-class`}
               items={
                 characterClassesData?.characterClasses.all.map((c) => ({
                   label: c.name,
@@ -365,6 +378,7 @@ export default function CreateCharacterPage() {
                         className="flex gap-2 items-center"
                       >
                         <Dropdown
+                          aria-label={`Look ${i + 1} type`}
                           items={lookTypes.map((l) => ({
                             label: capitalize(l.name),
                             value: l.key,
@@ -376,6 +390,7 @@ export default function CreateCharacterPage() {
                           value={look.lookTypeKey}
                         />
                         <TextInput
+                          aria-label={`Look ${i + 1}`}
                           className="flex-1"
                           list={`look-examples-${i}`}
                           value={look.value}
@@ -390,6 +405,7 @@ export default function CreateCharacterPage() {
                           ))}
                         </datalist>
                         <button
+                          aria-label={`Remove look ${i + 1}`}
                           type="button"
                           onClick={() => handleRemoveLook(i)}
                           className="text-red-500 hover:text-red-700 text-sm px-1"
@@ -417,9 +433,15 @@ export default function CreateCharacterPage() {
                 <div className="space-y-2">
                   {abilityScores.map(({ ability, score }) => (
                     <div key={ability} className="flex items-center gap-3">
-                      <label className="w-28 text-sm">{ability}</label>
+                      <label
+                        className="w-28 text-sm"
+                        htmlFor={`${idPrefix}-ability-${ability}`}
+                      >
+                        {ability}
+                      </label>
                       <Dropdown
                         className="flex-1"
+                        id={`${idPrefix}-ability-${ability}`}
                         data-ability={ability}
                         items={STARTING_ABILITY_SCORES.map((s) => ({
                           disabled: abilityScores.some(
@@ -462,6 +484,7 @@ export default function CreateCharacterPage() {
                 </div>
                 <div className="flex gap-3 px-4 py-3 rounded border cursor-pointer transition-colors">
                   <Dropdown
+                    aria-label="Alignment"
                     className="flex-1"
                     items={ALIGNMENTS.map((a) => ({
                       label: capitalize(a),
@@ -472,6 +495,7 @@ export default function CreateCharacterPage() {
                     value={alignmentType}
                   />
                   <TextInput
+                    aria-label="Alignment description"
                     className="flex-3"
                     placeholder="Alignment description..."
                     value={alignmentDescription}
@@ -489,6 +513,7 @@ export default function CreateCharacterPage() {
                 {characterClass.raceMoves.map((move) => (
                   <SelectableArea
                     key={move.key}
+                    label={`Race: ${unmaskFragment(MoveFragment, move).name}`}
                     onSelect={() => setRaceMoveKey(move.key)}
                     onDeselect={() => setRaceMoveKey("")}
                     selected={raceMoveKey === move.key}

@@ -1,8 +1,9 @@
 version: "2"
 
-# Lint the integration tests too (they're behind a build tag).
+# Lint the integration tests and the e2e server too (they are behind build tags).
 run:
   build-tags:
+    - e2e
     - integration
 
 # Default linters (errcheck, govet, ineffassign, staticcheck, unused). Files

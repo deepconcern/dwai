@@ -16,6 +16,8 @@ export type SelectableAreaProps = PropsWithChildren<
     DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
     "onClick"
   > & {
+    /** The accessible name of the select/deselect toggle. */
+    label?: string;
     onSelect?: (ev: MouseEvent<HTMLElement>) => void;
     onDeselect?: (ev: MouseEvent<HTMLElement>) => void;
     selected?: boolean | null;
@@ -25,6 +27,7 @@ export type SelectableAreaProps = PropsWithChildren<
 export const SelectableArea: React.FC<SelectableAreaProps> = ({
   children,
   className,
+  label,
   onSelect,
   onDeselect,
   selected: isSelected = false,
@@ -47,6 +50,8 @@ export const SelectableArea: React.FC<SelectableAreaProps> = ({
     {...rest}
   >
     <button
+      aria-label={label}
+      aria-pressed={!!isSelected}
       className={clsx(
         "absolute border cursor-pointer font-bold h-4 right-2 rounded text-xs top-2 w-4",
         {

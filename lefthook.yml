@@ -9,6 +9,11 @@ pre-commit:
       glob: "*.go"
       run: golangci-lint fmt {staged_files}
       stage_fixed: true
+    e2e-format:
+      root: "dwai-e2e/"
+      glob: "*.{json,md,ts}"
+      run: bunx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
     app-format:
       root: "dwai-app/"
       glob: "*.{css,js,json,md,mjs,ts,tsx}"
@@ -27,6 +32,10 @@ pre-commit:
     app-typecheck:
       root: "dwai-app/"
       glob: "*.{ts,tsx}"
+      run: bun run typecheck
+    e2e-typecheck:
+      root: "dwai-e2e/"
+      glob: "*.ts"
       run: bun run typecheck
 
 pre-push:

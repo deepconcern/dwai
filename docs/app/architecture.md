@@ -10,6 +10,7 @@ dwai-app (Next.js, :3000)  ──GraphQL (Apollo)──▶  dwai-api (Go/gqlgen,
 | ---- | ----- | ----------- |
 | `dwai-api/` | Go, gqlgen (schema-first GraphQL), sqlc + pgx, golang-migrate, testcontainers-go | [`dwai-api/AGENTS.md`](../../dwai-api/AGENTS.md) |
 | `dwai-app/` | Next.js 16 (App Router), React 19, Apollo Client 4, GraphQL Codegen, Tailwind 4, Bun | [`dwai-app/AGENTS.md`](../../dwai-app/AGENTS.md) |
+| `dwai-e2e/` | Playwright browser tests that drive the app against the real API (`make test-e2e`) | [`dwai-e2e/AGENTS.md`](../../dwai-e2e/AGENTS.md) |
 
 ## Data Flow
 

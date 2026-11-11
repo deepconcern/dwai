@@ -107,20 +107,17 @@ func (e *Env) Close() error {
 func (e *Env) NewDB(t testing.TB) *pgxpool.Pool {
 	t.Helper()
 
-	name := "test_" + strings.ToLower(rand.Text())
-	ident := pgx.Identifier{name}.Sanitize()
-
-	_, err := e.admin.Exec(t.Context(), fmt.Sprintf(
-		"CREATE DATABASE %s TEMPLATE %s", ident, pgx.Identifier{templateDatabase}.Sanitize(),
-	))
+	name, err := e.createDatabase(t.Context())
 	if err != nil {
-		t.Fatalf("create test database: %v", err)
+		t.Fatal(err)
 	}
 
 	// Cleanups run last-in first-out, so the pool closes before the drop.
 	// t.Context() is already canceled by then, hence context.Background().
 	t.Cleanup(func() {
-		_, err := e.admin.Exec(context.Background(), fmt.Sprintf("DROP DATABASE %s WITH (FORCE)", ident))
+		_, err := e.admin.Exec(context.Background(), fmt.Sprintf(
+			"DROP DATABASE %s WITH (FORCE)", pgx.Identifier{name}.Sanitize(),
+		))
 		if err != nil {
 			t.Errorf("drop test database: %v", err)
 		}
@@ -133,6 +130,39 @@ func (e *Env) NewDB(t testing.TB) *pgxpool.Pool {
 	t.Cleanup(pool.Close)
 
 	return pool
+}
+
+// NewPool creates a fresh, migrated database and returns a pool connected to
+// it, for callers that aren't a Go test (such as the end-to-end server). The
+// database is not dropped; it goes away with the container on Close.
+func (e *Env) NewPool(ctx context.Context) (*pgxpool.Pool, error) {
+	name, err := e.createDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pool, err := server.NewPool(ctx, e.databaseURI(name))
+	if err != nil {
+		return nil, fmt.Errorf("connect to new database: %w", err)
+	}
+
+	return pool, nil
+}
+
+// createDatabase copies the migrated template into a new, randomly named
+// database and returns its name.
+func (e *Env) createDatabase(ctx context.Context) (string, error) {
+	name := "test_" + strings.ToLower(rand.Text())
+
+	_, err := e.admin.Exec(ctx, fmt.Sprintf(
+		"CREATE DATABASE %s TEMPLATE %s",
+		pgx.Identifier{name}.Sanitize(), pgx.Identifier{templateDatabase}.Sanitize(),
+	))
+	if err != nil {
+		return "", fmt.Errorf("create test database: %w", err)
+	}
+
+	return name, nil
 }
 
 // NewClient creates a fresh database (see NewDB) and returns a GraphQL client

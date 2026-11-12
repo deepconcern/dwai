@@ -24,6 +24,12 @@ fragment CharacterFields on Character {
 	alignmentDescription
 	gold
 	hitPoints
+	maxHitPoints
+	isDying
+	armor
+	load
+	maxLoad
+	debilities
 	characterClass { key }
 	raceMove { key }
 	abilities { ability score modifier }
@@ -48,6 +54,12 @@ type characterResponse struct {
 	AlignmentDescription string
 	Gold                 int32
 	HitPoints            int32
+	MaxHitPoints         int32
+	IsDying              bool
+	Armor                int32
+	Load                 int32
+	MaxLoad              int32
+	Debilities           []string
 	CharacterClass       struct{ Key string }
 	RaceMove             struct{ Key string }
 	Abilities            []struct {
@@ -158,6 +170,33 @@ func postErrors(t *testing.T, c *client.Client, query string, options ...client.
 	}
 
 	return errs
+}
+
+// postCharacter sends a mutation that returns a Character at the path
+// namespace.field (e.g. characters.takeDamage), failing the test on any
+// error.
+func postCharacter(t *testing.T, c *client.Client, mutation, namespace, field string, options ...client.Option) characterResponse {
+	t.Helper()
+
+	var resp map[string]map[string]characterResponse
+	if err := c.Post(mutation, &resp, options...); err != nil {
+		t.Fatalf("%s.%s: %v", namespace, field, err)
+	}
+
+	return resp[namespace][field]
+}
+
+// wantValidationError fails the test unless errs has a validation error on
+// field.
+func wantValidationError(t *testing.T, errs gqlerror.List, field string) {
+	t.Helper()
+
+	for _, err := range errs {
+		if err.Extensions["code"] == models.ValidationErrorCode && err.Extensions["field"] == field {
+			return
+		}
+	}
+	t.Errorf("no validation error on %q in %v", field, errs)
 }
 
 // characterClass returns the class with key from the game data.

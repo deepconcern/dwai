@@ -25,12 +25,50 @@ type ItemTemplate {
   key: ID!
   label: String!
   tags: [Tag!]!
+  "Category of item (e.g. 'weapon', 'armor', 'service')."
+  type: String!
+}
+
+"Input for adding an item to a character. With a template key, label, description, type, and tags are optional overrides; for a custom item, label is required."
+input AddItemInput {
+  "How many of the item to add."
+  count: Int! = 1
+  "Flavour or rules text."
+  description: String
+  "Key of the item template to use, or 'custom'."
+  key: String! = "custom"
+  "Display name."
+  label: String
+  "Tags, each a key from the tag catalog."
+  tags: [TagInput!]! = []
+  "Category of item (e.g. 'weapon', 'armor', 'shield')."
+  type: String
 }
 
 "Namespace for item mutations."
 type ItemMutation {
+  "Adds an item to a character and returns the character."
+  add(characterId: ID!, input: AddItemInput!): Character!
+  "Removes an item and returns the character that owned it."
+  remove(id: ID!): Character!
+  "Sets an item's count (at least 1) and returns the updated item."
+  setCount(count: Int!, id: ID!): Item!
   "Sets whether an item is currently worn and returns the updated item."
   setWorn(id: ID!, worn: Boolean!): Item!
+}
+
+"Namespace for item template queries."
+type ItemTemplateQuery {
+  "Returns every item template, sorted by label."
+  all: [ItemTemplate!]!
+}
+
+"A tag on an item being added."
+input TagInput {
+  "Key of a tag from the tag catalog (e.g. 'weight', 'close')."
+  key: String!
+  "Numeric value for quantified tags; omit for simple tags."
+  quantity: Int
 }
 
 "A tag describing a property of an equipment item. Simple tags (e.g. 'close', 'worn') have no quantity; quantified tags (e.g. cost, weight, armor) carry a numeric value."

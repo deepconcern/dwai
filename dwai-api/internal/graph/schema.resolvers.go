@@ -43,6 +43,11 @@ func (r *queryResolver) Characters(ctx context.Context) (*model.CharacterQuery, 
 	return &model.CharacterQuery{}, nil
 }
 
+// ItemTemplates is the resolver for the itemTemplates field.
+func (r *queryResolver) ItemTemplates(ctx context.Context) (*model.ItemTemplateQuery, error) {
+	return &model.ItemTemplateQuery{}, nil
+}
+
 // LookTypes is the resolver for the lookTypes field.
 func (r *queryResolver) LookTypes(ctx context.Context) (*model.LookTypeQuery, error) {
 	return &model.LookTypeQuery{}, nil

@@ -36,6 +36,7 @@ type ResolverRoot interface {
 	CharacterMutation() CharacterMutationResolver
 	CharacterQuery() CharacterQueryResolver
 	ItemMutation() ItemMutationResolver
+	ItemTemplateQuery() ItemTemplateQueryResolver
 	Look() LookResolver
 	LookTypeQuery() LookTypeQueryResolver
 	MoveQuery() MoveQueryResolver
@@ -62,13 +63,19 @@ type ComplexityRoot struct {
 		Abilities            func(childComplexity int) int
 		AlignmentDescription func(childComplexity int) int
 		AlignmentType        func(childComplexity int) int
+		Armor                func(childComplexity int) int
 		CharacterClass       func(childComplexity int) int
 		ClassMoves           func(childComplexity int) int
+		Debilities           func(childComplexity int) int
 		Equipment            func(childComplexity int) int
 		Gold                 func(childComplexity int) int
 		HitPoints            func(childComplexity int) int
 		ID                   func(childComplexity int) int
+		IsDying              func(childComplexity int) int
+		Load                 func(childComplexity int) int
 		Looks                func(childComplexity int) int
+		MaxHitPoints         func(childComplexity int) int
+		MaxLoad              func(childComplexity int) int
 		Name                 func(childComplexity int) int
 		RaceMove             func(childComplexity int) int
 	}
@@ -92,7 +99,11 @@ type ComplexityRoot struct {
 	}
 
 	CharacterMutation struct {
-		Create func(childComplexity int, input model.CreateCharacterInput) int
+		AdjustGold  func(childComplexity int, delta int32, id string) int
+		Create      func(childComplexity int, input model.CreateCharacterInput) int
+		Heal        func(childComplexity int, amount int32, id string) int
+		SetDebility func(childComplexity int, active bool, debility model.Debility, id string) int
+		TakeDamage  func(childComplexity int, id string, input model.TakeDamageInput) int
 	}
 
 	CharacterQuery struct {
@@ -130,7 +141,10 @@ type ComplexityRoot struct {
 	}
 
 	ItemMutation struct {
-		SetWorn func(childComplexity int, id string, worn bool) int
+		Add      func(childComplexity int, characterID string, input model.AddItemInput) int
+		Remove   func(childComplexity int, id string) int
+		SetCount func(childComplexity int, count int32, id string) int
+		SetWorn  func(childComplexity int, id string, worn bool) int
 	}
 
 	ItemOption struct {
@@ -146,6 +160,11 @@ type ComplexityRoot struct {
 		Key         func(childComplexity int) int
 		Label       func(childComplexity int) int
 		Tags        func(childComplexity int) int
+		Type        func(childComplexity int) int
+	}
+
+	ItemTemplateQuery struct {
+		All func(childComplexity int) int
 	}
 
 	Look struct {
@@ -207,6 +226,7 @@ type ComplexityRoot struct {
 		APIVersion       func(childComplexity int) int
 		CharacterClasses func(childComplexity int) int
 		Characters       func(childComplexity int) int
+		ItemTemplates    func(childComplexity int) int
 		LookTypes        func(childComplexity int) int
 		Moves            func(childComplexity int) int
 	}
@@ -228,11 +248,16 @@ type AbilityScoreResolver interface {
 	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
 }
 type CharacterResolver interface {
+	Armor(ctx context.Context, obj *model.Character) (int32, error)
 	CharacterClass(ctx context.Context, obj *model.Character) (*model.CharacterClass, error)
 	ClassMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error)
+
 	Equipment(ctx context.Context, obj *model.Character) ([]*model.Item, error)
 
+	Load(ctx context.Context, obj *model.Character) (int32, error)
 	Looks(ctx context.Context, obj *model.Character) ([]*model.Look, error)
+	MaxHitPoints(ctx context.Context, obj *model.Character) (int32, error)
+	MaxLoad(ctx context.Context, obj *model.Character) (int32, error)
 
 	RaceMove(ctx context.Context, obj *model.Character) (*model.Move, error)
 }
@@ -244,14 +269,24 @@ type CharacterClassQueryResolver interface {
 	ByKey(ctx context.Context, obj *model.CharacterClassQuery, key string) (*model.CharacterClass, error)
 }
 type CharacterMutationResolver interface {
+	AdjustGold(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error)
 	Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error)
+	Heal(ctx context.Context, obj *model.CharacterMutation, amount int32, id string) (*model.Character, error)
+	SetDebility(ctx context.Context, obj *model.CharacterMutation, active bool, debility model.Debility, id string) (*model.Character, error)
+	TakeDamage(ctx context.Context, obj *model.CharacterMutation, id string, input model.TakeDamageInput) (*model.Character, error)
 }
 type CharacterQueryResolver interface {
 	All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error)
 	ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error)
 }
 type ItemMutationResolver interface {
+	Add(ctx context.Context, obj *model.ItemMutation, characterID string, input model.AddItemInput) (*model.Character, error)
+	Remove(ctx context.Context, obj *model.ItemMutation, id string) (*model.Character, error)
+	SetCount(ctx context.Context, obj *model.ItemMutation, count int32, id string) (*model.Item, error)
 	SetWorn(ctx context.Context, obj *model.ItemMutation, id string, worn bool) (*model.Item, error)
+}
+type ItemTemplateQueryResolver interface {
+	All(ctx context.Context, obj *model.ItemTemplateQuery) ([]*model.ItemTemplate, error)
 }
 type LookResolver interface {
 	LookType(ctx context.Context, obj *model.Look) (*model.LookType, error)
@@ -272,6 +307,7 @@ type QueryResolver interface {
 	APIVersion(ctx context.Context) (string, error)
 	CharacterClasses(ctx context.Context) (*model.CharacterClassQuery, error)
 	Characters(ctx context.Context) (*model.CharacterQuery, error)
+	ItemTemplates(ctx context.Context) (*model.ItemTemplateQuery, error)
 	LookTypes(ctx context.Context) (*model.LookTypeQuery, error)
 	Moves(ctx context.Context) (*model.MoveQuery, error)
 }
@@ -340,6 +376,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.AlignmentType(childComplexity), true
+	case "Character.armor":
+		if e.ComplexityRoot.Character.Armor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Armor(childComplexity), true
 	case "Character.characterClass":
 		if e.ComplexityRoot.Character.CharacterClass == nil {
 			break
@@ -352,6 +394,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.ClassMoves(childComplexity), true
+	case "Character.debilities":
+		if e.ComplexityRoot.Character.Debilities == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Debilities(childComplexity), true
 	case "Character.equipment":
 		if e.ComplexityRoot.Character.Equipment == nil {
 			break
@@ -376,12 +424,36 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.ID(childComplexity), true
+	case "Character.isDying":
+		if e.ComplexityRoot.Character.IsDying == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.IsDying(childComplexity), true
+	case "Character.load":
+		if e.ComplexityRoot.Character.Load == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Load(childComplexity), true
 	case "Character.looks":
 		if e.ComplexityRoot.Character.Looks == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Character.Looks(childComplexity), true
+	case "Character.maxHitPoints":
+		if e.ComplexityRoot.Character.MaxHitPoints == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.MaxHitPoints(childComplexity), true
+	case "Character.maxLoad":
+		if e.ComplexityRoot.Character.MaxLoad == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.MaxLoad(childComplexity), true
 	case "Character.name":
 		if e.ComplexityRoot.Character.Name == nil {
 			break
@@ -474,6 +546,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CharacterClassQuery.ByKey(childComplexity, args["key"].(string)), true
 
+	case "CharacterMutation.adjustGold":
+		if e.ComplexityRoot.CharacterMutation.AdjustGold == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_adjustGold_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.AdjustGold(childComplexity, args["delta"].(int32), args["id"].(string)), true
 	case "CharacterMutation.create":
 		if e.ComplexityRoot.CharacterMutation.Create == nil {
 			break
@@ -485,6 +568,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterMutation.Create(childComplexity, args["input"].(model.CreateCharacterInput)), true
+	case "CharacterMutation.heal":
+		if e.ComplexityRoot.CharacterMutation.Heal == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_heal_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.Heal(childComplexity, args["amount"].(int32), args["id"].(string)), true
+	case "CharacterMutation.setDebility":
+		if e.ComplexityRoot.CharacterMutation.SetDebility == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_setDebility_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.SetDebility(childComplexity, args["active"].(bool), args["debility"].(model.Debility), args["id"].(string)), true
+	case "CharacterMutation.takeDamage":
+		if e.ComplexityRoot.CharacterMutation.TakeDamage == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_takeDamage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.TakeDamage(childComplexity, args["id"].(string), args["input"].(model.TakeDamageInput)), true
 
 	case "CharacterQuery.all":
 		if e.ComplexityRoot.CharacterQuery.All == nil {
@@ -610,6 +726,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Item.Type(childComplexity), true
 
+	case "ItemMutation.add":
+		if e.ComplexityRoot.ItemMutation.Add == nil {
+			break
+		}
+
+		args, err := ec.field_ItemMutation_add_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.ItemMutation.Add(childComplexity, args["characterId"].(string), args["input"].(model.AddItemInput)), true
+	case "ItemMutation.remove":
+		if e.ComplexityRoot.ItemMutation.Remove == nil {
+			break
+		}
+
+		args, err := ec.field_ItemMutation_remove_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.ItemMutation.Remove(childComplexity, args["id"].(string)), true
+	case "ItemMutation.setCount":
+		if e.ComplexityRoot.ItemMutation.SetCount == nil {
+			break
+		}
+
+		args, err := ec.field_ItemMutation_setCount_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.ItemMutation.SetCount(childComplexity, args["count"].(int32), args["id"].(string)), true
 	case "ItemMutation.setWorn":
 		if e.ComplexityRoot.ItemMutation.SetWorn == nil {
 			break
@@ -677,6 +826,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ItemTemplate.Tags(childComplexity), true
+	case "ItemTemplate.type":
+		if e.ComplexityRoot.ItemTemplate.Type == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ItemTemplate.Type(childComplexity), true
+
+	case "ItemTemplateQuery.all":
+		if e.ComplexityRoot.ItemTemplateQuery.All == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ItemTemplateQuery.All(childComplexity), true
 
 	case "Look.id":
 		if e.ComplexityRoot.Look.ID == nil {
@@ -901,6 +1063,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Characters(childComplexity), true
 
+	case "Query.itemTemplates":
+		if e.ComplexityRoot.Query.ItemTemplates == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.ItemTemplates(childComplexity), true
 	case "Query.lookTypes":
 		if e.ComplexityRoot.Query.LookTypes == nil {
 			break
@@ -961,10 +1129,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAbilityScoreInput,
+		ec.unmarshalInputAddItemInput,
 		ec.unmarshalInputCreateCharacterInput,
 		ec.unmarshalInputGearOptionChoiceInput,
 		ec.unmarshalInputMoveCreationOptionChoiceInput,
 		ec.unmarshalInputNewLookInput,
+		ec.unmarshalInputTagInput,
+		ec.unmarshalInputTakeDamageInput,
 	)
 	first := true
 
@@ -1094,10 +1265,14 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_alignmentType(ctx, field)
 	case "alignmentDescription":
 		return ec.fieldContext_Character_alignmentDescription(ctx, field)
+	case "armor":
+		return ec.fieldContext_Character_armor(ctx, field)
 	case "characterClass":
 		return ec.fieldContext_Character_characterClass(ctx, field)
 	case "classMoves":
 		return ec.fieldContext_Character_classMoves(ctx, field)
+	case "debilities":
+		return ec.fieldContext_Character_debilities(ctx, field)
 	case "equipment":
 		return ec.fieldContext_Character_equipment(ctx, field)
 	case "gold":
@@ -1106,8 +1281,16 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_hitPoints(ctx, field)
 	case "id":
 		return ec.fieldContext_Character_id(ctx, field)
+	case "isDying":
+		return ec.fieldContext_Character_isDying(ctx, field)
+	case "load":
+		return ec.fieldContext_Character_load(ctx, field)
 	case "looks":
 		return ec.fieldContext_Character_looks(ctx, field)
+	case "maxHitPoints":
+		return ec.fieldContext_Character_maxHitPoints(ctx, field)
+	case "maxLoad":
+		return ec.fieldContext_Character_maxLoad(ctx, field)
 	case "name":
 		return ec.fieldContext_Character_name(ctx, field)
 	case "raceMove":
@@ -1154,8 +1337,16 @@ func (ec *executionContext) childFields_CharacterClassQuery(ctx context.Context,
 
 func (ec *executionContext) childFields_CharacterMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "adjustGold":
+		return ec.fieldContext_CharacterMutation_adjustGold(ctx, field)
 	case "create":
 		return ec.fieldContext_CharacterMutation_create(ctx, field)
+	case "heal":
+		return ec.fieldContext_CharacterMutation_heal(ctx, field)
+	case "setDebility":
+		return ec.fieldContext_CharacterMutation_setDebility(ctx, field)
+	case "takeDamage":
+		return ec.fieldContext_CharacterMutation_takeDamage(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CharacterMutation", field.Name)
 }
@@ -1230,6 +1421,12 @@ func (ec *executionContext) childFields_Item(ctx context.Context, field graphql.
 
 func (ec *executionContext) childFields_ItemMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "add":
+		return ec.fieldContext_ItemMutation_add(ctx, field)
+	case "remove":
+		return ec.fieldContext_ItemMutation_remove(ctx, field)
+	case "setCount":
+		return ec.fieldContext_ItemMutation_setCount(ctx, field)
 	case "setWorn":
 		return ec.fieldContext_ItemMutation_setWorn(ctx, field)
 	}
@@ -1262,8 +1459,18 @@ func (ec *executionContext) childFields_ItemTemplate(ctx context.Context, field 
 		return ec.fieldContext_ItemTemplate_label(ctx, field)
 	case "tags":
 		return ec.fieldContext_ItemTemplate_tags(ctx, field)
+	case "type":
+		return ec.fieldContext_ItemTemplate_type(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ItemTemplate", field.Name)
+}
+
+func (ec *executionContext) childFields_ItemTemplateQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "all":
+		return ec.fieldContext_ItemTemplateQuery_all(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ItemTemplateQuery", field.Name)
 }
 
 func (ec *executionContext) childFields_Look(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1506,6 +1713,28 @@ func (ec *executionContext) field_CharacterClassQuery_byKey_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_CharacterMutation_adjustGold_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "delta",
+		func(ctx context.Context, v any) (int32, error) {
+			return ec.unmarshalNInt2int32(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["delta"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_CharacterMutation_create_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1520,6 +1749,80 @@ func (ec *executionContext) field_CharacterMutation_create_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_CharacterMutation_heal_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "amount",
+		func(ctx context.Context, v any) (int32, error) {
+			return ec.unmarshalNInt2int32(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["amount"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_CharacterMutation_setDebility_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "active",
+		func(ctx context.Context, v any) (bool, error) {
+			return ec.unmarshalNBoolean2bool(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["active"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "debility",
+		func(ctx context.Context, v any) (model.Debility, error) {
+			return ec.unmarshalNDebility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebility(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["debility"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_CharacterMutation_takeDamage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.TakeDamageInput, error) {
+			return ec.unmarshalNTakeDamageInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTakeDamageInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_CharacterQuery_byId_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1531,6 +1834,64 @@ func (ec *executionContext) field_CharacterQuery_byId_args(ctx context.Context, 
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_ItemMutation_add_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["characterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.AddItemInput, error) {
+			return ec.unmarshalNAddItemInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAddItemInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_ItemMutation_remove_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_ItemMutation_setCount_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "count",
+		func(ctx context.Context, v any) (int32, error) {
+			return ec.unmarshalNInt2int32(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["count"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg1
 	return args, nil
 }
 
@@ -1855,6 +2216,29 @@ func (ec *executionContext) fieldContext_Character_alignmentDescription(_ contex
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _Character_armor(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_armor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().Armor(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_armor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_characterClass(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1917,6 +2301,29 @@ func (ec *executionContext) fieldContext_Character_classMoves(_ context.Context,
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Character_debilities(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_debilities(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Debilities, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []model.Debility) graphql.Marshaler {
+			return ec.marshalNDebility2ᚕgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebilityᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_debilities(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Debility does not have child fields"))
 }
 
 func (ec *executionContext) _Character_equipment(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -2020,6 +2427,52 @@ func (ec *executionContext) fieldContext_Character_id(_ context.Context, field g
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Character_isDying(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_isDying(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IsDying, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_isDying(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _Character_load(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_load(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().Load(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_load(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_looks(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2050,6 +2503,52 @@ func (ec *executionContext) fieldContext_Character_looks(_ context.Context, fiel
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Character_maxHitPoints(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_maxHitPoints(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().MaxHitPoints(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_maxHitPoints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Character_maxLoad(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_maxLoad(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().MaxLoad(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_maxLoad(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _Character_name(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -2458,6 +2957,50 @@ func (ec *executionContext) fieldContext_CharacterClassQuery_byKey(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _CharacterMutation_adjustGold(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_adjustGold(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().AdjustGold(ctx, obj, fc.Args["delta"].(int32), fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_adjustGold(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_adjustGold_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CharacterMutation_create(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2496,6 +3039,138 @@ func (ec *executionContext) fieldContext_CharacterMutation_create(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_CharacterMutation_create_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterMutation_heal(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_heal(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().Heal(ctx, obj, fc.Args["amount"].(int32), fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_heal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_heal_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterMutation_setDebility(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_setDebility(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().SetDebility(ctx, obj, fc.Args["active"].(bool), fc.Args["debility"].(model.Debility), fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_setDebility(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_setDebility_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterMutation_takeDamage(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_takeDamage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().TakeDamage(ctx, obj, fc.Args["id"].(string), fc.Args["input"].(model.TakeDamageInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_takeDamage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_takeDamage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3005,6 +3680,138 @@ func (ec *executionContext) fieldContext_Item_type(_ context.Context, field grap
 	return graphql.NewScalarFieldContext("Item", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _ItemMutation_add(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemMutation_add(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.ItemMutation().Add(ctx, obj, fc.Args["characterId"].(string), fc.Args["input"].(model.AddItemInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemMutation_add(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ItemMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ItemMutation_add_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ItemMutation_remove(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemMutation_remove(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.ItemMutation().Remove(ctx, obj, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemMutation_remove(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ItemMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ItemMutation_remove_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ItemMutation_setCount(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemMutation_setCount(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.ItemMutation().SetCount(ctx, obj, fc.Args["count"].(int32), fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Item) graphql.Marshaler {
+			return ec.marshalNItem2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItem(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemMutation_setCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ItemMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Item(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ItemMutation_setCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ItemMutation_setWorn(ctx context.Context, field graphql.CollectedField, obj *model.ItemMutation) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3269,6 +4076,61 @@ func (ec *executionContext) fieldContext_ItemTemplate_tags(_ context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Tag(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ItemTemplate_type(ctx context.Context, field graphql.CollectedField, obj *model.ItemTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemTemplate_type(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemTemplate_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ItemTemplate", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ItemTemplateQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.ItemTemplateQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ItemTemplateQuery_all(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.ItemTemplateQuery().All(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.ItemTemplate) graphql.Marshaler {
+			return ec.marshalNItemTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplateᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ItemTemplateQuery_all(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ItemTemplateQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ItemTemplate(ctx, field)
 		},
 	}
 	return fc, nil
@@ -4174,6 +5036,38 @@ func (ec *executionContext) fieldContext_Query_characters(_ context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_CharacterQuery(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_itemTemplates(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_itemTemplates(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().ItemTemplates(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ItemTemplateQuery) graphql.Marshaler {
+			return ec.marshalNItemTemplateQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplateQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_itemTemplates(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ItemTemplateQuery(ctx, field)
 		},
 	}
 	return fc, nil
@@ -5571,6 +6465,81 @@ func (ec *executionContext) unmarshalInputAbilityScoreInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputAddItemInput(ctx context.Context, obj any) (model.AddItemInput, error) {
+	var it model.AddItemInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["count"]; !present {
+		asMap["count"] = 1
+	}
+	if _, present := asMap["key"]; !present {
+		asMap["key"] = "custom"
+	}
+	if _, present := asMap["tags"]; !present {
+		asMap["tags"] = []any{}
+	}
+
+	fieldsInOrder := [...]string{"count", "description", "key", "label", "tags", "type"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "count":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("count"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Count = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Key = data
+		case "label":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Label = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalNTagInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateCharacterInput(ctx context.Context, obj any) (model.CreateCharacterInput, error) {
 	var it model.CreateCharacterInput
 	if obj == nil {
@@ -5775,6 +6744,94 @@ func (ec *executionContext) unmarshalInputNewLookInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTagInput(ctx context.Context, obj any) (model.TagInput, error) {
+	var it model.TagInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"key", "quantity"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Key = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTakeDamageInput(ctx context.Context, obj any) (model.TakeDamageInput, error) {
+	var it model.TakeDamageInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["ignoresArmor"]; !present {
+		asMap["ignoresArmor"] = false
+	}
+	if _, present := asMap["piercing"]; !present {
+		asMap["piercing"] = 0
+	}
+
+	fieldsInOrder := [...]string{"amount", "ignoresArmor", "piercing"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Amount = data
+		case "ignoresArmor":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ignoresArmor"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IgnoresArmor = data
+		case "piercing":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercing"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Piercing = data
+		}
+	}
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -5933,6 +6990,42 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "armor":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_armor(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "characterClass":
 			field := field
 
@@ -6005,6 +7098,11 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "debilities":
+			out.Values[i] = ec._Character_debilities(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "equipment":
 			field := field
 
@@ -6056,6 +7154,47 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "isDying":
+			out.Values[i] = ec._Character_isDying(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "load":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_load(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "looks":
 			field := field
 
@@ -6066,6 +7205,78 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Character_looks(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "maxHitPoints":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_maxHitPoints(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "maxLoad":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_maxLoad(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -6388,6 +7599,42 @@ func (ec *executionContext) _CharacterMutation(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CharacterMutation")
+		case "adjustGold":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_adjustGold(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "create":
 			field := field
 
@@ -6398,6 +7645,114 @@ func (ec *executionContext) _CharacterMutation(ctx context.Context, sel ast.Sele
 					}
 				}()
 				res = ec._CharacterMutation_create(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "heal":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_heal(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "setDebility":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_setDebility(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "takeDamage":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_takeDamage(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -6782,6 +8137,114 @@ func (ec *executionContext) _ItemMutation(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ItemMutation")
+		case "add":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ItemMutation_add(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "remove":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ItemMutation_remove(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "setCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ItemMutation_setCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "setWorn":
 			field := field
 
@@ -6931,6 +8394,81 @@ func (ec *executionContext) _ItemTemplate(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "type":
+			out.Values[i] = ec._ItemTemplate_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var itemTemplateQueryImplementors = []string{"ItemTemplateQuery"}
+
+func (ec *executionContext) _ItemTemplateQuery(ctx context.Context, sel ast.SelectionSet, obj *model.ItemTemplateQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, itemTemplateQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ItemTemplateQuery")
+		case "all":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ItemTemplateQuery_all(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7609,6 +9147,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "itemTemplates":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_itemTemplates(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "lookTypes":
 			field := field
 
@@ -8170,6 +9730,11 @@ func (ec *executionContext) unmarshalNAbilityScoreInput2ᚖgithubᚗcomᚋdeepco
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNAddItemInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAddItemInput(ctx context.Context, v any) (model.AddItemInput, error) {
+	res, err := ec.unmarshalInputAddItemInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8371,6 +9936,47 @@ func (ec *executionContext) marshalNCreationOptionChoice2ᚖgithubᚗcomᚋdeepc
 	return ec._CreationOptionChoice(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNDebility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebility(ctx context.Context, v any) (model.Debility, error) {
+	var res model.Debility
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDebility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebility(ctx context.Context, sel ast.SelectionSet, v model.Debility) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNDebility2ᚕgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebilityᚄ(ctx context.Context, v any) ([]model.Debility, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]model.Debility, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDebility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebility(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNDebility2ᚕgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebilityᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Debility) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNDebility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDebility(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNGearOptionChoiceInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐGearOptionChoiceInputᚄ(ctx context.Context, v any) ([]*model.GearOptionChoiceInput, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
@@ -8563,6 +10169,46 @@ func (ec *executionContext) marshalNItemOption2ᚖgithubᚗcomᚋdeepconcernᚋd
 		return graphql.Null
 	}
 	return ec._ItemOption(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNItemTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ItemTemplate) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplate(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNItemTemplate2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplate(ctx context.Context, sel ast.SelectionSet, v *model.ItemTemplate) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ItemTemplate(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNItemTemplateQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplateQuery(ctx context.Context, sel ast.SelectionSet, v model.ItemTemplateQuery) graphql.Marshaler {
+	return ec._ItemTemplateQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNItemTemplateQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐItemTemplateQuery(ctx context.Context, sel ast.SelectionSet, v *model.ItemTemplateQuery) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ItemTemplateQuery(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Look) graphql.Marshaler {
@@ -8829,6 +10475,31 @@ func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋd
 		return graphql.Null
 	}
 	return ec._Tag(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTagInput2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagInputᚄ(ctx context.Context, v any) ([]*model.TagInput, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.TagInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTagInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNTagInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTagInput(ctx context.Context, v any) (*model.TagInput, error) {
+	res, err := ec.unmarshalInputTagInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNTakeDamageInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTakeDamageInput(ctx context.Context, v any) (model.TakeDamageInput, error) {
+	res, err := ec.unmarshalInputTakeDamageInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

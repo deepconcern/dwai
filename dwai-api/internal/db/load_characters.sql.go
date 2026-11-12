@@ -12,54 +12,24 @@ import (
 )
 
 const loadCharacters = `-- name: LoadCharacters :many
-SELECT character_class_key,
-    alignment_description,
-    alignment_type,
-    charisma,
-    constitution,
-    dexterity,
-    gold,
-    hit_points,
-    id,
-    intelligence,
-    name,
-    race_move_key,
-    strength,
-    wisdom
+SELECT alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities
 FROM characters
 WHERE id = ANY ($1::uuid [])
 `
 
-type LoadCharactersRow struct {
-	CharacterClassKey    string
-	AlignmentDescription string
-	AlignmentType        string
-	Charisma             int32
-	Constitution         int32
-	Dexterity            int32
-	Gold                 int32
-	HitPoints            int32
-	ID                   pgtype.UUID
-	Intelligence         int32
-	Name                 string
-	RaceMoveKey          string
-	Strength             int32
-	Wisdom               int32
-}
-
-func (q *Queries) LoadCharacters(ctx context.Context, dollar_1 []pgtype.UUID) ([]LoadCharactersRow, error) {
+func (q *Queries) LoadCharacters(ctx context.Context, dollar_1 []pgtype.UUID) ([]Character, error) {
 	rows, err := q.db.Query(ctx, loadCharacters, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []LoadCharactersRow
+	var items []Character
 	for rows.Next() {
-		var i LoadCharactersRow
+		var i Character
 		if err := rows.Scan(
-			&i.CharacterClassKey,
 			&i.AlignmentDescription,
 			&i.AlignmentType,
+			&i.CharacterClassKey,
 			&i.Charisma,
 			&i.Constitution,
 			&i.Dexterity,
@@ -71,6 +41,7 @@ func (q *Queries) LoadCharacters(ctx context.Context, dollar_1 []pgtype.UUID) ([
 			&i.RaceMoveKey,
 			&i.Strength,
 			&i.Wisdom,
+			&i.Debilities,
 		); err != nil {
 			return nil, err
 		}

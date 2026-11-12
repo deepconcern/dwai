@@ -14,6 +14,22 @@ enum Ability {
   WISDOM
 }
 
+"A named condition that gives -1 to one stat's modifier until it's removed."
+enum Debility {
+  "Confused (-1 WIS)."
+  CONFUSED
+  "Scarred (-1 CHA)."
+  SCARRED
+  "Shaky (-1 DEX)."
+  SHAKY
+  "Sick (-1 CON)."
+  SICK
+  "Stunned (-1 INT)."
+  STUNNED
+  "Weak (-1 STR)."
+  WEAK
+}
+
 "A type representing a character's ability score, including the base score and the derived modifier."
 type AbilityScore {
   "The ability this score belongs to."
@@ -40,10 +56,14 @@ type Character {
   alignmentType: String!
   "The description of the alignment ethos."
   alignmentDescription: String!
+  "Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken."
+  armor: Int!
   "The character's class (e.g. Fighter, Wizard)."
   characterClass: CharacterClass!
   "Moves available to the character based on their class and choices"
   classMoves: [Move!]!
+  "Active debilities. Each gives -1 to its stat's modifier; the API's modifier values don't include it."
+  debilities: [Debility!]!
   "Items owned by the character."
   equipment: [Item!]!
   "Coins the character is carrying, tracked separately from equipment."
@@ -52,8 +72,16 @@ type Character {
   hitPoints: Int!
   "Unique identifier for the character."
   id: ID!
+  "Whether the character is at 0 HP and must make the Last Breath move."
+  isDying: Boolean!
+  "Total weight carried: each item's weight times its count."
+  load: Int!
   "The character's appearance choices, one per look type."
   looks: [Look!]!
+  "Maximum HP: the class's base HP plus the Constitution score."
+  maxHitPoints: Int!
+  "Maximum load before encumbrance: the class's base load plus the Strength modifier."
+  maxLoad: Int!
   "The character's name."
   name: String!
   "The character's race move."
@@ -129,6 +157,16 @@ input GearOptionChoiceInput {
   optionIndex: Int!
 }
 
+"Input for taking damage."
+input TakeDamageInput {
+  "The damage rolled, before armor."
+  amount: Int!
+  "Whether the damage ignores armor entirely."
+  ignoresArmor: Boolean! = false
+  "How much armor the damage ignores (the piercing tag)."
+  piercing: Int! = 0
+}
+
 "Namespace for character queries."
 type CharacterQuery {
   "Returns all characters."
@@ -139,6 +177,14 @@ type CharacterQuery {
 
 "Namespace for character mutations."
 type CharacterMutation {
+  "Adds delta (positive or negative) to the character's gold. The result can't be negative."
+  adjustGold(delta: Int!, id: ID!): Character!
   "Creates a new character and returns it."
   create(input: CreateCharacterInput!): Character!
+  "Heals the character by amount, up to their maximum HP."
+  heal(amount: Int!, id: ID!): Character!
+  "Sets or clears one debility."
+  setDebility(active: Boolean!, debility: Debility!, id: ID!): Character!
+  "Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0."
+  takeDamage(id: ID!, input: TakeDamageInput!): Character!
 }

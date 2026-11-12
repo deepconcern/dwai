@@ -203,13 +203,21 @@ models:
 
   Character:
     fields:
+      armor:
+        resolver: true
       characterClass:
         resolver: true
       classMoves:
         resolver: true
       equipment:
         resolver: true
+      load:
+        resolver: true
       looks:
+        resolver: true
+      maxHitPoints:
+        resolver: true
+      maxLoad:
         resolver: true
       raceMove:
         resolver: true
@@ -228,7 +236,15 @@ models:
 
   CharacterMutation:
     fields:
+      adjustGold:
+        resolver: true
       create:
+        resolver: true
+      heal:
+        resolver: true
+      setDebility:
+        resolver: true
+      takeDamage:
         resolver: true
 
   CharacterQuery:
@@ -240,7 +256,17 @@ models:
 
   ItemMutation:
     fields:
+      add:
+        resolver: true
+      remove:
+        resolver: true
+      setCount:
+        resolver: true
       setWorn:
+        resolver: true
+  ItemTemplateQuery:
+    fields:
+      all:
         resolver: true
 
   Look:

@@ -18,6 +18,12 @@ type ValidationError struct {
 	Message string
 }
 
+// Error returns the message, so a single ValidationError can be returned as
+// an error.
+func (e ValidationError) Error() string {
+	return e.Message
+}
+
 // StartingAbilityScores is the standard array: at creation, each value is
 // assigned to exactly one ability.
 var StartingAbilityScores = []int32{16, 15, 13, 12, 9, 8}

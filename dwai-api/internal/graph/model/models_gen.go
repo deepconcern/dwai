@@ -85,6 +85,8 @@ type Character struct {
 	IsDying bool `json:"isDying"`
 	// The character's level, from 1 to 10.
 	Level int32 `json:"level"`
+	// How many leveled spells a Wizard's spellbook should hold (3 + 1 per level gained). Null for other classes.
+	ExpectedSpellbookSize *int32 `json:"expectedSpellbookSize,omitempty"`
 	// Total weight carried: each item's weight times its count.
 	Load int32 `json:"load"`
 	// The character's appearance choices, one per look type.
@@ -93,10 +95,18 @@ type Character struct {
 	MaxHitPoints int32 `json:"maxHitPoints"`
 	// Maximum load before encumbrance: the class's base load plus the Strength modifier.
 	MaxLoad int32 `json:"maxLoad"`
+	// The most spell levels the character can have prepared: level + 1. Null for classes that don't cast spells.
+	MaxPreparedSpellLevels *int32 `json:"maxPreparedSpellLevels,omitempty"`
 	// The character's name.
 	Name string `json:"name"`
+	// Total level of the prepared spells (cantrips and rotes count 0).
+	PreparedSpellLevels int32 `json:"preparedSpellLevels"`
+	// Prepared leveled spells. Cantrips and rotes are always prepared and aren't listed.
+	PreparedSpells []*PreparedSpell `json:"preparedSpells"`
 	// The character's race move.
 	RaceMove *Move `json:"raceMove"`
+	// Leveled spells in a Wizard's spellbook. Empty for other classes.
+	Spellbook []*Spell `json:"spellbook"`
 	// Experience points toward the next level.
 	Xp int32 `json:"xp"`
 	// XP needed to level up: the current level + 7.
@@ -385,7 +395,49 @@ type NewLookInput struct {
 	Value string `json:"value"`
 }
 
+// A spell a character has prepared.
+type PreparedSpell struct {
+	// Whether the caster forgot it (a 7–9 casting choice) until they next prepare spells.
+	IsForgotten bool `json:"isForgotten"`
+	// The spell.
+	Spell *Spell `json:"spell"`
+}
+
 type Query struct {
+}
+
+// A Wizard or Cleric spell.
+type Spell struct {
+	// What the spell does.
+	Description string `json:"description"`
+	// Unique key for this spell within its class's list.
+	Key string `json:"key"`
+	// The spell's level: 0 for cantrips (Wizard) and rotes (Cleric), which are always prepared.
+	Level int32 `json:"level"`
+	// Human-readable name.
+	Name string `json:"name"`
+	// Choices the description refers to, if any.
+	Options []string `json:"options"`
+	// The spell's school (e.g. 'evocation') and 'ongoing' for spells that are maintained.
+	Tags []string `json:"tags"`
+}
+
+// Namespace for spell mutations. Each returns the updated character.
+type SpellMutation struct {
+	// Adds a leveled spell of the character's level or lower to a Wizard's spellbook.
+	AddToSpellbook *Character `json:"addToSpellbook"`
+	// Replaces the character's prepared spells (Prepare Spells or Commune), clearing any forgotten marks. Cantrips and rotes are always prepared, so they're left out.
+	Prepare *Character `json:"prepare"`
+	// Removes a spell from a Wizard's spellbook, unpreparing it too.
+	RemoveFromSpellbook *Character `json:"removeFromSpellbook"`
+	// Marks a prepared spell as forgotten, or remembered.
+	SetForgotten *Character `json:"setForgotten"`
+}
+
+// Namespace for spell queries.
+type SpellQuery struct {
+	// Returns a class's spells, sorted by level and name. Empty for classes that don't cast spells.
+	ByClass []*Spell `json:"byClass"`
 }
 
 // The starting gear configuration for a character class.

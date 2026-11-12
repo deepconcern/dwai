@@ -36,6 +36,11 @@ fragment CharacterFields on Character {
 	canLevelUp
 	advancedMoves { key }
 	availableAdvancedMoves { key requiresKey replacesKey }
+	expectedSpellbookSize
+	maxPreparedSpellLevels
+	preparedSpellLevels
+	preparedSpells { isForgotten spell { key } }
+	spellbook { key }
 	characterClass { key }
 	raceMove { key }
 	abilities { ability score modifier }
@@ -76,6 +81,14 @@ type characterResponse struct {
 		RequiresKey *string
 		ReplacesKey *string
 	}
+	ExpectedSpellbookSize  *int32
+	MaxPreparedSpellLevels *int32
+	PreparedSpellLevels    int32
+	PreparedSpells         []struct {
+		IsForgotten bool
+		Spell       struct{ Key string }
+	}
+	Spellbook      []struct{ Key string }
 	CharacterClass struct{ Key string }
 	RaceMove       struct{ Key string }
 	Abilities      []struct {

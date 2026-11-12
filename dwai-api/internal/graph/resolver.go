@@ -18,5 +18,6 @@ type Resolver struct {
 	ItemTemplates    *models.ItemTemplateMap
 	LookTypes        *models.LookTypeMap
 	PlayerMoves      *models.MoveMap
+	Spells           *models.SpellMap
 	TagDefinitions   *models.TagDefinitionMap
 }

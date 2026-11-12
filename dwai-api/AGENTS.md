@@ -48,8 +48,8 @@ YAML files in `internal/data/` are loaded at startup; they are not stored in the
 | `internal/data/player_moves.yaml`         | Shared player moves                | `Move` (type: `"basic"` / `"special"`) |
 | `internal/data/item_templates.yaml`       | Items, weapons, armor, magic items | `ItemTemplate` — referenced by key from `StartingGear`'s `ItemOption`s and from a character's owned `Item`s |
 | `internal/data/tags.yaml`                 | Item tag definitions               | `Tag`                          |
-| `internal/data/spells/wizard_spells.yaml` | Wizard spell list                  | _(future `Spell` type)_        |
-| `internal/data/spells/cleric_spells.yaml` | Cleric spell list                  | _(future `Spell` type)_        |
+| `internal/data/spells/wizard_spells.yaml` | Wizard spell list                  | `Spell`                        |
+| `internal/data/spells/cleric_spells.yaml` | Cleric spell list                  | `Spell`                        |
 | `internal/data/monsters/*.yaml`           | Monster compendium                 | _(reference only)_             |
 | `internal/data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
 | `internal/data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
@@ -81,6 +81,18 @@ An advanced move may have a `requires: <move key>` or `replaces: <move key>` fie
 | `on_miss`     | `onMiss`      | Explicit miss effect, if any (otherwise GM makes a move) |
 | `options`     | `options`     | List players choose from on partial or full success      |
 | `description` | `description` | Used for moves with no roll (procedural rules)           |
+
+### Spell YAML
+
+Spells are grouped by level under `cantrips` (level 0: Wizard cantrips, Cleric rotes) and `level_1` … `level_9`; the group sets `Spell.level`.
+
+| YAML field    | GraphQL field | Meaning                                                         |
+| ------------- | ------------- | --------------------------------------------------------------- |
+| `key`         | `key`         | Stable ID stored in `spellbook_spells` / `prepared_spells`      |
+| `name`        | `name`        | Display name only (no level or tags packed in)                  |
+| `tags`        | `tags`        | School (`evocation`, `illusion`, …) and `ongoing`               |
+| `options`     | `options`     | Choices the description refers to                               |
+| `description` | `description` | The spell's effect                                              |
 
 ## Database Migrations
 

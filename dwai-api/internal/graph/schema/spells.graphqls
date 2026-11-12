@@ -1,0 +1,41 @@
+"A Wizard or Cleric spell."
+type Spell {
+  "What the spell does."
+  description: String!
+  "Unique key for this spell within its class's list."
+  key: ID!
+  "The spell's level: 0 for cantrips (Wizard) and rotes (Cleric), which are always prepared."
+  level: Int!
+  "Human-readable name."
+  name: String!
+  "Choices the description refers to, if any."
+  options: [String!]!
+  "The spell's school (e.g. 'evocation') and 'ongoing' for spells that are maintained."
+  tags: [String!]!
+}
+
+"A spell a character has prepared."
+type PreparedSpell {
+  "Whether the caster forgot it (a 7–9 casting choice) until they next prepare spells."
+  isForgotten: Boolean!
+  "The spell."
+  spell: Spell!
+}
+
+"Namespace for spell queries."
+type SpellQuery {
+  "Returns a class's spells, sorted by level and name. Empty for classes that don't cast spells."
+  byClass(classKey: ID!): [Spell!]!
+}
+
+"Namespace for spell mutations. Each returns the updated character."
+type SpellMutation {
+  "Adds a leveled spell of the character's level or lower to a Wizard's spellbook."
+  addToSpellbook(characterId: ID!, spellKey: ID!): Character!
+  "Replaces the character's prepared spells (Prepare Spells or Commune), clearing any forgotten marks. Cantrips and rotes are always prepared, so they're left out."
+  prepare(characterId: ID!, spellKeys: [ID!]!): Character!
+  "Removes a spell from a Wizard's spellbook, unpreparing it too."
+  removeFromSpellbook(characterId: ID!, spellKey: ID!): Character!
+  "Marks a prepared spell as forgotten, or remembered."
+  setForgotten(characterId: ID!, forgotten: Boolean!, spellKey: ID!): Character!
+}

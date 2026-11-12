@@ -9,6 +9,7 @@ export const CharacterFragment = graphql(`
     }
     alignmentDescription
     alignmentType
+    armor
     characterClass {
       damageDie
       hpBase
@@ -18,12 +19,15 @@ export const CharacterFragment = graphql(`
     classMoves {
       ...MoveFragment
     }
+    debilities
     equipment {
       ...ItemFragment
     }
     gold
     hitPoints
     id
+    isDying
+    load
     looks {
       id
       lookType {
@@ -32,6 +36,8 @@ export const CharacterFragment = graphql(`
       }
       value
     }
+    maxHitPoints
+    maxLoad
     name
     raceMove {
       ...MoveFragment

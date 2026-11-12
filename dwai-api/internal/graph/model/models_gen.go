@@ -27,6 +27,22 @@ type AbilityScoreInput struct {
 	Score int32 `json:"score"`
 }
 
+// Input for adding an item to a character. With a template key, label, description, type, and tags are optional overrides; for a custom item, label is required.
+type AddItemInput struct {
+	// How many of the item to add.
+	Count int32 `json:"count"`
+	// Flavour or rules text.
+	Description *string `json:"description,omitempty"`
+	// Key of the item template to use, or 'custom'.
+	Key string `json:"key"`
+	// Display name.
+	Label *string `json:"label,omitempty"`
+	// Tags, each a key from the tag catalog.
+	Tags []*TagInput `json:"tags"`
+	// Category of item (e.g. 'weapon', 'armor', 'shield').
+	Type *string `json:"type,omitempty"`
+}
+
 // An example of an alignment a player may use
 type AlignmentTemplate struct {
 	// The alignment type
@@ -43,10 +59,14 @@ type Character struct {
 	AlignmentType string `json:"alignmentType"`
 	// The description of the alignment ethos.
 	AlignmentDescription string `json:"alignmentDescription"`
+	// Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken.
+	Armor int32 `json:"armor"`
 	// The character's class (e.g. Fighter, Wizard).
 	CharacterClass *CharacterClass `json:"characterClass"`
 	// Moves available to the character based on their class and choices
 	ClassMoves []*Move `json:"classMoves"`
+	// Active debilities. Each gives -1 to its stat's modifier; the API's modifier values don't include it.
+	Debilities []Debility `json:"debilities"`
 	// Items owned by the character.
 	Equipment []*Item `json:"equipment"`
 	// Coins the character is carrying, tracked separately from equipment.
@@ -55,8 +75,16 @@ type Character struct {
 	HitPoints int32 `json:"hitPoints"`
 	// Unique identifier for the character.
 	ID string `json:"id"`
+	// Whether the character is at 0 HP and must make the Last Breath move.
+	IsDying bool `json:"isDying"`
+	// Total weight carried: each item's weight times its count.
+	Load int32 `json:"load"`
 	// The character's appearance choices, one per look type.
 	Looks []*Look `json:"looks"`
+	// Maximum HP: the class's base HP plus the Constitution score.
+	MaxHitPoints int32 `json:"maxHitPoints"`
+	// Maximum load before encumbrance: the class's base load plus the Strength modifier.
+	MaxLoad int32 `json:"maxLoad"`
 	// The character's name.
 	Name string `json:"name"`
 	// The character's race move.
@@ -89,8 +117,16 @@ type CharacterClass struct {
 
 // Namespace for character mutations.
 type CharacterMutation struct {
+	// Adds delta (positive or negative) to the character's gold. The result can't be negative.
+	AdjustGold *Character `json:"adjustGold"`
 	// Creates a new character and returns it.
 	Create *Character `json:"create"`
+	// Heals the character by amount, up to their maximum HP.
+	Heal *Character `json:"heal"`
+	// Sets or clears one debility.
+	SetDebility *Character `json:"setDebility"`
+	// Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0.
+	TakeDamage *Character `json:"takeDamage"`
 }
 
 // Namespace for character queries.
@@ -182,6 +218,12 @@ type Item struct {
 
 // Namespace for item mutations.
 type ItemMutation struct {
+	// Adds an item to a character and returns the character.
+	Add *Character `json:"add"`
+	// Removes an item and returns the character that owned it.
+	Remove *Character `json:"remove"`
+	// Sets an item's count (at least 1) and returns the updated item.
+	SetCount *Item `json:"setCount"`
 	// Sets whether an item is currently worn and returns the updated item.
 	SetWorn *Item `json:"setWorn"`
 }
@@ -206,6 +248,14 @@ type ItemTemplate struct {
 	Key         string `json:"key"`
 	Label       string `json:"label"`
 	Tags        []*Tag `json:"tags"`
+	// Category of item (e.g. 'weapon', 'armor', 'service').
+	Type string `json:"type"`
+}
+
+// Namespace for item template queries.
+type ItemTemplateQuery struct {
+	// Returns every item template, sorted by label.
+	All []*ItemTemplate `json:"all"`
 }
 
 // A single appearance choice made for a character.
@@ -312,7 +362,7 @@ type Query struct {
 
 // The starting gear configuration for a character class.
 type StartingGear struct {
-	// Base load capacity before applying Constitution modifier.
+	// Base load capacity before adding the Strength modifier.
 	LoadBase int32 `json:"loadBase"`
 	// Items every character of this class receives automatically.
 	Default []*ItemOption `json:"default"`
@@ -328,6 +378,24 @@ type Tag struct {
 	Name string `json:"name"`
 	// Numeric value for quantified tags. Null for simple tags.
 	Quantity *int32 `json:"quantity,omitempty"`
+}
+
+// A tag on an item being added.
+type TagInput struct {
+	// Key of a tag from the tag catalog (e.g. 'weight', 'close').
+	Key string `json:"key"`
+	// Numeric value for quantified tags; omit for simple tags.
+	Quantity *int32 `json:"quantity,omitempty"`
+}
+
+// Input for taking damage.
+type TakeDamageInput struct {
+	// The damage rolled, before armor.
+	Amount int32 `json:"amount"`
+	// Whether the damage ignores armor entirely.
+	IgnoresArmor bool `json:"ignoresArmor"`
+	// How much armor the damage ignores (the piercing tag).
+	Piercing int32 `json:"piercing"`
 }
 
 // The six core ability scores used for all rolls and derived stats in Dungeon World.
@@ -395,6 +463,76 @@ func (e *Ability) UnmarshalJSON(b []byte) error {
 }
 
 func (e Ability) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// A named condition that gives -1 to one stat's modifier until it's removed.
+type Debility string
+
+const (
+	// Confused (-1 WIS).
+	DebilityConfused Debility = "CONFUSED"
+	// Scarred (-1 CHA).
+	DebilityScarred Debility = "SCARRED"
+	// Shaky (-1 DEX).
+	DebilityShaky Debility = "SHAKY"
+	// Sick (-1 CON).
+	DebilitySick Debility = "SICK"
+	// Stunned (-1 INT).
+	DebilityStunned Debility = "STUNNED"
+	// Weak (-1 STR).
+	DebilityWeak Debility = "WEAK"
+)
+
+var AllDebility = []Debility{
+	DebilityConfused,
+	DebilityScarred,
+	DebilityShaky,
+	DebilitySick,
+	DebilityStunned,
+	DebilityWeak,
+}
+
+func (e Debility) IsValid() bool {
+	switch e {
+	case DebilityConfused, DebilityScarred, DebilityShaky, DebilitySick, DebilityStunned, DebilityWeak:
+		return true
+	}
+	return false
+}
+
+func (e Debility) String() string {
+	return string(e)
+}
+
+func (e *Debility) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Debility(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Debility", str)
+	}
+	return nil
+}
+
+func (e Debility) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *Debility) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e Debility) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

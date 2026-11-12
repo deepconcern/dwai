@@ -28,6 +28,21 @@ func (r *abilityScoreResolver) Modifier(ctx context.Context, obj *model.AbilityS
 	return models.AbilityModifier(obj.Score), nil
 }
 
+// Armor is the resolver for the armor field.
+func (r *characterResolver) Armor(ctx context.Context, obj *model.Character) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	items, err := r.characterItems(ctx, uuid)
+	if err != nil {
+		return 0, err
+	}
+
+	return models.Armor(items), nil
+}
+
 // CharacterClass is the resolver for the characterClass field.
 func (r *characterResolver) CharacterClass(ctx context.Context, obj *model.Character) (*model.CharacterClass, error) {
 	var uuid pgtype.UUID
@@ -107,39 +122,27 @@ func (r *characterResolver) ClassMoves(ctx context.Context, obj *model.Character
 
 // Equipment is the resolver for the equipment field.
 func (r *characterResolver) Equipment(ctx context.Context, obj *model.Character) ([]*model.Item, error) {
-	var uuid pgtype.UUID
-	if err := uuid.Scan(obj.ID); err != nil {
-		return nil, fmt.Errorf("invalid UUID: %w", err)
-	}
-
-	queries := db.New(r.DbPool)
-
-	itemRows, err := queries.SelectItemsByCharacter(ctx, uuid)
+	uuid, err := parseCharacterID(obj.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load items for character with ID '%s': %w", uuid.String(), err)
+		return nil, err
 	}
 
-	itemIds := make([]int32, len(itemRows))
-	for i, row := range itemRows {
-		itemIds[i] = row.ID
-	}
+	return r.characterItems(ctx, uuid)
+}
 
-	tagRows, err := queries.SelectItemTagsByItems(ctx, itemIds)
+// Load is the resolver for the load field.
+func (r *characterResolver) Load(ctx context.Context, obj *model.Character) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load item tags for character with ID '%s': %w", uuid.String(), err)
+		return 0, err
 	}
 
-	tagsByItemId := make(map[int32][]*db.ItemTag, len(itemRows))
-	for i := range tagRows {
-		tagsByItemId[tagRows[i].ItemID] = append(tagsByItemId[tagRows[i].ItemID], &tagRows[i])
+	items, err := r.characterItems(ctx, uuid)
+	if err != nil {
+		return 0, err
 	}
 
-	items := make([]*model.Item, len(itemRows))
-	for i := range itemRows {
-		items[i] = models.ToItemObject(&itemRows[i], tagsByItemId[itemRows[i].ID], r.ItemTemplates, r.TagDefinitions)
-	}
-
-	return items, nil
+	return models.Load(items), nil
 }
 
 // Looks is the resolver for the looks field.
@@ -162,6 +165,36 @@ func (r *characterResolver) Looks(ctx context.Context, obj *model.Character) ([]
 	}
 
 	return looks, nil
+}
+
+// MaxHitPoints is the resolver for the maxHitPoints field.
+func (r *characterResolver) MaxHitPoints(ctx context.Context, obj *model.Character) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	character, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return 0, err
+	}
+
+	return models.MaxHitPoints(class, character.Constitution), nil
+}
+
+// MaxLoad is the resolver for the maxLoad field.
+func (r *characterResolver) MaxLoad(ctx context.Context, obj *model.Character) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	character, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return 0, err
+	}
+
+	return models.MaxLoad(class, character.Strength), nil
 }
 
 // RaceMove is the resolver for the raceMove field.
@@ -189,6 +222,31 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 	}
 
 	return characterClassModel.RaceMoves[raceMoveIndex].ToObject(), nil
+}
+
+// AdjustGold is the resolver for the adjustGold field.
+func (r *characterMutationResolver) AdjustGold(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	gold, err := models.AdjustGold(character.Gold, delta)
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	row, err := db.New(r.DbPool).UpdateCharacterGold(ctx, db.UpdateCharacterGoldParams{Gold: gold, ID: uuid})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update gold for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
 }
 
 // Create is the resolver for the create field.
@@ -366,6 +424,90 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 	return models.ToCharacterObject(characterModel), nil
 }
 
+// Heal is the resolver for the heal field.
+func (r *characterMutationResolver) Heal(ctx context.Context, obj *model.CharacterMutation, amount int32, id string) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	hitPoints, err := models.Heal(character.HitPoints, models.MaxHitPoints(class, character.Constitution), amount)
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	row, err := db.New(r.DbPool).UpdateCharacterHitPoints(ctx, db.UpdateCharacterHitPointsParams{HitPoints: hitPoints, ID: uuid})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update HP for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
+// SetDebility is the resolver for the setDebility field.
+func (r *characterMutationResolver) SetDebility(ctx context.Context, obj *model.CharacterMutation, active bool, debility model.Debility, id string) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := db.New(r.DbPool).UpdateCharacterDebilities(ctx, db.UpdateCharacterDebilitiesParams{
+		Debilities: models.SetDebility(character.Debilities, debility, active),
+		ID:         uuid,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update debilities for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
+// TakeDamage is the resolver for the takeDamage field.
+func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.CharacterMutation, id string, input model.TakeDamageInput) (*model.Character, error) {
+	damage := models.DamageInput{
+		Amount:       input.Amount,
+		IgnoresArmor: input.IgnoresArmor,
+		Piercing:     input.Piercing,
+	}
+	if addValidationErrors(ctx, damage.Validate()) {
+		return nil, nil
+	}
+
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := r.characterItems(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	hitPoints := models.ApplyDamage(character.HitPoints, damage, models.Armor(items))
+
+	row, err := db.New(r.DbPool).UpdateCharacterHitPoints(ctx, db.UpdateCharacterHitPointsParams{HitPoints: hitPoints, ID: uuid})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update HP for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
 // All is the resolver for the all field.
 func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error) {
 	queries := db.New(r.DbPool)
@@ -380,23 +522,8 @@ func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQu
 	// Extract characters from rows
 
 	characterModels := make([]*db.Character, len(rows))
-	for i, row := range rows {
-		characterModels[i] = &db.Character{
-			AlignmentDescription: row.AlignmentDescription,
-			AlignmentType:        row.AlignmentType,
-			CharacterClassKey:    row.CharacterClassKey,
-			Charisma:             row.Charisma,
-			Constitution:         row.Constitution,
-			Dexterity:            row.Dexterity,
-			Gold:                 row.Gold,
-			HitPoints:            row.HitPoints,
-			ID:                   row.ID,
-			Intelligence:         row.Intelligence,
-			Name:                 row.Name,
-			RaceMoveKey:          row.RaceMoveKey,
-			Strength:             row.Strength,
-			Wisdom:               row.Wisdom,
-		}
+	for i := range rows {
+		characterModels[i] = &rows[i]
 	}
 
 	// Build characters and prime the loader cache

@@ -26,12 +26,18 @@ type TagModel struct {
 	Quantity *int32 `yaml:"quantity"`
 }
 
+// ToObject resolves the tag's name from the tag catalog. A tag that isn't in
+// the catalog (some item templates, such as services, carry free-text tags)
+// uses its key as its name.
 func (t *TagModel) ToObject(td *TagDefinitionMap) *model.Tag {
-	tagDef := (*td)[t.Key]
+	name := t.Key
+	if tagDef, ok := (*td)[t.Key]; ok {
+		name = tagDef.Name
+	}
 
 	return &model.Tag{
 		Key:      t.Key,
-		Name:     tagDef.Name,
+		Name:     name,
 		Quantity: t.Quantity,
 	}
 }
@@ -81,6 +87,7 @@ func (m *ItemTemplateModel) ToObject(td *TagDefinitionMap) *model.ItemTemplate {
 		Key:         m.Key,
 		Label:       m.Name,
 		Tags:        tags,
+		Type:        m.Type,
 	}
 }
 

@@ -20,13 +20,20 @@ func ToCharacterObject(c *db.Character) *model.Character {
 		{Ability: model.AbilityWisdom, Score: c.Wisdom},
 	}
 
+	debilities := make([]model.Debility, len(c.Debilities))
+	for i, d := range c.Debilities {
+		debilities[i] = model.Debility(d)
+	}
+
 	return &model.Character{
 		Abilities:            abilities,
 		AlignmentDescription: c.AlignmentDescription,
 		AlignmentType:        c.AlignmentType,
+		Debilities:           debilities,
 		Gold:                 c.Gold,
 		HitPoints:            c.HitPoints,
 		ID:                   c.ID.String(),
+		IsDying:              c.HitPoints <= 0,
 		Name:                 c.Name,
 	}
 }
@@ -62,23 +69,8 @@ func (c *characterLoader) loadCharacters(ctx context.Context, keys []pgtype.UUID
 	}
 
 	characters := make(map[pgtype.UUID]*db.Character, len(rows))
-	for _, row := range rows {
-		characters[row.ID] = &db.Character{
-			AlignmentDescription: row.AlignmentDescription,
-			AlignmentType:        row.AlignmentType,
-			CharacterClassKey:    row.CharacterClassKey,
-			Charisma:             row.Charisma,
-			Constitution:         row.Constitution,
-			Dexterity:            row.Dexterity,
-			Gold:                 row.Gold,
-			HitPoints:            row.HitPoints,
-			ID:                   row.ID,
-			Intelligence:         row.Intelligence,
-			Name:                 row.Name,
-			RaceMoveKey:          row.RaceMoveKey,
-			Strength:             row.Strength,
-			Wisdom:               row.Wisdom,
-		}
+	for i := range rows {
+		characters[rows[i].ID] = &rows[i]
 	}
 
 	return characters, nil

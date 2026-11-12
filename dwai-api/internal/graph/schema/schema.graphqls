@@ -5,6 +5,8 @@ type Query {
   characterClasses: CharacterClassQuery!
   "Queries for player characters."
   characters: CharacterQuery!
+  "Queries for the item template catalog."
+  itemTemplates: ItemTemplateQuery!
   "Queries for look types used when building a character's appearance."
   lookTypes: LookTypeQuery!
   "Queries for moves available to characters."

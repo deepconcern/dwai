@@ -1,6 +1,6 @@
 # Dungeon World AI — App Agent Guide
 
-Next.js frontend. Read the root [`AGENTS.md`](../AGENTS.md) first for the workflow and shared conventions. The app never implements game rules on its own: it displays what the API computes (see [`docs/app/architecture.md`](../docs/app/architecture.md)).
+Next.js frontend. Read the root [`AGENTS.md`](../AGENTS.md) first for the workflow and shared conventions. The app displays what the API computes. It may compute rules as display helpers (like applying debilities to modifiers), but it generally doesn't enforce them (see [`docs/app/architecture.md`](../docs/app/architecture.md)).
 
 ## Commands
 
@@ -32,6 +32,7 @@ Run from `dwai-app/` with Bun:
   - items in an unordered array (or other set of data)
   - component props
   - CSS classes (it is OK to violate this rule for specificity reasons)
+- Document exported functions, components, and props types with JSDoc (`/** ... */`) where it helps a reader: what it's for and anything non-obvious, not a restatement of the name
 - Do not use default exports unless required to by a framework/library (for example, pages in Next.js)
 - React components should use "fat arrow" (=>) function expressions combined with a `FC` annotation
 - Props should be explicitly defined as a type with the name being the name of their component + "Props"

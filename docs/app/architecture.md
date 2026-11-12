@@ -16,7 +16,7 @@ dwai-app (Next.js, :3000)  ──GraphQL (Apollo)──▶  dwai-api (Go/gqlgen,
 
 - **Game content** (classes, moves, items, tags, spells, monsters) is YAML embedded into the API binary and loaded into in-memory maps at startup. It's never stored in the database.
 - **Player data** (characters, looks, items, choices) is in Postgres. Rows store only the **keys** of the game content they reference (`character_class_key`, `race_move_key`, item `key`), and resolvers join them with the YAML at query time.
-- **The frontend** never computes rules on its own. It queries the API and generates TypeScript types from the running API's schema.
+- **The frontend** queries the API and generates TypeScript types from the running API's schema. It shows what the API computes, and may compute rules as display helpers (for example, applying debilities to the modifiers it shows, in `dwai-app/lib/debilities.ts`), but it generally doesn't enforce them. Like a pen-and-paper sheet, where a player can technically write whatever they want, there's a bit of an honor system, and it keeps mistakes easy to fix.
 
 ## Schema Changes Flow API → App
 

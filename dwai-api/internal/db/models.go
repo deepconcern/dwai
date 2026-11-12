@@ -23,6 +23,7 @@ type Character struct {
 	RaceMoveKey          string
 	Strength             int32
 	Wisdom               int32
+	Debilities           []string
 }
 
 type Item struct {

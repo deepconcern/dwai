@@ -22,7 +22,7 @@ type GearOptionGroup {
 
 "The starting gear configuration for a character class."
 type StartingGear {
-  "Base load capacity before applying Constitution modifier."
+  "Base load capacity before adding the Strength modifier."
   loadBase: Int!
   "Items every character of this class receives automatically."
   default: [ItemOption!]!

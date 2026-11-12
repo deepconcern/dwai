@@ -8,7 +8,8 @@ How the Dungeon World concepts in [docs/game](../game/README.md) are represented
 | ------- | ------ | ------- | ----- |
 | Class | `internal/data/classes/*.yaml` | `CharacterClass` | Base HP, damage die, looks, alignments, bonds, starting gear, moves |
 | Basic and special moves | `internal/data/player_moves.yaml` | `Move` (`type: basic / special`) | |
-| Race, starting, advanced moves | Class YAML | `Move` (`type: class`) | Advanced moves aren't exposed yet (Milestone 3) |
+| Race, starting, advanced moves | Class YAML | `Move` (`type: class`) | `CharacterClass.advancedMoves2to5` / `advancedMoves6to10` |
+| Level, XP, taken advanced moves | `characters.level`, `characters.xp`, `advanced_moves` table | `Character.level`, `xp`, `advancedMoves`, `availableAdvancedMoves` | Level-up rules in `internal/models/level.go` |
 | Move creation options | Class YAML `creation_options` | — | Chosen at creation; stored in `move_creation_option_choices` |
 | Item templates | `internal/data/item_templates.yaml` | `ItemTemplate` | Referenced by key from starting gear and owned items |
 | Tags | `internal/data/tags.yaml` | `Tag` | Item tags like `weight`, `close`, `piercing` |

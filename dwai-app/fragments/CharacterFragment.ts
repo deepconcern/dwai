@@ -7,9 +7,16 @@ export const CharacterFragment = graphql(`
       modifier
       score
     }
+    advancedMoves {
+      ...MoveFragment
+    }
     alignmentDescription
     alignmentType
     armor
+    availableAdvancedMoves {
+      ...MoveFragment
+    }
+    canLevelUp
     characterClass {
       damageDie
       hpBase
@@ -27,6 +34,7 @@ export const CharacterFragment = graphql(`
     hitPoints
     id
     isDying
+    level
     load
     looks {
       id
@@ -42,5 +50,7 @@ export const CharacterFragment = graphql(`
     raceMove {
       ...MoveFragment
     }
+    xp
+    xpToLevel
   }
 `);

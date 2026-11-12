@@ -52,12 +52,18 @@ input AbilityScoreInput {
 type Character {
   "The character's six core ability scores, one for each ability."
   abilities: [AbilityScore!]!
+  "Advanced moves the character has taken, in the order taken. A move that was replaced is gone."
+  advancedMoves: [Move!]!
   "The alignment type (e.g. 'Good', 'Neutral', 'Evil')."
   alignmentType: String!
   "The description of the alignment ethos."
   alignmentDescription: String!
+  "Advanced moves the character may choose at their next level up: from the 2–5 list, or either list at level 6+, respecting requires and replaces."
+  availableAdvancedMoves: [Move!]!
   "Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken."
   armor: Int!
+  "Whether the character has the XP to level up and isn't at the maximum level."
+  canLevelUp: Boolean!
   "The character's class (e.g. Fighter, Wizard)."
   characterClass: CharacterClass!
   "Moves available to the character based on their class and choices"
@@ -74,6 +80,8 @@ type Character {
   id: ID!
   "Whether the character is at 0 HP and must make the Last Breath move."
   isDying: Boolean!
+  "The character's level, from 1 to 10."
+  level: Int!
   "Total weight carried: each item's weight times its count."
   load: Int!
   "The character's appearance choices, one per look type."
@@ -86,6 +94,10 @@ type Character {
   name: String!
   "The character's race move."
   raceMove: Move!
+  "Experience points toward the next level."
+  xp: Int!
+  "XP needed to level up: the current level + 7."
+  xpToLevel: Int!
 }
 
 "A single appearance choice made for a character."
@@ -157,6 +169,14 @@ input GearOptionChoiceInput {
   optionIndex: Int!
 }
 
+"Input for leveling up."
+input LevelUpInput {
+  "The ability whose score rises by 1 (it must be under 18)."
+  ability: Ability!
+  "The key of the advanced move to take; it must be in availableAdvancedMoves."
+  advancedMoveKey: String!
+}
+
 "Input for taking damage."
 input TakeDamageInput {
   "The damage rolled, before armor."
@@ -179,10 +199,14 @@ type CharacterQuery {
 type CharacterMutation {
   "Adds delta (positive or negative) to the character's gold. The result can't be negative."
   adjustGold(delta: Int!, id: ID!): Character!
+  "Adds delta (positive or negative) to the character's XP. The result can't be negative."
+  adjustXp(delta: Int!, id: ID!): Character!
   "Creates a new character and returns it."
   create(input: CreateCharacterInput!): Character!
   "Heals the character by amount, up to their maximum HP."
   heal(amount: Int!, id: ID!): Character!
+  "Levels up: spends level + 7 XP, raises the level and one ability score by 1, and adds an advanced move (losing any move it replaces)."
+  levelUp(id: ID!, input: LevelUpInput!): Character!
   "Sets or clears one debility."
   setDebility(active: Boolean!, debility: Debility!, id: ID!): Character!
   "Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0."

@@ -10,7 +10,7 @@ import (
 )
 
 const selectAllCharacters = `-- name: SelectAllCharacters :many
-SELECT alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities
+SELECT alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
 FROM characters
 `
 
@@ -39,6 +39,8 @@ func (q *Queries) SelectAllCharacters(ctx context.Context) ([]Character, error) 
 			&i.Strength,
 			&i.Wisdom,
 			&i.Debilities,
+			&i.Level,
+			&i.Xp,
 		); err != nil {
 			return nil, err
 		}

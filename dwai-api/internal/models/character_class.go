@@ -137,12 +137,24 @@ func (m *CharacterClassModel) ToObject() *model.CharacterClass {
 		raceMoves[i] = r.ToObject()
 	}
 
+	advancedMoves25 := make([]*model.Move, len(m.AdvancedMoves25))
+	for i, a := range m.AdvancedMoves25 {
+		advancedMoves25[i] = a.ToObject()
+	}
+
+	advancedMoves610 := make([]*model.Move, len(m.AdvancedMoves610))
+	for i, a := range m.AdvancedMoves610 {
+		advancedMoves610[i] = a.ToObject()
+	}
+
 	startingMoves := make([]*model.Move, len(m.StartingMoves))
 	for i, s := range m.StartingMoves {
 		startingMoves[i] = s.ToObject()
 	}
 
 	return &model.CharacterClass{
+		AdvancedMoves2to5:  advancedMoves25,
+		AdvancedMoves6to10: advancedMoves610,
 		AlignmentTemplates: alignmentTemplate,
 		Bonds:              m.Bonds,
 		DamageDie:          m.DamageDie,

@@ -60,27 +60,35 @@ type ComplexityRoot struct {
 	}
 
 	Character struct {
-		Abilities            func(childComplexity int) int
-		AlignmentDescription func(childComplexity int) int
-		AlignmentType        func(childComplexity int) int
-		Armor                func(childComplexity int) int
-		CharacterClass       func(childComplexity int) int
-		ClassMoves           func(childComplexity int) int
-		Debilities           func(childComplexity int) int
-		Equipment            func(childComplexity int) int
-		Gold                 func(childComplexity int) int
-		HitPoints            func(childComplexity int) int
-		ID                   func(childComplexity int) int
-		IsDying              func(childComplexity int) int
-		Load                 func(childComplexity int) int
-		Looks                func(childComplexity int) int
-		MaxHitPoints         func(childComplexity int) int
-		MaxLoad              func(childComplexity int) int
-		Name                 func(childComplexity int) int
-		RaceMove             func(childComplexity int) int
+		Abilities              func(childComplexity int) int
+		AdvancedMoves          func(childComplexity int) int
+		AlignmentDescription   func(childComplexity int) int
+		AlignmentType          func(childComplexity int) int
+		Armor                  func(childComplexity int) int
+		AvailableAdvancedMoves func(childComplexity int) int
+		CanLevelUp             func(childComplexity int) int
+		CharacterClass         func(childComplexity int) int
+		ClassMoves             func(childComplexity int) int
+		Debilities             func(childComplexity int) int
+		Equipment              func(childComplexity int) int
+		Gold                   func(childComplexity int) int
+		HitPoints              func(childComplexity int) int
+		ID                     func(childComplexity int) int
+		IsDying                func(childComplexity int) int
+		Level                  func(childComplexity int) int
+		Load                   func(childComplexity int) int
+		Looks                  func(childComplexity int) int
+		MaxHitPoints           func(childComplexity int) int
+		MaxLoad                func(childComplexity int) int
+		Name                   func(childComplexity int) int
+		RaceMove               func(childComplexity int) int
+		Xp                     func(childComplexity int) int
+		XpToLevel              func(childComplexity int) int
 	}
 
 	CharacterClass struct {
+		AdvancedMoves2to5  func(childComplexity int) int
+		AdvancedMoves6to10 func(childComplexity int) int
 		AlignmentTemplates func(childComplexity int) int
 		Bonds              func(childComplexity int) int
 		DamageDie          func(childComplexity int) int
@@ -100,8 +108,10 @@ type ComplexityRoot struct {
 
 	CharacterMutation struct {
 		AdjustGold  func(childComplexity int, delta int32, id string) int
+		AdjustXp    func(childComplexity int, delta int32, id string) int
 		Create      func(childComplexity int, input model.CreateCharacterInput) int
 		Heal        func(childComplexity int, amount int32, id string) int
+		LevelUp     func(childComplexity int, id string, input model.LevelUpInput) int
 		SetDebility func(childComplexity int, active bool, debility model.Debility, id string) int
 		TakeDamage  func(childComplexity int, id string, input model.TakeDamageInput) int
 	}
@@ -248,7 +258,11 @@ type AbilityScoreResolver interface {
 	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
 }
 type CharacterResolver interface {
+	AdvancedMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error)
+
+	AvailableAdvancedMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error)
 	Armor(ctx context.Context, obj *model.Character) (int32, error)
+
 	CharacterClass(ctx context.Context, obj *model.Character) (*model.CharacterClass, error)
 	ClassMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error)
 
@@ -270,8 +284,10 @@ type CharacterClassQueryResolver interface {
 }
 type CharacterMutationResolver interface {
 	AdjustGold(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error)
+	AdjustXp(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error)
 	Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error)
 	Heal(ctx context.Context, obj *model.CharacterMutation, amount int32, id string) (*model.Character, error)
+	LevelUp(ctx context.Context, obj *model.CharacterMutation, id string, input model.LevelUpInput) (*model.Character, error)
 	SetDebility(ctx context.Context, obj *model.CharacterMutation, active bool, debility model.Debility, id string) (*model.Character, error)
 	TakeDamage(ctx context.Context, obj *model.CharacterMutation, id string, input model.TakeDamageInput) (*model.Character, error)
 }
@@ -364,6 +380,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.Abilities(childComplexity), true
+	case "Character.advancedMoves":
+		if e.ComplexityRoot.Character.AdvancedMoves == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.AdvancedMoves(childComplexity), true
 	case "Character.alignmentDescription":
 		if e.ComplexityRoot.Character.AlignmentDescription == nil {
 			break
@@ -382,6 +404,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.Armor(childComplexity), true
+	case "Character.availableAdvancedMoves":
+		if e.ComplexityRoot.Character.AvailableAdvancedMoves == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.AvailableAdvancedMoves(childComplexity), true
+	case "Character.canLevelUp":
+		if e.ComplexityRoot.Character.CanLevelUp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.CanLevelUp(childComplexity), true
 	case "Character.characterClass":
 		if e.ComplexityRoot.Character.CharacterClass == nil {
 			break
@@ -430,6 +464,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.IsDying(childComplexity), true
+	case "Character.level":
+		if e.ComplexityRoot.Character.Level == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Level(childComplexity), true
 	case "Character.load":
 		if e.ComplexityRoot.Character.Load == nil {
 			break
@@ -466,7 +506,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.RaceMove(childComplexity), true
+	case "Character.xp":
+		if e.ComplexityRoot.Character.Xp == nil {
+			break
+		}
 
+		return e.ComplexityRoot.Character.Xp(childComplexity), true
+	case "Character.xpToLevel":
+		if e.ComplexityRoot.Character.XpToLevel == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.XpToLevel(childComplexity), true
+
+	case "CharacterClass.advancedMoves2to5":
+		if e.ComplexityRoot.CharacterClass.AdvancedMoves2to5 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CharacterClass.AdvancedMoves2to5(childComplexity), true
+	case "CharacterClass.advancedMoves6to10":
+		if e.ComplexityRoot.CharacterClass.AdvancedMoves6to10 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CharacterClass.AdvancedMoves6to10(childComplexity), true
 	case "CharacterClass.alignmentTemplates":
 		if e.ComplexityRoot.CharacterClass.AlignmentTemplates == nil {
 			break
@@ -557,6 +621,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterMutation.AdjustGold(childComplexity, args["delta"].(int32), args["id"].(string)), true
+	case "CharacterMutation.adjustXp":
+		if e.ComplexityRoot.CharacterMutation.AdjustXp == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_adjustXp_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.AdjustXp(childComplexity, args["delta"].(int32), args["id"].(string)), true
 	case "CharacterMutation.create":
 		if e.ComplexityRoot.CharacterMutation.Create == nil {
 			break
@@ -579,6 +654,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterMutation.Heal(childComplexity, args["amount"].(int32), args["id"].(string)), true
+	case "CharacterMutation.levelUp":
+		if e.ComplexityRoot.CharacterMutation.LevelUp == nil {
+			break
+		}
+
+		args, err := ec.field_CharacterMutation_levelUp_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CharacterMutation.LevelUp(childComplexity, args["id"].(string), args["input"].(model.LevelUpInput)), true
 	case "CharacterMutation.setDebility":
 		if e.ComplexityRoot.CharacterMutation.SetDebility == nil {
 			break
@@ -1132,6 +1218,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputAddItemInput,
 		ec.unmarshalInputCreateCharacterInput,
 		ec.unmarshalInputGearOptionChoiceInput,
+		ec.unmarshalInputLevelUpInput,
 		ec.unmarshalInputMoveCreationOptionChoiceInput,
 		ec.unmarshalInputNewLookInput,
 		ec.unmarshalInputTagInput,
@@ -1261,12 +1348,18 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 	switch field.Name {
 	case "abilities":
 		return ec.fieldContext_Character_abilities(ctx, field)
+	case "advancedMoves":
+		return ec.fieldContext_Character_advancedMoves(ctx, field)
 	case "alignmentType":
 		return ec.fieldContext_Character_alignmentType(ctx, field)
 	case "alignmentDescription":
 		return ec.fieldContext_Character_alignmentDescription(ctx, field)
+	case "availableAdvancedMoves":
+		return ec.fieldContext_Character_availableAdvancedMoves(ctx, field)
 	case "armor":
 		return ec.fieldContext_Character_armor(ctx, field)
+	case "canLevelUp":
+		return ec.fieldContext_Character_canLevelUp(ctx, field)
 	case "characterClass":
 		return ec.fieldContext_Character_characterClass(ctx, field)
 	case "classMoves":
@@ -1283,6 +1376,8 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_id(ctx, field)
 	case "isDying":
 		return ec.fieldContext_Character_isDying(ctx, field)
+	case "level":
+		return ec.fieldContext_Character_level(ctx, field)
 	case "load":
 		return ec.fieldContext_Character_load(ctx, field)
 	case "looks":
@@ -1295,12 +1390,20 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_name(ctx, field)
 	case "raceMove":
 		return ec.fieldContext_Character_raceMove(ctx, field)
+	case "xp":
+		return ec.fieldContext_Character_xp(ctx, field)
+	case "xpToLevel":
+		return ec.fieldContext_Character_xpToLevel(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
 }
 
 func (ec *executionContext) childFields_CharacterClass(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "advancedMoves2to5":
+		return ec.fieldContext_CharacterClass_advancedMoves2to5(ctx, field)
+	case "advancedMoves6to10":
+		return ec.fieldContext_CharacterClass_advancedMoves6to10(ctx, field)
 	case "alignmentTemplates":
 		return ec.fieldContext_CharacterClass_alignmentTemplates(ctx, field)
 	case "bonds":
@@ -1339,10 +1442,14 @@ func (ec *executionContext) childFields_CharacterMutation(ctx context.Context, f
 	switch field.Name {
 	case "adjustGold":
 		return ec.fieldContext_CharacterMutation_adjustGold(ctx, field)
+	case "adjustXp":
+		return ec.fieldContext_CharacterMutation_adjustXp(ctx, field)
 	case "create":
 		return ec.fieldContext_CharacterMutation_create(ctx, field)
 	case "heal":
 		return ec.fieldContext_CharacterMutation_heal(ctx, field)
+	case "levelUp":
+		return ec.fieldContext_CharacterMutation_levelUp(ctx, field)
 	case "setDebility":
 		return ec.fieldContext_CharacterMutation_setDebility(ctx, field)
 	case "takeDamage":
@@ -1735,6 +1842,28 @@ func (ec *executionContext) field_CharacterMutation_adjustGold_args(ctx context.
 	return args, nil
 }
 
+func (ec *executionContext) field_CharacterMutation_adjustXp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "delta",
+		func(ctx context.Context, v any) (int32, error) {
+			return ec.unmarshalNInt2int32(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["delta"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_CharacterMutation_create_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1768,6 +1897,28 @@ func (ec *executionContext) field_CharacterMutation_heal_args(ctx context.Contex
 		return nil, err
 	}
 	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_CharacterMutation_levelUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.LevelUpInput, error) {
+			return ec.unmarshalNLevelUpInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLevelUpInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -2170,6 +2321,38 @@ func (ec *executionContext) fieldContext_Character_abilities(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Character_advancedMoves(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_advancedMoves(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().AdvancedMoves(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_advancedMoves(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Move(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Character_alignmentType(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2216,6 +2399,38 @@ func (ec *executionContext) fieldContext_Character_alignmentDescription(_ contex
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _Character_availableAdvancedMoves(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_availableAdvancedMoves(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().AvailableAdvancedMoves(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_availableAdvancedMoves(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Move(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Character_armor(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2237,6 +2452,29 @@ func (ec *executionContext) _Character_armor(ctx context.Context, field graphql.
 }
 func (ec *executionContext) fieldContext_Character_armor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Character_canLevelUp(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_canLevelUp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CanLevelUp, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_canLevelUp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _Character_characterClass(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -2450,6 +2688,29 @@ func (ec *executionContext) fieldContext_Character_isDying(_ context.Context, fi
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
+func (ec *executionContext) _Character_level(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_level(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Level, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_level(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_load(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2599,6 +2860,116 @@ func (ec *executionContext) fieldContext_Character_raceMove(_ context.Context, f
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Move(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Character_xp(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_xp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Xp, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_xp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Character_xpToLevel(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_xpToLevel(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.XpToLevel, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_xpToLevel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CharacterClass_advancedMoves2to5(ctx context.Context, field graphql.CollectedField, obj *model.CharacterClass) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterClass_advancedMoves2to5(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AdvancedMoves2to5, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterClass_advancedMoves2to5(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterClass",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Move(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterClass_advancedMoves6to10(ctx context.Context, field graphql.CollectedField, obj *model.CharacterClass) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterClass_advancedMoves6to10(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AdvancedMoves6to10, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Move) graphql.Marshaler {
+			return ec.marshalNMove2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMoveᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterClass_advancedMoves6to10(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterClass",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Move(ctx, field)
 		},
@@ -3001,6 +3372,50 @@ func (ec *executionContext) fieldContext_CharacterMutation_adjustGold(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _CharacterMutation_adjustXp(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_adjustXp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().AdjustXp(ctx, obj, fc.Args["delta"].(int32), fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_adjustXp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_adjustXp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CharacterMutation_create(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3083,6 +3498,50 @@ func (ec *executionContext) fieldContext_CharacterMutation_heal(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_CharacterMutation_heal_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterMutation_levelUp(ctx context.Context, field graphql.CollectedField, obj *model.CharacterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterMutation_levelUp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CharacterMutation().LevelUp(ctx, obj, fc.Args["id"].(string), fc.Args["input"].(model.LevelUpInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterMutation_levelUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CharacterMutation_levelUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6663,6 +7122,43 @@ func (ec *executionContext) unmarshalInputGearOptionChoiceInput(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLevelUpInput(ctx context.Context, obj any) (model.LevelUpInput, error) {
+	var it model.LevelUpInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ability", "advancedMoveKey"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ability":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ability"))
+			data, err := ec.unmarshalNAbility2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAbility(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ability = data
+		case "advancedMoveKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("advancedMoveKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AdvancedMoveKey = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMoveCreationOptionChoiceInput(ctx context.Context, obj any) (model.MoveCreationOptionChoiceInput, error) {
 	var it model.MoveCreationOptionChoiceInput
 	if obj == nil {
@@ -6980,6 +7476,42 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "advancedMoves":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_advancedMoves(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "alignmentType":
 			out.Values[i] = ec._Character_alignmentType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6990,6 +7522,42 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "availableAdvancedMoves":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_availableAdvancedMoves(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "armor":
 			field := field
 
@@ -7026,6 +7594,11 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "canLevelUp":
+			out.Values[i] = ec._Character_canLevelUp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "characterClass":
 			field := field
 
@@ -7156,6 +7729,11 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 		case "isDying":
 			out.Values[i] = ec._Character_isDying(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "level":
+			out.Values[i] = ec._Character_level(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -7344,6 +7922,16 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "xp":
+			out.Values[i] = ec._Character_xp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "xpToLevel":
+			out.Values[i] = ec._Character_xpToLevel(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7378,6 +7966,16 @@ func (ec *executionContext) _CharacterClass(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CharacterClass")
+		case "advancedMoves2to5":
+			out.Values[i] = ec._CharacterClass_advancedMoves2to5(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "advancedMoves6to10":
+			out.Values[i] = ec._CharacterClass_advancedMoves6to10(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "alignmentTemplates":
 			out.Values[i] = ec._CharacterClass_alignmentTemplates(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7635,6 +8233,42 @@ func (ec *executionContext) _CharacterMutation(ctx context.Context, sel ast.Sele
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "adjustXp":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_adjustXp(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "create":
 			field := field
 
@@ -7681,6 +8315,42 @@ func (ec *executionContext) _CharacterMutation(ctx context.Context, sel ast.Sele
 					}
 				}()
 				res = ec._CharacterMutation_heal(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "levelUp":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CharacterMutation_levelUp(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -10209,6 +10879,11 @@ func (ec *executionContext) marshalNItemTemplateQuery2ᚖgithubᚗcomᚋdeepconc
 		return graphql.Null
 	}
 	return ec._ItemTemplateQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNLevelUpInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLevelUpInput(ctx context.Context, v any) (model.LevelUpInput, error) {
+	res, err := ec.unmarshalInputLevelUpInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Look) graphql.Marshaler {

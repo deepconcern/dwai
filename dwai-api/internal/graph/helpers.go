@@ -116,3 +116,13 @@ func addValidationErrors(ctx context.Context, errs []models.ValidationError) boo
 
 	return len(errs) > 0
 }
+
+// moveObjects converts class moves to GraphQL objects.
+func moveObjects(moves []*models.ClassMoveModel) []*model.Move {
+	objects := make([]*model.Move, len(moves))
+	for i, m := range moves {
+		objects[i] = m.ToObject()
+	}
+
+	return objects
+}

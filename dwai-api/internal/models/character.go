@@ -29,12 +29,16 @@ func ToCharacterObject(c *db.Character) *model.Character {
 		Abilities:            abilities,
 		AlignmentDescription: c.AlignmentDescription,
 		AlignmentType:        c.AlignmentType,
+		CanLevelUp:           CanLevelUp(c.Level, c.Xp),
 		Debilities:           debilities,
 		Gold:                 c.Gold,
 		HitPoints:            c.HitPoints,
 		ID:                   c.ID.String(),
 		IsDying:              c.HitPoints <= 0,
+		Level:                c.Level,
 		Name:                 c.Name,
+		Xp:                   c.Xp,
+		XpToLevel:            XPToLevel(c.Level),
 	}
 }
 

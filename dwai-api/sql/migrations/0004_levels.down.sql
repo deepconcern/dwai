@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS advanced_moves;
+ALTER TABLE characters DROP COLUMN IF EXISTS level,
+DROP COLUMN IF EXISTS xp;

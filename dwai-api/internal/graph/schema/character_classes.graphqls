@@ -47,6 +47,10 @@ type LookExample {
 
 "A playable character class as defined by the Dungeon World ruleset (e.g. Fighter, Wizard)."
 type CharacterClass {
+  "Advanced moves available at levels 2–10 (the 2–5 list)."
+  advancedMoves2to5: [Move!]!
+  "Advanced moves available only at levels 6–10."
+  advancedMoves6to10: [Move!]!
   "Moves available when choosing an alignment for this class."
   alignmentTemplates: [AlignmentTemplate!]!
   "Example bonds templates."

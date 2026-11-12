@@ -2,11 +2,12 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-11-11)
+## Status (2026-11-12)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
 - **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
-- **In progress**: Milestone 3 (Character Sheet), spec #4. Slices A (HP, armor, gold, debilities, inventory, derived stats in the API) and B (XP, level up, advanced moves) are done; spells (#7) are next.
+- **Done**: Milestone 3 (Character Sheet), spec #4 — HP with damage and healing, armor, load, gold, debilities, inventory, XP and level up with advanced moves, and Wizard and Cleric spells (spellbook, preparation within the level limit, forgotten spells). Derived stats and rules live in the API.
+- **Next**: Milestone 4 (Accounts & Auth).
 
 ---
 
@@ -29,7 +30,7 @@ Make adding tests cheap before the rules logic grows.
 - [x] Integration tests run from `make check` (or a separate `make test-integration` if they need Postgres)
 - [x] A Playwright smoke test that creates a character through the UI (`make test-e2e`)
 
-### 3. Character Sheet (State Management) ← current
+### 3. Character Sheet (State Management) ✓
 
 Everything a player changes during play. Bonds wait for campaigns.
 
@@ -39,10 +40,10 @@ Everything a player changes during play. Bonds wait for campaigns.
 - [x] Debilities
 - [x] XP; level up (spend XP, +1 stat, choose an advanced move respecting requires/replaces)
 - [x] Expose advanced moves in GraphQL
-- [ ] Spells for Wizard and Cleric: load the spell data, spellbook, prepare spells, level limits
+- [x] Spells for Wizard and Cleric: load the spell data, spellbook, prepare spells, level limits
 - [x] Move all derived stats (armor, load, max HP) to the API so the frontend and the future AI agents share one implementation
 
-### 4. Accounts & Auth
+### 4. Accounts & Auth ← next
 
 Every later milestone needs to know who owns what.
 

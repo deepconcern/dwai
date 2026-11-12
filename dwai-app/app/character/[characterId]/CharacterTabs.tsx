@@ -11,6 +11,7 @@ import { CharacterFragmentFragment } from "@/gql/graphql";
 import { BasicInfoTab } from "./BasicInfoTab";
 import { EquipmentTab } from "./EquipmentTab";
 import { MovesDisplay } from "./MovesDisplay";
+import { SpellsTab } from "./SpellsTab";
 
 export type CharacterTabsProps = {
   basicMoves: FragmentType<typeof MoveFragment>[];
@@ -67,6 +68,16 @@ export const CharacterTabs: FC<CharacterTabsProps> = ({
         render: () => <EquipmentTab character={character} />,
         tab: "equipment",
       },
+      // Only spellcasters (Wizards and Clerics) have a preparation limit.
+      ...(character.maxPreparedSpellLevels === null
+        ? []
+        : [
+            {
+              label: "Spells",
+              render: () => <SpellsTab character={character} />,
+              tab: "spells",
+            },
+          ]),
     ],
     [basicMoves, character, specialMoves],
   );

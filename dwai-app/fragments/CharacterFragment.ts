@@ -33,6 +33,7 @@ export const CharacterFragment = graphql(`
     gold
     hitPoints
     id
+    expectedSpellbookSize
     isDying
     level
     load
@@ -46,9 +47,20 @@ export const CharacterFragment = graphql(`
     }
     maxHitPoints
     maxLoad
+    maxPreparedSpellLevels
     name
+    preparedSpellLevels
+    preparedSpells {
+      isForgotten
+      spell {
+        ...SpellFragment
+      }
+    }
     raceMove {
       ...MoveFragment
+    }
+    spellbook {
+      ...SpellFragment
     }
     xp
     xpToLevel

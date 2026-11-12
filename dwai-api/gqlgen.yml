@@ -215,6 +215,8 @@ models:
         resolver: true
       equipment:
         resolver: true
+      expectedSpellbookSize:
+        resolver: true
       load:
         resolver: true
       looks:
@@ -223,7 +225,15 @@ models:
         resolver: true
       maxLoad:
         resolver: true
+      maxPreparedSpellLevels:
+        resolver: true
+      preparedSpellLevels:
+        resolver: true
+      preparedSpells:
+        resolver: true
       raceMove:
+        resolver: true
+      spellbook:
         resolver: true
 
   CharacterClass:
@@ -271,6 +281,20 @@ models:
       setCount:
         resolver: true
       setWorn:
+        resolver: true
+  SpellMutation:
+    fields:
+      addToSpellbook:
+        resolver: true
+      prepare:
+        resolver: true
+      removeFromSpellbook:
+        resolver: true
+      setForgotten:
+        resolver: true
+  SpellQuery:
+    fields:
+      byClass:
         resolver: true
   ItemTemplateQuery:
     fields:

@@ -172,6 +172,27 @@ func (r *characterResolver) Equipment(ctx context.Context, obj *model.Character)
 	return r.characterItems(ctx, uuid)
 }
 
+// ExpectedSpellbookSize is the resolver for the expectedSpellbookSize field.
+func (r *characterResolver) ExpectedSpellbookSize(ctx context.Context, obj *model.Character) (*int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !models.UsesSpellbook(character.CharacterClassKey) {
+		return nil, nil
+	}
+
+	size := models.ExpectedSpellbookSize(character.Level)
+
+	return &size, nil
+}
+
 // Load is the resolver for the load field.
 func (r *characterResolver) Load(ctx context.Context, obj *model.Character) (int32, error) {
 	uuid, err := parseCharacterID(obj.ID)
@@ -239,6 +260,64 @@ func (r *characterResolver) MaxLoad(ctx context.Context, obj *model.Character) (
 	return models.MaxLoad(class, character.Strength), nil
 }
 
+// MaxPreparedSpellLevels is the resolver for the maxPreparedSpellLevels field.
+func (r *characterResolver) MaxPreparedSpellLevels(ctx context.Context, obj *model.Character) (*int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !r.Spells.IsSpellcaster(character.CharacterClassKey) {
+		return nil, nil
+	}
+
+	limit := models.MaxPreparedSpellLevels(character.Level)
+
+	return &limit, nil
+}
+
+// PreparedSpellLevels is the resolver for the preparedSpellLevels field.
+func (r *characterResolver) PreparedSpellLevels(ctx context.Context, obj *model.Character) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return 0, err
+	}
+
+	_, spells, err := r.preparedSpells(ctx, character)
+	if err != nil {
+		return 0, err
+	}
+
+	return models.PreparedSpellLevels(spells), nil
+}
+
+// PreparedSpells is the resolver for the preparedSpells field.
+func (r *characterResolver) PreparedSpells(ctx context.Context, obj *model.Character) ([]*model.PreparedSpell, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	prepared, _, err := r.preparedSpells(ctx, character)
+
+	return prepared, err
+}
+
 // RaceMove is the resolver for the raceMove field.
 func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) (*model.Move, error) {
 	var uuid pgtype.UUID
@@ -264,6 +343,26 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 	}
 
 	return characterClassModel.RaceMoves[raceMoveIndex].ToObject(), nil
+}
+
+// Spellbook is the resolver for the spellbook field.
+func (r *characterResolver) Spellbook(ctx context.Context, obj *model.Character) ([]*model.Spell, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	keys, err := db.New(r.DbPool).SelectSpellbookByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the spellbook for character with ID '%s': %w", obj.ID, err)
+	}
+
+	return spellObjects(r.Spells.SpellsByKey(character.CharacterClassKey, keys)), nil
 }
 
 // AdjustGold is the resolver for the adjustGold field.

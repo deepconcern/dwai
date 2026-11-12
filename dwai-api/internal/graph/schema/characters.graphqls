@@ -82,6 +82,8 @@ type Character {
   isDying: Boolean!
   "The character's level, from 1 to 10."
   level: Int!
+  "How many leveled spells a Wizard's spellbook should hold (3 + 1 per level gained). Null for other classes."
+  expectedSpellbookSize: Int
   "Total weight carried: each item's weight times its count."
   load: Int!
   "The character's appearance choices, one per look type."
@@ -90,10 +92,18 @@ type Character {
   maxHitPoints: Int!
   "Maximum load before encumbrance: the class's base load plus the Strength modifier."
   maxLoad: Int!
+  "The most spell levels the character can have prepared: level + 1. Null for classes that don't cast spells."
+  maxPreparedSpellLevels: Int
   "The character's name."
   name: String!
+  "Total level of the prepared spells (cantrips and rotes count 0)."
+  preparedSpellLevels: Int!
+  "Prepared leveled spells. Cantrips and rotes are always prepared and aren't listed."
+  preparedSpells: [PreparedSpell!]!
   "The character's race move."
   raceMove: Move!
+  "Leveled spells in a Wizard's spellbook. Empty for other classes."
+  spellbook: [Spell!]!
   "Experience points toward the next level."
   xp: Int!
   "XP needed to level up: the current level + 7."

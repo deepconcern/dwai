@@ -65,9 +65,14 @@ const TOGGLE_ITEM_WORN_MUTATION = graphql(`
 `);
 
 export type EquipmentTabProps = {
+  /** The character whose gold and items are shown and changed. */
   character: CharacterFragmentFragment;
 };
 
+/**
+ * Gold, load vs. max load, and the inventory: change an item's count, wear
+ * it, remove it, or add a new one.
+ */
 export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [goldChange, setGoldChange] = useState("");

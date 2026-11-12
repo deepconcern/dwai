@@ -35,9 +35,14 @@ const ITEM_TEMPLATES_QUERY = graphql(`
 `);
 
 export type AddItemFormProps = {
+  /** The character the item is added to. */
   characterId: string;
 };
 
+/**
+ * Adds an item to a character, either from the item catalog (services left
+ * out) or as a custom item with a name, description, and weight.
+ */
 export const AddItemForm: FC<AddItemFormProps> = ({ characterId }) => {
   const [count, setCount] = useState("1");
   const [description, setDescription] = useState("");

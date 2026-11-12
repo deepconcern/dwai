@@ -32,9 +32,15 @@ const TAKE_DAMAGE_MUTATION = graphql(`
 `);
 
 export type HealthSectionProps = {
+  /** The character whose HP and armor are shown and changed. */
   character: CharacterFragmentFragment;
 };
 
+/**
+ * HP (current / max) and armor, with forms to take damage and heal. The API
+ * applies armor, piercing, and the HP limits; at 0 HP this shows a Last
+ * Breath notice.
+ */
 export const HealthSection: FC<HealthSectionProps> = ({ character }) => {
   const [damage, setDamage] = useState("");
   const [errors, setErrors] = useState<string[]>([]);

@@ -1,8 +1,10 @@
 import { Page, expect } from "@playwright/test";
 
-// createFighter creates a Fighter through the UI and waits for its sheet.
-// CON 13 (23 HP), STR 16 (max load 14), with scale armor (unworn), a shield
-// (+1 armor), and 22 gold.
+/**
+ * Creates a Fighter through the UI and waits for its sheet: CON 13 (23 HP),
+ * STR 16 (max load 14), with scale armor (unworn), a shield (+1 armor), and
+ * 22 gold.
+ */
 export const createFighter = async (page: Page, name: string) => {
   await page.goto("/create-character");
 

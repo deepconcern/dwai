@@ -26,9 +26,15 @@ const SET_DEBILITY_MUTATION = graphql(`
 `);
 
 export type AbilitiesSectionProps = {
+  /** The character whose abilities and debilities are shown. */
   character: CharacterFragmentFragment;
 };
 
+/**
+ * The six abilities with their scores and modifiers. Each has a checkbox for
+ * its debility; an active one shows the modifier 1 lower, with the base
+ * modifier beside it.
+ */
 export const AbilitiesSection: FC<AbilitiesSectionProps> = ({ character }) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [setDebility, { loading }] = useMutation(SET_DEBILITY_MUTATION);

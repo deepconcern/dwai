@@ -8,6 +8,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AdvancedMove struct {
+	CharacterID pgtype.UUID
+	ID          int32
+	MoveKey     string
+}
+
 type Character struct {
 	AlignmentDescription string
 	AlignmentType        string
@@ -24,6 +30,8 @@ type Character struct {
 	Strength             int32
 	Wisdom               int32
 	Debilities           []string
+	Level                int32
+	Xp                   int32
 }
 
 type Item struct {

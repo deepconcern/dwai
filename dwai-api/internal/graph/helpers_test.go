@@ -30,6 +30,12 @@ fragment CharacterFields on Character {
 	load
 	maxLoad
 	debilities
+	level
+	xp
+	xpToLevel
+	canLevelUp
+	advancedMoves { key }
+	availableAdvancedMoves { key requiresKey replacesKey }
 	characterClass { key }
 	raceMove { key }
 	abilities { ability score modifier }
@@ -48,21 +54,31 @@ fragment CharacterFields on Character {
 }`
 
 type characterResponse struct {
-	ID                   string
-	Name                 string
-	AlignmentType        string
-	AlignmentDescription string
-	Gold                 int32
-	HitPoints            int32
-	MaxHitPoints         int32
-	IsDying              bool
-	Armor                int32
-	Load                 int32
-	MaxLoad              int32
-	Debilities           []string
-	CharacterClass       struct{ Key string }
-	RaceMove             struct{ Key string }
-	Abilities            []struct {
+	ID                     string
+	Name                   string
+	AlignmentType          string
+	AlignmentDescription   string
+	Gold                   int32
+	HitPoints              int32
+	MaxHitPoints           int32
+	IsDying                bool
+	Armor                  int32
+	Load                   int32
+	MaxLoad                int32
+	Debilities             []string
+	Level                  int32
+	Xp                     int32
+	XpToLevel              int32
+	CanLevelUp             bool
+	AdvancedMoves          []struct{ Key string }
+	AvailableAdvancedMoves []struct {
+		Key         string
+		RequiresKey *string
+		ReplacesKey *string
+	}
+	CharacterClass struct{ Key string }
+	RaceMove       struct{ Key string }
+	Abilities      []struct {
 		Ability  string
 		Score    int32
 		Modifier int32

@@ -59,16 +59,16 @@ The `key` field on all entities uses `snake_case` derived from the name (e.g., `
 
 ### Class YAML
 
-| YAML field            | GraphQL field   | Notes                                         |
-| --------------------- | --------------- | --------------------------------------------- |
-| `hp_base`             | `hpBase`        | Integer added to CON **score** (not modifier) |
-| `damage_die`          | `damageDie`     | Integer — the die face (4, 6, 8, 10)          |
-| `race_moves`          | `raceMoves`     | One chosen at character creation              |
-| `starting_moves`      | `startingMoves` | All characters of this class begin with these |
-| `advanced_moves_2_5`  | —               | Moves available at levels 2–5                 |
-| `advanced_moves_6_10` | —               | Moves available at levels 6–10                |
+| YAML field            | GraphQL field        | Notes                                         |
+| --------------------- | -------------------- | --------------------------------------------- |
+| `hp_base`             | `hpBase`             | Integer added to CON **score** (not modifier) |
+| `damage_die`          | `damageDie`          | Integer — the die face (4, 6, 8, 10)          |
+| `race_moves`          | `raceMoves`          | One chosen at character creation              |
+| `starting_moves`      | `startingMoves`      | All characters of this class begin with these |
+| `advanced_moves_2_5`  | `advancedMoves2to5`  | Moves available at levels 2–10                |
+| `advanced_moves_6_10` | `advancedMoves6to10` | Moves available at levels 6–10                |
 
-An advanced move's `requirement` field is either `Requires: <move>` or `Replaces: <move>`, exposed as `requiresKey` / `replacesKey`. `alignments` entries are ethos descriptions (`AlignmentTemplate`), not `Move`s.
+An advanced move may have a `requires: <move key>` or `replaces: <move key>` field, exposed as `requiresKey` / `replacesKey`. The level-up rules that use them are in `internal/models/level.go`. `alignments` entries are ethos descriptions (`AlignmentTemplate`), not `Move`s.
 
 ### Move YAML
 

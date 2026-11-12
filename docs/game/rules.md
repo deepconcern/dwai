@@ -84,7 +84,7 @@ Every move has a fictional **trigger** ("When you…"). If the fiction matches, 
 
 - **Race moves**: one is chosen at character creation (for example Dwarf, Elf, Halfling, Human; the options vary by class).
 - **Starting moves**: every character of the class has them. Some require a choice at creation (for example the Fighter's Signature Weapon, the Wizard's spellbook).
-- **Advanced moves**: chosen on level up, from the 2–5 list or (at level 6+) either list. An advanced move may **require** another move first, or **replace** one it supersedes (the replaced move is lost).
+- **Advanced moves**: chosen on level up, from the 2–5 list or (at level 6+) either list. An advanced move may **require** another move first, or **replace** one it supersedes. A replacing move can be taken without the move it replaces; if the character has that move, it's lost, and it can't be taken again while the replacement is held.
 
 ## Alignment
 

@@ -203,7 +203,11 @@ models:
 
   Character:
     fields:
+      advancedMoves:
+        resolver: true
       armor:
+        resolver: true
+      availableAdvancedMoves:
         resolver: true
       characterClass:
         resolver: true
@@ -238,9 +242,13 @@ models:
     fields:
       adjustGold:
         resolver: true
+      adjustXp:
+        resolver: true
       create:
         resolver: true
       heal:
+        resolver: true
+      levelUp:
         resolver: true
       setDebility:
         resolver: true

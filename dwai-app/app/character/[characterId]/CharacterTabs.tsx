@@ -2,6 +2,7 @@
 
 import { FC, useMemo, useState } from "react";
 
+import { SectionTitle } from "@/components/SectionTitle";
 import { TabItem, Tabs } from "@/components/Tabs";
 import { MoveFragment } from "@/fragments/MoveFragment";
 import { FragmentType } from "@/gql";
@@ -33,7 +34,22 @@ export const CharacterTabs: FC<CharacterTabsProps> = ({
       },
       {
         label: "Class Moves",
-        render: () => <MovesDisplay moves={character.classMoves} />,
+        render: () => (
+          <div className="flex flex-col space-y-4">
+            <section>
+              <SectionTitle title="Starting Moves" />
+              <MovesDisplay moves={character.classMoves} />
+            </section>
+            <section>
+              <SectionTitle title="Advanced Moves" />
+              {character.advancedMoves.length > 0 ? (
+                <MovesDisplay moves={character.advancedMoves} />
+              ) : (
+                <p>None yet: choose one each time you level up.</p>
+              )}
+            </section>
+          </div>
+        ),
         tab: "class-moves",
       },
       {

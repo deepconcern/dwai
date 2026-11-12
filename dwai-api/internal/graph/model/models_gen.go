@@ -55,12 +55,18 @@ type AlignmentTemplate struct {
 type Character struct {
 	// The character's six core ability scores, one for each ability.
 	Abilities []*AbilityScore `json:"abilities"`
+	// Advanced moves the character has taken, in the order taken. A move that was replaced is gone.
+	AdvancedMoves []*Move `json:"advancedMoves"`
 	// The alignment type (e.g. 'Good', 'Neutral', 'Evil').
 	AlignmentType string `json:"alignmentType"`
 	// The description of the alignment ethos.
 	AlignmentDescription string `json:"alignmentDescription"`
+	// Advanced moves the character may choose at their next level up: from the 2–5 list, or either list at level 6+, respecting requires and replaces.
+	AvailableAdvancedMoves []*Move `json:"availableAdvancedMoves"`
 	// Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken.
 	Armor int32 `json:"armor"`
+	// Whether the character has the XP to level up and isn't at the maximum level.
+	CanLevelUp bool `json:"canLevelUp"`
 	// The character's class (e.g. Fighter, Wizard).
 	CharacterClass *CharacterClass `json:"characterClass"`
 	// Moves available to the character based on their class and choices
@@ -77,6 +83,8 @@ type Character struct {
 	ID string `json:"id"`
 	// Whether the character is at 0 HP and must make the Last Breath move.
 	IsDying bool `json:"isDying"`
+	// The character's level, from 1 to 10.
+	Level int32 `json:"level"`
 	// Total weight carried: each item's weight times its count.
 	Load int32 `json:"load"`
 	// The character's appearance choices, one per look type.
@@ -89,10 +97,18 @@ type Character struct {
 	Name string `json:"name"`
 	// The character's race move.
 	RaceMove *Move `json:"raceMove"`
+	// Experience points toward the next level.
+	Xp int32 `json:"xp"`
+	// XP needed to level up: the current level + 7.
+	XpToLevel int32 `json:"xpToLevel"`
 }
 
 // A playable character class as defined by the Dungeon World ruleset (e.g. Fighter, Wizard).
 type CharacterClass struct {
+	// Advanced moves available at levels 2–10 (the 2–5 list).
+	AdvancedMoves2to5 []*Move `json:"advancedMoves2to5"`
+	// Advanced moves available only at levels 6–10.
+	AdvancedMoves6to10 []*Move `json:"advancedMoves6to10"`
 	// Moves available when choosing an alignment for this class.
 	AlignmentTemplates []*AlignmentTemplate `json:"alignmentTemplates"`
 	// Example bonds templates.
@@ -119,10 +135,14 @@ type CharacterClass struct {
 type CharacterMutation struct {
 	// Adds delta (positive or negative) to the character's gold. The result can't be negative.
 	AdjustGold *Character `json:"adjustGold"`
+	// Adds delta (positive or negative) to the character's XP. The result can't be negative.
+	AdjustXp *Character `json:"adjustXp"`
 	// Creates a new character and returns it.
 	Create *Character `json:"create"`
 	// Heals the character by amount, up to their maximum HP.
 	Heal *Character `json:"heal"`
+	// Levels up: spends level + 7 XP, raises the level and one ability score by 1, and adds an advanced move (losing any move it replaces).
+	LevelUp *Character `json:"levelUp"`
 	// Sets or clears one debility.
 	SetDebility *Character `json:"setDebility"`
 	// Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0.
@@ -256,6 +276,14 @@ type ItemTemplate struct {
 type ItemTemplateQuery struct {
 	// Returns every item template, sorted by label.
 	All []*ItemTemplate `json:"all"`
+}
+
+// Input for leveling up.
+type LevelUpInput struct {
+	// The ability whose score rises by 1 (it must be under 18).
+	Ability Ability `json:"ability"`
+	// The key of the advanced move to take; it must be in availableAdvancedMoves.
+	AdvancedMoveKey string `json:"advancedMoveKey"`
 }
 
 // A single appearance choice made for a character.

@@ -28,6 +28,48 @@ func (r *abilityScoreResolver) Modifier(ctx context.Context, obj *model.AbilityS
 	return models.AbilityModifier(obj.Score), nil
 }
 
+// AdvancedMoves is the resolver for the advancedMoves field.
+func (r *characterResolver) AdvancedMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	keys, err := db.New(r.DbPool).SelectAdvancedMovesByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load advanced moves for character with ID '%s': %w", obj.ID, err)
+	}
+
+	return moveObjects(models.AdvancedMoves(class, keys)), nil
+}
+
+// AvailableAdvancedMoves is the resolver for the availableAdvancedMoves field.
+func (r *characterResolver) AvailableAdvancedMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	keys, err := db.New(r.DbPool).SelectAdvancedMovesByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load advanced moves for character with ID '%s': %w", obj.ID, err)
+	}
+
+	held := models.HeldMoveKeys(class, character.RaceMoveKey, keys)
+
+	return moveObjects(models.AvailableAdvancedMoves(class, character.Level+1, held)), nil
+}
+
 // Armor is the resolver for the armor field.
 func (r *characterResolver) Armor(ctx context.Context, obj *model.Character) (int32, error) {
 	uuid, err := parseCharacterID(obj.ID)
@@ -249,6 +291,31 @@ func (r *characterMutationResolver) AdjustGold(ctx context.Context, obj *model.C
 	return characterUpdated(ctx, row), nil
 }
 
+// AdjustXp is the resolver for the adjustXp field.
+func (r *characterMutationResolver) AdjustXp(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	xp, err := models.AdjustXP(character.Xp, delta)
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	row, err := db.New(r.DbPool).UpdateCharacterXp(ctx, db.UpdateCharacterXpParams{ID: uuid, Xp: xp})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update XP for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
 // Create is the resolver for the create field.
 func (r *characterMutationResolver) Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error) {
 	// Parse ability scores from the input slice into individual vars.
@@ -444,6 +511,74 @@ func (r *characterMutationResolver) Heal(ctx context.Context, obj *model.Charact
 	row, err := db.New(r.DbPool).UpdateCharacterHitPoints(ctx, db.UpdateCharacterHitPointsParams{HitPoints: hitPoints, ID: uuid})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update HP for character with ID '%s': %w", id, err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
+// LevelUp is the resolver for the levelUp field.
+func (r *characterMutationResolver) LevelUp(ctx context.Context, obj *model.CharacterMutation, id string, input model.LevelUpInput) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, class, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	keys, err := db.New(r.DbPool).SelectAdvancedMovesByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load advanced moves for character with ID '%s': %w", id, err)
+	}
+
+	result, errs := models.LevelUp(class, *character, keys, input)
+	if addValidationErrors(ctx, errs) {
+		return nil, nil
+	}
+
+	tx, err := r.DbPool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to roll back level up", "error", err)
+		}
+	}()
+
+	queries := db.New(tx)
+
+	updated := result.Character
+	row, err := queries.UpdateCharacterLevel(ctx, db.UpdateCharacterLevelParams{
+		Charisma:     updated.Charisma,
+		Constitution: updated.Constitution,
+		Dexterity:    updated.Dexterity,
+		HitPoints:    updated.HitPoints,
+		ID:           uuid,
+		Intelligence: updated.Intelligence,
+		Level:        updated.Level,
+		Strength:     updated.Strength,
+		Wisdom:       updated.Wisdom,
+		Xp:           updated.Xp,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to level up character with ID '%s': %w", id, err)
+	}
+
+	if result.MoveReplaced != nil {
+		if err := queries.DeleteAdvancedMove(ctx, db.DeleteAdvancedMoveParams{CharacterID: uuid, MoveKey: *result.MoveReplaced}); err != nil {
+			return nil, fmt.Errorf("failed to remove replaced move '%s': %w", *result.MoveReplaced, err)
+		}
+	}
+
+	if _, err := queries.InsertAdvancedMove(ctx, db.InsertAdvancedMoveParams{CharacterID: uuid, MoveKey: result.MoveAdded}); err != nil {
+		return nil, fmt.Errorf("failed to add advanced move '%s': %w", result.MoveAdded, err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return characterUpdated(ctx, row), nil

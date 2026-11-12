@@ -33,7 +33,7 @@ export const CharacterPageClient: FC<CharacterPageClientProps> = ({
     <>
       <PageTitle title={character.name} />
       <p className="mb-4">
-        Level ?? {raceMove.name} {character.characterClass.name}
+        Level {character.level} {raceMove.name} {character.characterClass.name}
       </p>
 
       <div className="flex flex-col space-y-4">

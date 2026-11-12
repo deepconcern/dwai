@@ -6,7 +6,7 @@ Each milestone is one or more branches merged to `main`. A milestone is done whe
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
 - **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
-- **Next**: Milestone 3 (Character Sheet).
+- **In progress**: Milestone 3 (Character Sheet), spec #4. Slice A (HP, armor, gold, debilities, inventory, derived stats in the API) is done; XP/level up (#6) and spells (#7) are next.
 
 ---
 
@@ -33,14 +33,14 @@ Make adding tests cheap before the rules logic grows.
 
 Everything a player changes during play. Bonds wait for campaigns.
 
-- [ ] Max HP shown alongside current HP; take damage (armor applied) and heal
-- [ ] Inventory: add (from a template or custom), remove, change count, wear/unwear; load vs. max load
-- [ ] Gold adjustments
-- [ ] Debilities
+- [x] Max HP shown alongside current HP; take damage (armor applied) and heal
+- [x] Inventory: add (from a template or custom), remove, change count, wear/unwear; load vs. max load
+- [x] Gold adjustments
+- [x] Debilities
 - [ ] XP; level up (spend XP, +1 stat, choose an advanced move respecting requires/replaces)
 - [ ] Expose advanced moves in GraphQL
 - [ ] Spells for Wizard and Cleric: load the spell data, spellbook, prepare spells, level limits
-- [ ] Move all derived stats (armor, load, max HP) to the API so the frontend and the future AI agents share one implementation
+- [x] Move all derived stats (armor, load, max HP) to the API so the frontend and the future AI agents share one implementation
 
 ### 4. Accounts & Auth
 

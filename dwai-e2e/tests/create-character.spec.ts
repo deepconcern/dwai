@@ -54,7 +54,7 @@ test.describe("character creation", () => {
     await expect(page.getByRole("heading", { name: "Grimbold" })).toBeVisible();
     await expect(page.getByText("Dwarf Fighter")).toBeVisible();
     // Fighters have 10 base HP, plus Constitution.
-    await expect(page.getByText("HP: 23")).toBeVisible();
+    await expect(page.getByText("HP: 23 / 23")).toBeVisible();
   });
 
   test("shows validation errors for an incomplete form", async ({ page }) => {

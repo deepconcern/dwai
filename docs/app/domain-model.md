@@ -13,7 +13,8 @@ How the Dungeon World concepts in [docs/game](../game/README.md) are represented
 | Item templates | `internal/data/item_templates.yaml` | `ItemTemplate` | Referenced by key from starting gear and owned items |
 | Tags | `internal/data/tags.yaml` | `Tag` | Item tags like `weight`, `close`, `piercing` |
 | Starting gear | Class YAML `starting_gear` | `StartingGear`, `GearOptionGroup`, `ItemOption` | Defaults plus pick-N groups; identical items are merged on creation |
-| Character | `characters` table | `Character` | Stats stored as six score columns; modifiers derived |
+| Character | `characters` table | `Character` | Stats stored as six score columns; modifiers derived. Max HP, armor, load, and max load are derived in `internal/models/sheet.go` |
+| Debilities | `characters.debilities` (text array) | `Debility` | Stored by the API; the app applies the −1 to displayed modifiers |
 | Looks | `looks` table | `Look`, `LookType` | One per look type |
 | Owned items | `items`, `item_tags` tables | `Item` | `key` is a template key or `custom`; label, description, and tags override the template |
 | Spells | `internal/data/spells/*.yaml` | — | Loaded, not exposed yet (Milestone 3) |
@@ -21,7 +22,7 @@ How the Dungeon World concepts in [docs/game](../game/README.md) are represented
 
 ## Rules Logic
 
-Pure rules logic lives in `dwai-api/internal/models` (ability modifiers, character validation, starting-gear resolution and merging) and is unit tested there. Resolvers in `internal/graph` stay thin: they load data, call into `models`, and persist.
+Pure rules logic lives in `dwai-api/internal/models` (ability modifiers, character validation, starting-gear resolution and merging, derived stats, damage and healing) and is unit tested there. Resolvers in `internal/graph` stay thin: they load data, call into `models`, and persist.
 
 When adding a rule, put the calculation in `models`, test it there, expose the result through GraphQL, and have the frontend display it rather than recompute it.
 

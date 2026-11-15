@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import { FC, FormEventHandler, useCallback, useState } from "react";
+import { FC, FormEventHandler, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { ErrorList } from "@/components/ErrorList";
@@ -52,46 +52,40 @@ export const HealthSection: FC<HealthSectionProps> = ({ character }) => {
   const [takeDamage, { loading: damageLoading }] =
     useMutation(TAKE_DAMAGE_MUTATION);
 
-  const handleTakeDamage = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      setErrors([]);
-      try {
-        await takeDamage({
-          variables: {
-            id: character.id,
-            input: {
-              amount: Number(damage),
-              ignoresArmor,
-              piercing: Number(piercing || 0),
-            },
+  const handleTakeDamage: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    setErrors([]);
+    try {
+      await takeDamage({
+        variables: {
+          id: character.id,
+          input: {
+            amount: Number(damage),
+            ignoresArmor,
+            piercing: Number(piercing || 0),
           },
-        });
-        setDamage("");
-        setIgnoresArmor(false);
-        setPiercing("");
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [character.id, damage, ignoresArmor, piercing, takeDamage],
-  );
+        },
+      });
+      setDamage("");
+      setIgnoresArmor(false);
+      setPiercing("");
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
-  const handleHeal = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      setErrors([]);
-      try {
-        await heal({
-          variables: { amount: Number(healing), id: character.id },
-        });
-        setHealing("");
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [character.id, heal, healing],
-  );
+  const handleHeal: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    setErrors([]);
+    try {
+      await heal({
+        variables: { amount: Number(healing), id: character.id },
+      });
+      setHealing("");
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
   return (
     <Section className="flex-1" title="Health">

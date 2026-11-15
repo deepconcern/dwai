@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import { ChangeEventHandler, FC, useCallback, useState } from "react";
+import { ChangeEventHandler, FC, useState } from "react";
 
 import { ErrorList } from "@/components/ErrorList";
 import { SectionTitle } from "@/components/SectionTitle";
@@ -39,24 +39,21 @@ export const AbilitiesSection: FC<AbilitiesSectionProps> = ({ character }) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [setDebility, { loading }] = useMutation(SET_DEBILITY_MUTATION);
 
-  const handleDebilityChange = useCallback<
-    ChangeEventHandler<HTMLInputElement>
-  >(
-    async (ev) => {
-      const debility = ev.currentTarget.dataset.debility as Debility;
-      const active = ev.currentTarget.checked;
+  const handleDebilityChange: ChangeEventHandler<HTMLInputElement> = async (
+    ev,
+  ) => {
+    const debility = ev.currentTarget.dataset.debility as Debility;
+    const active = ev.currentTarget.checked;
 
-      setErrors([]);
-      try {
-        await setDebility({
-          variables: { active, debility, id: character.id },
-        });
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [character.id, setDebility],
-  );
+    setErrors([]);
+    try {
+      await setDebility({
+        variables: { active, debility, id: character.id },
+      });
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
   return (
     <section>

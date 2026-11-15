@@ -1,13 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import {
-  ChangeEventHandler,
-  FC,
-  FormEventHandler,
-  useCallback,
-  useState,
-} from "react";
+import { ChangeEventHandler, FC, FormEventHandler, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { ErrorList } from "@/components/ErrorList";
@@ -71,31 +65,25 @@ export const PrepareSpellsDialog: FC<PrepareSpellsDialogProps> = ({
     selected,
   );
 
-  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (ev) => {
-      const { checked, value } = ev.currentTarget;
-      setSelected((current) =>
-        checked ? [...current, value] : current.filter((k) => k !== value),
-      );
-    },
-    [],
-  );
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (ev) => {
+    const { checked, value } = ev.currentTarget;
+    setSelected((current) =>
+      checked ? [...current, value] : current.filter((k) => k !== value),
+    );
+  };
 
-  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      setErrors([]);
-      try {
-        await prepare({
-          variables: { characterId: character.id, spellKeys: selected },
-        });
-        onClose();
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [character.id, onClose, prepare, selected],
-  );
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    setErrors([]);
+    try {
+      await prepare({
+        variables: { characterId: character.id, spellKeys: selected },
+      });
+      onClose();
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
   return (
     <Modal isOpen onClose={onClose}>

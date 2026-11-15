@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import { FC, MouseEventHandler, useCallback, useState } from "react";
+import { FC, MouseEventHandler, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { ErrorList } from "@/components/ErrorList";
@@ -38,22 +38,19 @@ export const ExperienceSection: FC<ExperienceSectionProps> = ({
   const [isLevelUpOpen, setLevelUpOpen] = useState(false);
   const [adjustXp, { loading }] = useMutation(ADJUST_XP_MUTATION);
 
-  const handleAdjust = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    async (ev) => {
-      const delta = Number(ev.currentTarget.value);
+  const handleAdjust: MouseEventHandler<HTMLButtonElement> = async (ev) => {
+    const delta = Number(ev.currentTarget.value);
 
-      setErrors([]);
-      try {
-        await adjustXp({ variables: { delta, id: character.id } });
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [adjustXp, character.id],
-  );
+    setErrors([]);
+    try {
+      await adjustXp({ variables: { delta, id: character.id } });
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
-  const handleClose = useCallback(() => setLevelUpOpen(false), []);
-  const handleOpen = useCallback(() => setLevelUpOpen(true), []);
+  const handleClose = () => setLevelUpOpen(false);
+  const handleOpen = () => setLevelUpOpen(true);
 
   return (
     <Section className="flex-1" title="Experience">

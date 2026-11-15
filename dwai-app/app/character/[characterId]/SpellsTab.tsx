@@ -6,8 +6,6 @@ import {
   FC,
   FormEventHandler,
   MouseEventHandler,
-  useCallback,
-  useMemo,
   useState,
 } from "react";
 
@@ -99,17 +97,12 @@ export const SpellsTab: FC<SpellsTabProps> = ({ character }) => {
   const usesSpellbook = character.expectedSpellbookSize !== null;
   const isCleric = !usesSpellbook;
 
-  const classSpells = useMemo(
-    () =>
-      (data?.spells.byClass ?? []).map((ref) => ({
-        ref,
-        spell: unmaskFragment(SpellFragment, ref),
-      })),
-    [data],
-  );
-  const spellbook = useMemo(
-    () => character.spellbook.map((s) => unmaskFragment(SpellFragment, s)),
-    [character.spellbook],
+  const classSpells = (data?.spells.byClass ?? []).map((ref) => ({
+    ref,
+    spell: unmaskFragment(SpellFragment, ref),
+  }));
+  const spellbook = character.spellbook.map((s) =>
+    unmaskFragment(SpellFragment, s),
   );
 
   const cantrips = classSpells.filter(({ spell }) => spell.level === 0);
@@ -119,21 +112,17 @@ export const SpellsTab: FC<SpellsTabProps> = ({ character }) => {
     ? character.spellbook
     : classSpells.filter(({ spell }) => spell.level > 0).map(({ ref }) => ref);
 
-  const addable = useMemo(
-    () =>
-      classSpells
-        .map(({ spell }) => spell)
-        .filter(
-          (s) =>
-            s.level > 0 &&
-            s.level <= character.level &&
-            !spellbook.some((b) => b.key === s.key),
-        )
-        .map((s) => ({ label: `${s.name} (level ${s.level})`, value: s.key })),
-    [character.level, classSpells, spellbook],
-  );
+  const addable = classSpells
+    .map(({ spell }) => spell)
+    .filter(
+      (s) =>
+        s.level > 0 &&
+        s.level <= character.level &&
+        !spellbook.some((b) => b.key === s.key),
+    )
+    .map((s) => ({ label: `${s.name} (level ${s.level})`, value: s.key }));
 
-  const run = useCallback(async (action: () => Promise<unknown>) => {
+  const run = async (action: () => Promise<unknown>) => {
     setErrors([]);
     try {
       await action();
@@ -142,52 +131,42 @@ export const SpellsTab: FC<SpellsTabProps> = ({ character }) => {
       setErrors(errorMessages(error));
       return false;
     }
-  }, []);
+  };
 
-  const handleAdd = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      const ok = await run(() =>
-        addToSpellbook({
-          variables: { characterId: character.id, spellKey: spellToAdd },
-        }),
-      );
-      if (ok) setSpellToAdd("");
-    },
-    [addToSpellbook, character.id, run, spellToAdd],
-  );
+  const handleAdd: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    const ok = await run(() =>
+      addToSpellbook({
+        variables: { characterId: character.id, spellKey: spellToAdd },
+      }),
+    );
+    if (ok) setSpellToAdd("");
+  };
 
-  const handleRemove = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    async (ev) => {
-      const spellKey = ev.currentTarget.value;
-      await run(() =>
-        removeFromSpellbook({
-          variables: { characterId: character.id, spellKey },
-        }),
-      );
-    },
-    [character.id, removeFromSpellbook, run],
-  );
+  const handleRemove: MouseEventHandler<HTMLButtonElement> = async (ev) => {
+    const spellKey = ev.currentTarget.value;
+    await run(() =>
+      removeFromSpellbook({
+        variables: { characterId: character.id, spellKey },
+      }),
+    );
+  };
 
-  const handleForgotten = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    async (ev) => {
-      const spellKey = ev.currentTarget.value;
-      const forgotten = ev.currentTarget.checked;
-      await run(() =>
-        setForgotten({
-          variables: { characterId: character.id, forgotten, spellKey },
-        }),
-      );
-    },
-    [character.id, run, setForgotten],
-  );
+  const handleForgotten: ChangeEventHandler<HTMLInputElement> = async (ev) => {
+    const spellKey = ev.currentTarget.value;
+    const forgotten = ev.currentTarget.checked;
+    await run(() =>
+      setForgotten({
+        variables: { characterId: character.id, forgotten, spellKey },
+      }),
+    );
+  };
 
-  const handleSpellToAddChange = useCallback<
-    ChangeEventHandler<HTMLSelectElement>
-  >((ev) => setSpellToAdd(ev.target.value), []);
+  const handleSpellToAddChange: ChangeEventHandler<HTMLSelectElement> = (ev) =>
+    setSpellToAdd(ev.target.value);
 
-  const handleClose = useCallback(() => setPrepareOpen(false), []);
-  const handleOpen = useCallback(() => setPrepareOpen(true), []);
+  const handleClose = () => setPrepareOpen(false);
+  const handleOpen = () => setPrepareOpen(true);
 
   const warning = spellbookWarning(
     spellbook.length,

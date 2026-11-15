@@ -1,14 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import {
-  ChangeEventHandler,
-  FC,
-  FormEventHandler,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { ChangeEventHandler, FC, FormEventHandler, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { Dropdown } from "@/components/Dropdown";
@@ -55,40 +48,31 @@ export const LevelUpDialog: FC<LevelUpDialogProps> = ({
   const [moveKey, setMoveKey] = useState("");
   const [levelUp, { loading }] = useMutation(LEVEL_UP_MUTATION);
 
-  const abilityOptions = useMemo(
-    () => levelUpAbilityOptions(character.abilities),
-    [character.abilities],
-  );
+  const abilityOptions = levelUpAbilityOptions(character.abilities);
 
-  const handleAbilityChange = useCallback<
-    ChangeEventHandler<HTMLSelectElement>
-  >((ev) => setAbility(ev.target.value), []);
+  const handleAbilityChange: ChangeEventHandler<HTMLSelectElement> = (ev) =>
+    setAbility(ev.target.value);
 
-  const handleMoveChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (ev) => setMoveKey(ev.target.value),
-    [],
-  );
+  const handleMoveChange: ChangeEventHandler<HTMLInputElement> = (ev) =>
+    setMoveKey(ev.target.value);
 
-  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      setErrors([]);
-      try {
-        await levelUp({
-          variables: {
-            id: character.id,
-            input: { ability: ability as Ability, advancedMoveKey: moveKey },
-          },
-        });
-        setAbility("");
-        setMoveKey("");
-        onClose();
-      } catch (error) {
-        setErrors(errorMessages(error));
-      }
-    },
-    [ability, character.id, levelUp, moveKey, onClose],
-  );
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    setErrors([]);
+    try {
+      await levelUp({
+        variables: {
+          id: character.id,
+          input: { ability: ability as Ability, advancedMoveKey: moveKey },
+        },
+      });
+      setAbility("");
+      setMoveKey("");
+      onClose();
+    } catch (error) {
+      setErrors(errorMessages(error));
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

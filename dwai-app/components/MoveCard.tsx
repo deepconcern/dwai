@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 
 import { MoveFragment } from "@/fragments/MoveFragment";
 import { FragmentType, unmaskFragment } from "@/gql";
@@ -26,21 +26,16 @@ export const MoveCard: FC<MoveCardProps> = ({
   // eslint-disable-next-line react-hooks/immutability
   selectedOptions = selectedOptions ?? move.creationOptions.map(() => []);
 
-  const rollResults = useMemo(() => {
-    if (!move.roll) return [];
-
-    const results = [];
-    if (move.on10) {
-      results.push({ content: <>On a 10+: {move.on10}</>, key: "10+" });
-    }
-    if (move.on7to9) {
-      results.push({ content: <>On a 7-9: {move.on7to9}</>, key: "7-9" });
-    }
-    if (move.onMiss) {
-      results.push({ content: <>On a miss: {move.onMiss}</>, key: "miss" });
-    }
-    return results;
-  }, [move]);
+  const rollResults = [];
+  if (move.roll && move.on10) {
+    rollResults.push({ content: <>On a 10+: {move.on10}</>, key: "10+" });
+  }
+  if (move.roll && move.on7to9) {
+    rollResults.push({ content: <>On a 7-9: {move.on7to9}</>, key: "7-9" });
+  }
+  if (move.roll && move.onMiss) {
+    rollResults.push({ content: <>On a miss: {move.onMiss}</>, key: "miss" });
+  }
 
   return (
     <div

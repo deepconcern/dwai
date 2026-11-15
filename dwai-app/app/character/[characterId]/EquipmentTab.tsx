@@ -6,7 +6,6 @@ import {
   FC,
   FormEventHandler,
   MouseEventHandler,
-  useCallback,
   useState,
 } from "react";
 
@@ -88,7 +87,7 @@ export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
     refetch,
   );
 
-  const run = useCallback(async (action: () => Promise<unknown>) => {
+  const run = async (action: () => Promise<unknown>) => {
     setErrors([]);
     try {
       await action();
@@ -97,59 +96,47 @@ export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
       setErrors(errorMessages(error));
       return false;
     }
-  }, []);
+  };
 
-  const handleGold = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      // The submitter says whether to add or spend.
-      const submitter = (ev.nativeEvent as SubmitEvent)
-        .submitter as HTMLButtonElement | null;
-      const sign = submitter?.value === "spend" ? -1 : 1;
+  const handleGold: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    // The submitter says whether to add or spend.
+    const submitter = (ev.nativeEvent as SubmitEvent)
+      .submitter as HTMLButtonElement | null;
+    const sign = submitter?.value === "spend" ? -1 : 1;
 
-      const ok = await run(() =>
-        adjustGold({
-          variables: { delta: sign * Number(goldChange), id: character.id },
-        }),
-      );
-      if (ok) setGoldChange("");
-    },
-    [adjustGold, character.id, goldChange, run],
-  );
+    const ok = await run(() =>
+      adjustGold({
+        variables: { delta: sign * Number(goldChange), id: character.id },
+      }),
+    );
+    if (ok) setGoldChange("");
+  };
 
-  const handleCount = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    async (ev) => {
-      const id = ev.currentTarget.dataset.itemId;
-      const count = Number(ev.currentTarget.value);
-      if (!id || !Number.isInteger(count)) return;
+  const handleCount: ChangeEventHandler<HTMLInputElement> = async (ev) => {
+    const id = ev.currentTarget.dataset.itemId;
+    const count = Number(ev.currentTarget.value);
+    if (!id || !Number.isInteger(count)) return;
 
-      await run(() => setItemCount({ variables: { count, id } }));
-    },
-    [run, setItemCount],
-  );
+    await run(() => setItemCount({ variables: { count, id } }));
+  };
 
-  const handleRemove = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    async (ev) => {
-      const id = ev.currentTarget.dataset.itemId;
-      if (!id) return;
+  const handleRemove: MouseEventHandler<HTMLButtonElement> = async (ev) => {
+    const id = ev.currentTarget.dataset.itemId;
+    if (!id) return;
 
-      await run(() => removeItem({ variables: { id } }));
-    },
-    [removeItem, run],
-  );
+    await run(() => removeItem({ variables: { id } }));
+  };
 
-  const handleToggle = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    async (ev) => {
-      if (wornLoading) return;
+  const handleToggle: ChangeEventHandler<HTMLInputElement> = async (ev) => {
+    if (wornLoading) return;
 
-      const id = ev.currentTarget.dataset.itemId;
-      const worn = ev.currentTarget.checked;
-      if (!id) return;
+    const id = ev.currentTarget.dataset.itemId;
+    const worn = ev.currentTarget.checked;
+    if (!id) return;
 
-      await run(() => toggleItemWorn({ variables: { id, worn } }));
-    },
-    [run, toggleItemWorn, wornLoading],
-  );
+    await run(() => toggleItemWorn({ variables: { id, worn } }));
+  };
 
   const warning = loadWarning(character.load, character.maxLoad);
 

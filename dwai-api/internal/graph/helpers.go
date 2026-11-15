@@ -126,3 +126,35 @@ func moveObjects(moves []*models.ClassMoveModel) []*model.Move {
 
 	return objects
 }
+
+// spellObjects converts spells to GraphQL objects.
+func spellObjects(spells []*models.SpellModel) []*model.Spell {
+	objects := make([]*model.Spell, len(spells))
+	for i, s := range spells {
+		objects[i] = s.ToObject()
+	}
+
+	return objects
+}
+
+// preparedSpells loads a character's prepared spells, as GraphQL objects and
+// as spell models.
+func (r *Resolver) preparedSpells(ctx context.Context, character *db.Character) ([]*model.PreparedSpell, []*models.SpellModel, error) {
+	rows, err := db.New(r.DbPool).SelectPreparedSpellsByCharacter(ctx, character.ID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to load prepared spells for character with ID '%s': %w", character.ID.String(), err)
+	}
+
+	prepared := make([]*model.PreparedSpell, 0, len(rows))
+	spells := make([]*models.SpellModel, 0, len(rows))
+	for _, row := range rows {
+		spell := r.Spells.Find(character.CharacterClassKey, row.SpellKey)
+		if spell == nil {
+			continue
+		}
+		prepared = append(prepared, &model.PreparedSpell{IsForgotten: row.IsForgotten, Spell: spell.ToObject()})
+		spells = append(spells, spell)
+	}
+
+	return prepared, spells, nil
+}

@@ -72,6 +72,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		ItemTemplates:    gameData.ItemTemplateMap,
 		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),
 		PlayerMoves:      gameData.MoveMap,
+		Spells:           gameData.SpellMap,
 		TagDefinitions:   gameData.TagDefinitionMap,
 	}}))
 

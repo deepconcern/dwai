@@ -42,6 +42,8 @@ type ResolverRoot interface {
 	MoveQuery() MoveQueryResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	SpellMutation() SpellMutationResolver
+	SpellQuery() SpellQueryResolver
 }
 
 type DirectiveRoot struct {
@@ -71,6 +73,7 @@ type ComplexityRoot struct {
 		ClassMoves             func(childComplexity int) int
 		Debilities             func(childComplexity int) int
 		Equipment              func(childComplexity int) int
+		ExpectedSpellbookSize  func(childComplexity int) int
 		Gold                   func(childComplexity int) int
 		HitPoints              func(childComplexity int) int
 		ID                     func(childComplexity int) int
@@ -80,8 +83,12 @@ type ComplexityRoot struct {
 		Looks                  func(childComplexity int) int
 		MaxHitPoints           func(childComplexity int) int
 		MaxLoad                func(childComplexity int) int
+		MaxPreparedSpellLevels func(childComplexity int) int
 		Name                   func(childComplexity int) int
+		PreparedSpellLevels    func(childComplexity int) int
+		PreparedSpells         func(childComplexity int) int
 		RaceMove               func(childComplexity int) int
+		Spellbook              func(childComplexity int) int
 		Xp                     func(childComplexity int) int
 		XpToLevel              func(childComplexity int) int
 	}
@@ -230,6 +237,12 @@ type ComplexityRoot struct {
 	Mutation struct {
 		Characters func(childComplexity int) int
 		Items      func(childComplexity int) int
+		Spells     func(childComplexity int) int
+	}
+
+	PreparedSpell struct {
+		IsForgotten func(childComplexity int) int
+		Spell       func(childComplexity int) int
 	}
 
 	Query struct {
@@ -239,6 +252,27 @@ type ComplexityRoot struct {
 		ItemTemplates    func(childComplexity int) int
 		LookTypes        func(childComplexity int) int
 		Moves            func(childComplexity int) int
+		Spells           func(childComplexity int) int
+	}
+
+	Spell struct {
+		Description func(childComplexity int) int
+		Key         func(childComplexity int) int
+		Level       func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Options     func(childComplexity int) int
+		Tags        func(childComplexity int) int
+	}
+
+	SpellMutation struct {
+		AddToSpellbook      func(childComplexity int, characterID string, spellKey string) int
+		Prepare             func(childComplexity int, characterID string, spellKeys []string) int
+		RemoveFromSpellbook func(childComplexity int, characterID string, spellKey string) int
+		SetForgotten        func(childComplexity int, characterID string, forgotten bool, spellKey string) int
+	}
+
+	SpellQuery struct {
+		ByClass func(childComplexity int, classKey string) int
 	}
 
 	StartingGear struct {
@@ -268,12 +302,17 @@ type CharacterResolver interface {
 
 	Equipment(ctx context.Context, obj *model.Character) ([]*model.Item, error)
 
+	ExpectedSpellbookSize(ctx context.Context, obj *model.Character) (*int32, error)
 	Load(ctx context.Context, obj *model.Character) (int32, error)
 	Looks(ctx context.Context, obj *model.Character) ([]*model.Look, error)
 	MaxHitPoints(ctx context.Context, obj *model.Character) (int32, error)
 	MaxLoad(ctx context.Context, obj *model.Character) (int32, error)
+	MaxPreparedSpellLevels(ctx context.Context, obj *model.Character) (*int32, error)
 
+	PreparedSpellLevels(ctx context.Context, obj *model.Character) (int32, error)
+	PreparedSpells(ctx context.Context, obj *model.Character) ([]*model.PreparedSpell, error)
 	RaceMove(ctx context.Context, obj *model.Character) (*model.Move, error)
+	Spellbook(ctx context.Context, obj *model.Character) ([]*model.Spell, error)
 }
 type CharacterClassResolver interface {
 	StartingGear(ctx context.Context, obj *model.CharacterClass) (*model.StartingGear, error)
@@ -318,6 +357,7 @@ type MoveQueryResolver interface {
 type MutationResolver interface {
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
 	Items(ctx context.Context) (*model.ItemMutation, error)
+	Spells(ctx context.Context) (*model.SpellMutation, error)
 }
 type QueryResolver interface {
 	APIVersion(ctx context.Context) (string, error)
@@ -326,6 +366,16 @@ type QueryResolver interface {
 	ItemTemplates(ctx context.Context) (*model.ItemTemplateQuery, error)
 	LookTypes(ctx context.Context) (*model.LookTypeQuery, error)
 	Moves(ctx context.Context) (*model.MoveQuery, error)
+	Spells(ctx context.Context) (*model.SpellQuery, error)
+}
+type SpellMutationResolver interface {
+	AddToSpellbook(ctx context.Context, obj *model.SpellMutation, characterID string, spellKey string) (*model.Character, error)
+	Prepare(ctx context.Context, obj *model.SpellMutation, characterID string, spellKeys []string) (*model.Character, error)
+	RemoveFromSpellbook(ctx context.Context, obj *model.SpellMutation, characterID string, spellKey string) (*model.Character, error)
+	SetForgotten(ctx context.Context, obj *model.SpellMutation, characterID string, forgotten bool, spellKey string) (*model.Character, error)
+}
+type SpellQueryResolver interface {
+	ByClass(ctx context.Context, obj *model.SpellQuery, classKey string) ([]*model.Spell, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -440,6 +490,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.Equipment(childComplexity), true
+	case "Character.expectedSpellbookSize":
+		if e.ComplexityRoot.Character.ExpectedSpellbookSize == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.ExpectedSpellbookSize(childComplexity), true
 	case "Character.gold":
 		if e.ComplexityRoot.Character.Gold == nil {
 			break
@@ -494,18 +550,42 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Character.MaxLoad(childComplexity), true
+	case "Character.maxPreparedSpellLevels":
+		if e.ComplexityRoot.Character.MaxPreparedSpellLevels == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.MaxPreparedSpellLevels(childComplexity), true
 	case "Character.name":
 		if e.ComplexityRoot.Character.Name == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Character.Name(childComplexity), true
+	case "Character.preparedSpellLevels":
+		if e.ComplexityRoot.Character.PreparedSpellLevels == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.PreparedSpellLevels(childComplexity), true
+	case "Character.preparedSpells":
+		if e.ComplexityRoot.Character.PreparedSpells == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.PreparedSpells(childComplexity), true
 	case "Character.raceMove":
 		if e.ComplexityRoot.Character.RaceMove == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Character.RaceMove(childComplexity), true
+	case "Character.spellbook":
+		if e.ComplexityRoot.Character.Spellbook == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Character.Spellbook(childComplexity), true
 	case "Character.xp":
 		if e.ComplexityRoot.Character.Xp == nil {
 			break
@@ -1129,6 +1209,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.Items(childComplexity), true
+	case "Mutation.spells":
+		if e.ComplexityRoot.Mutation.Spells == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Mutation.Spells(childComplexity), true
+
+	case "PreparedSpell.isForgotten":
+		if e.ComplexityRoot.PreparedSpell.IsForgotten == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PreparedSpell.IsForgotten(childComplexity), true
+	case "PreparedSpell.spell":
+		if e.ComplexityRoot.PreparedSpell.Spell == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PreparedSpell.Spell(childComplexity), true
 
 	case "Query.apiVersion":
 		if e.ComplexityRoot.Query.APIVersion == nil {
@@ -1167,6 +1266,106 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Moves(childComplexity), true
+	case "Query.spells":
+		if e.ComplexityRoot.Query.Spells == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.Spells(childComplexity), true
+
+	case "Spell.description":
+		if e.ComplexityRoot.Spell.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Description(childComplexity), true
+	case "Spell.key":
+		if e.ComplexityRoot.Spell.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Key(childComplexity), true
+	case "Spell.level":
+		if e.ComplexityRoot.Spell.Level == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Level(childComplexity), true
+	case "Spell.name":
+		if e.ComplexityRoot.Spell.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Name(childComplexity), true
+	case "Spell.options":
+		if e.ComplexityRoot.Spell.Options == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Options(childComplexity), true
+	case "Spell.tags":
+		if e.ComplexityRoot.Spell.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Spell.Tags(childComplexity), true
+
+	case "SpellMutation.addToSpellbook":
+		if e.ComplexityRoot.SpellMutation.AddToSpellbook == nil {
+			break
+		}
+
+		args, err := ec.field_SpellMutation_addToSpellbook_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.SpellMutation.AddToSpellbook(childComplexity, args["characterId"].(string), args["spellKey"].(string)), true
+	case "SpellMutation.prepare":
+		if e.ComplexityRoot.SpellMutation.Prepare == nil {
+			break
+		}
+
+		args, err := ec.field_SpellMutation_prepare_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.SpellMutation.Prepare(childComplexity, args["characterId"].(string), args["spellKeys"].([]string)), true
+	case "SpellMutation.removeFromSpellbook":
+		if e.ComplexityRoot.SpellMutation.RemoveFromSpellbook == nil {
+			break
+		}
+
+		args, err := ec.field_SpellMutation_removeFromSpellbook_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.SpellMutation.RemoveFromSpellbook(childComplexity, args["characterId"].(string), args["spellKey"].(string)), true
+	case "SpellMutation.setForgotten":
+		if e.ComplexityRoot.SpellMutation.SetForgotten == nil {
+			break
+		}
+
+		args, err := ec.field_SpellMutation_setForgotten_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.SpellMutation.SetForgotten(childComplexity, args["characterId"].(string), args["forgotten"].(bool), args["spellKey"].(string)), true
+
+	case "SpellQuery.byClass":
+		if e.ComplexityRoot.SpellQuery.ByClass == nil {
+			break
+		}
+
+		args, err := ec.field_SpellQuery_byClass_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.SpellQuery.ByClass(childComplexity, args["classKey"].(string)), true
 
 	case "StartingGear.default":
 		if e.ComplexityRoot.StartingGear.Default == nil {
@@ -1297,7 +1496,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls"
+//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls" "schema/spells.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1315,6 +1514,7 @@ var sources = []*ast.Source{
 	{Name: "schema/look_types.graphqls", Input: sourceData("schema/look_types.graphqls"), BuiltIn: false},
 	{Name: "schema/moves.graphqls", Input: sourceData("schema/moves.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
+	{Name: "schema/spells.graphqls", Input: sourceData("schema/spells.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1378,6 +1578,8 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_isDying(ctx, field)
 	case "level":
 		return ec.fieldContext_Character_level(ctx, field)
+	case "expectedSpellbookSize":
+		return ec.fieldContext_Character_expectedSpellbookSize(ctx, field)
 	case "load":
 		return ec.fieldContext_Character_load(ctx, field)
 	case "looks":
@@ -1386,10 +1588,18 @@ func (ec *executionContext) childFields_Character(ctx context.Context, field gra
 		return ec.fieldContext_Character_maxHitPoints(ctx, field)
 	case "maxLoad":
 		return ec.fieldContext_Character_maxLoad(ctx, field)
+	case "maxPreparedSpellLevels":
+		return ec.fieldContext_Character_maxPreparedSpellLevels(ctx, field)
 	case "name":
 		return ec.fieldContext_Character_name(ctx, field)
+	case "preparedSpellLevels":
+		return ec.fieldContext_Character_preparedSpellLevels(ctx, field)
+	case "preparedSpells":
+		return ec.fieldContext_Character_preparedSpells(ctx, field)
 	case "raceMove":
 		return ec.fieldContext_Character_raceMove(ctx, field)
+	case "spellbook":
+		return ec.fieldContext_Character_spellbook(ctx, field)
 	case "xp":
 		return ec.fieldContext_Character_xp(ctx, field)
 	case "xpToLevel":
@@ -1664,6 +1874,56 @@ func (ec *executionContext) childFields_MoveQuery(ctx context.Context, field gra
 		return ec.fieldContext_MoveQuery_byType(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type MoveQuery", field.Name)
+}
+
+func (ec *executionContext) childFields_PreparedSpell(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "isForgotten":
+		return ec.fieldContext_PreparedSpell_isForgotten(ctx, field)
+	case "spell":
+		return ec.fieldContext_PreparedSpell_spell(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PreparedSpell", field.Name)
+}
+
+func (ec *executionContext) childFields_Spell(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "description":
+		return ec.fieldContext_Spell_description(ctx, field)
+	case "key":
+		return ec.fieldContext_Spell_key(ctx, field)
+	case "level":
+		return ec.fieldContext_Spell_level(ctx, field)
+	case "name":
+		return ec.fieldContext_Spell_name(ctx, field)
+	case "options":
+		return ec.fieldContext_Spell_options(ctx, field)
+	case "tags":
+		return ec.fieldContext_Spell_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Spell", field.Name)
+}
+
+func (ec *executionContext) childFields_SpellMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "addToSpellbook":
+		return ec.fieldContext_SpellMutation_addToSpellbook(ctx, field)
+	case "prepare":
+		return ec.fieldContext_SpellMutation_prepare(ctx, field)
+	case "removeFromSpellbook":
+		return ec.fieldContext_SpellMutation_removeFromSpellbook(ctx, field)
+	case "setForgotten":
+		return ec.fieldContext_SpellMutation_setForgotten(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SpellMutation", field.Name)
+}
+
+func (ec *executionContext) childFields_SpellQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "byClass":
+		return ec.fieldContext_SpellQuery_byClass(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SpellQuery", field.Name)
 }
 
 func (ec *executionContext) childFields_StartingGear(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -2107,6 +2367,116 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_SpellMutation_addToSpellbook_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["characterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "spellKey",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["spellKey"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_SpellMutation_prepare_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["characterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "spellKeys",
+		func(ctx context.Context, v any) ([]string, error) {
+			return ec.unmarshalNID2ᚕstringᚄ(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["spellKeys"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_SpellMutation_removeFromSpellbook_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["characterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "spellKey",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["spellKey"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_SpellMutation_setForgotten_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "characterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["characterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "forgotten",
+		func(ctx context.Context, v any) (bool, error) {
+			return ec.unmarshalNBoolean2bool(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["forgotten"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "spellKey",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["spellKey"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_SpellQuery_byClass_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "classKey",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["classKey"] = arg0
 	return args, nil
 }
 
@@ -2711,6 +3081,29 @@ func (ec *executionContext) fieldContext_Character_level(_ context.Context, fiel
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _Character_expectedSpellbookSize(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_expectedSpellbookSize(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().ExpectedSpellbookSize(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Character_expectedSpellbookSize(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_load(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2812,6 +3205,29 @@ func (ec *executionContext) fieldContext_Character_maxLoad(_ context.Context, fi
 	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _Character_maxPreparedSpellLevels(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_maxPreparedSpellLevels(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().MaxPreparedSpellLevels(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Character_maxPreparedSpellLevels(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
 func (ec *executionContext) _Character_name(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2833,6 +3249,61 @@ func (ec *executionContext) _Character_name(ctx context.Context, field graphql.C
 }
 func (ec *executionContext) fieldContext_Character_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Character", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Character_preparedSpellLevels(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_preparedSpellLevels(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().PreparedSpellLevels(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_preparedSpellLevels(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Character", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Character_preparedSpells(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_preparedSpells(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().PreparedSpells(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.PreparedSpell) graphql.Marshaler {
+			return ec.marshalNPreparedSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐPreparedSpellᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_preparedSpells(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PreparedSpell(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Character_raceMove(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -2862,6 +3333,38 @@ func (ec *executionContext) fieldContext_Character_raceMove(_ context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Move(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Character_spellbook(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Character_spellbook(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Character().Spellbook(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Spell) graphql.Marshaler {
+			return ec.marshalNSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Character_spellbook(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Spell(ctx, field)
 		},
 	}
 	return fc, nil
@@ -5413,6 +5916,93 @@ func (ec *executionContext) fieldContext_Mutation_items(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_spells(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_spells(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Mutation().Spells(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.SpellMutation) graphql.Marshaler {
+			return ec.marshalNSpellMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellMutation(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_spells(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SpellMutation(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PreparedSpell_isForgotten(ctx context.Context, field graphql.CollectedField, obj *model.PreparedSpell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PreparedSpell_isForgotten(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IsForgotten, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PreparedSpell_isForgotten(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PreparedSpell", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _PreparedSpell_spell(ctx context.Context, field graphql.CollectedField, obj *model.PreparedSpell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PreparedSpell_spell(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Spell, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Spell) graphql.Marshaler {
+			return ec.marshalNSpell2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpell(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PreparedSpell_spell(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PreparedSpell",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Spell(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_apiVersion(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5596,6 +6186,38 @@ func (ec *executionContext) fieldContext_Query_moves(_ context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_spells(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_spells(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().Spells(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.SpellQuery) graphql.Marshaler {
+			return ec.marshalNSpellQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_spells(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SpellQuery(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5668,6 +6290,364 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields___Schema(ctx, field)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Spell_description(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Spell_key(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Spell_level(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_level(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Level, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_level(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Spell_name(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Spell_options(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_options(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Options, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_options(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Spell_tags(ctx context.Context, field graphql.CollectedField, obj *model.Spell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Spell_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Spell_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Spell", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _SpellMutation_addToSpellbook(ctx context.Context, field graphql.CollectedField, obj *model.SpellMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SpellMutation_addToSpellbook(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.SpellMutation().AddToSpellbook(ctx, obj, fc.Args["characterId"].(string), fc.Args["spellKey"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SpellMutation_addToSpellbook(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SpellMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SpellMutation_addToSpellbook_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SpellMutation_prepare(ctx context.Context, field graphql.CollectedField, obj *model.SpellMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SpellMutation_prepare(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.SpellMutation().Prepare(ctx, obj, fc.Args["characterId"].(string), fc.Args["spellKeys"].([]string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SpellMutation_prepare(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SpellMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SpellMutation_prepare_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SpellMutation_removeFromSpellbook(ctx context.Context, field graphql.CollectedField, obj *model.SpellMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SpellMutation_removeFromSpellbook(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.SpellMutation().RemoveFromSpellbook(ctx, obj, fc.Args["characterId"].(string), fc.Args["spellKey"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SpellMutation_removeFromSpellbook(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SpellMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SpellMutation_removeFromSpellbook_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SpellMutation_setForgotten(ctx context.Context, field graphql.CollectedField, obj *model.SpellMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SpellMutation_setForgotten(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.SpellMutation().SetForgotten(ctx, obj, fc.Args["characterId"].(string), fc.Args["forgotten"].(bool), fc.Args["spellKey"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacter(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SpellMutation_setForgotten(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SpellMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SpellMutation_setForgotten_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SpellQuery_byClass(ctx context.Context, field graphql.CollectedField, obj *model.SpellQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SpellQuery_byClass(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.SpellQuery().ByClass(ctx, obj, fc.Args["classKey"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Spell) graphql.Marshaler {
+			return ec.marshalNSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SpellQuery_byClass(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SpellQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Spell(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SpellQuery_byClass_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -7737,6 +8717,39 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "expectedSpellbookSize":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_expectedSpellbookSize(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "load":
 			field := field
 
@@ -7881,11 +8894,116 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "maxPreparedSpellLevels":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_maxPreparedSpellLevels(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "name":
 			out.Values[i] = ec._Character_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "preparedSpellLevels":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_preparedSpellLevels(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "preparedSpells":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_preparedSpells(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "raceMove":
 			field := field
 
@@ -7896,6 +9014,42 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Character_raceMove(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "spellbook":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Character_spellbook(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9709,6 +10863,57 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "spells":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_spells(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var preparedSpellImplementors = []string{"PreparedSpell"}
+
+func (ec *executionContext) _PreparedSpell(ctx context.Context, sel ast.SelectionSet, obj *model.PreparedSpell) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, preparedSpellImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PreparedSpell")
+		case "isForgotten":
+			out.Values[i] = ec._PreparedSpell_isForgotten(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "spell":
+			out.Values[i] = ec._PreparedSpell_spell(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9883,6 +11088,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "spells":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_spells(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -9891,6 +11118,318 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var spellImplementors = []string{"Spell"}
+
+func (ec *executionContext) _Spell(ctx context.Context, sel ast.SelectionSet, obj *model.Spell) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, spellImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Spell")
+		case "description":
+			out.Values[i] = ec._Spell_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "key":
+			out.Values[i] = ec._Spell_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "level":
+			out.Values[i] = ec._Spell_level(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Spell_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "options":
+			out.Values[i] = ec._Spell_options(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._Spell_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var spellMutationImplementors = []string{"SpellMutation"}
+
+func (ec *executionContext) _SpellMutation(ctx context.Context, sel ast.SelectionSet, obj *model.SpellMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, spellMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SpellMutation")
+		case "addToSpellbook":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SpellMutation_addToSpellbook(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "prepare":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SpellMutation_prepare(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "removeFromSpellbook":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SpellMutation_removeFromSpellbook(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "setForgotten":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SpellMutation_setForgotten(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var spellQueryImplementors = []string{"SpellQuery"}
+
+func (ec *executionContext) _SpellQuery(ctx context.Context, sel ast.SelectionSet, obj *model.SpellQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, spellQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SpellQuery")
+		case "byClass":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SpellQuery_byClass(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10709,6 +12248,36 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {
 	res, err := graphql.UnmarshalInt32(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -11064,6 +12633,86 @@ func (ec *executionContext) unmarshalNNewLookInput2ᚕᚖgithubᚗcomᚋdeepconc
 func (ec *executionContext) unmarshalNNewLookInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐNewLookInput(ctx context.Context, v any) (*model.NewLookInput, error) {
 	res, err := ec.unmarshalInputNewLookInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPreparedSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐPreparedSpellᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PreparedSpell) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNPreparedSpell2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐPreparedSpell(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNPreparedSpell2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐPreparedSpell(ctx context.Context, sel ast.SelectionSet, v *model.PreparedSpell) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PreparedSpell(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Spell) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSpell2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpell(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSpell2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpell(ctx context.Context, sel ast.SelectionSet, v *model.Spell) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Spell(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSpellMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellMutation(ctx context.Context, sel ast.SelectionSet, v model.SpellMutation) graphql.Marshaler {
+	return ec._SpellMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSpellMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellMutation(ctx context.Context, sel ast.SelectionSet, v *model.SpellMutation) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SpellMutation(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSpellQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellQuery(ctx context.Context, sel ast.SelectionSet, v model.SpellQuery) graphql.Marshaler {
+	return ec._SpellQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSpellQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellQuery(ctx context.Context, sel ast.SelectionSet, v *model.SpellQuery) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SpellQuery(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStartingGear2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐStartingGear(ctx context.Context, sel ast.SelectionSet, v model.StartingGear) graphql.Marshaler {

@@ -66,3 +66,16 @@ type MoveCreationOptionChoice struct {
 	MoveKey     string
 	OptionKey   string
 }
+
+type PreparedSpell struct {
+	CharacterID pgtype.UUID
+	ID          int32
+	IsForgotten bool
+	SpellKey    string
+}
+
+type SpellbookSpell struct {
+	CharacterID pgtype.UUID
+	ID          int32
+	SpellKey    string
+}

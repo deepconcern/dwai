@@ -11,6 +11,8 @@ type Query {
   lookTypes: LookTypeQuery!
   "Queries for moves available to characters."
   moves: MoveQuery!
+  "Queries for Wizard and Cleric spells."
+  spells: SpellQuery!
 }
 
 type Mutation {
@@ -18,4 +20,6 @@ type Mutation {
   characters: CharacterMutation!
   "Mutations for items owned by characters."
   items: ItemMutation!
+  "Mutations for a character's spellbook and prepared spells."
+  spells: SpellMutation!
 }

@@ -36,7 +36,7 @@ Run from `dwai-app/` with Bun:
 - Do not use default exports unless required to by a framework/library (for example, pages in Next.js)
 - React components should use "fat arrow" (=>) function expressions combined with a `FC` annotation
 - Props should be explicitly defined as a type with the name being the name of their component + "Props"
-- Values passed to props should be memoized where possible (for example: event handlers should be created with `useCallback`)
+- Don't memoize by hand: the [React Compiler](https://react.dev/learn/react-compiler/introduction) is on (`reactCompiler` in `next.config.ts`) and memoizes components, values, and callbacks itself. Write event handlers as plain functions and compute derived values inline. Reach for `useMemo` or `useCallback` only as an escape hatch, for example to keep an effect's dependency stable, with a comment saying why. Write code that follows the Rules of React (the `react-hooks` lint rules check this), or the compiler skips the component
 
 ## GraphQL
 

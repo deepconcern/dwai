@@ -105,9 +105,10 @@ Template sentences that name other party members ("___ has my back when things g
 
 - **Cantrips (Wizard) / Rotes (Cleric)**: always prepared, never count against the preparation limit.
 - **Leveled spells** must be prepared before use:
-  - **Wizard** (Prepare Spells): choose from the spellbook. Total levels prepared ≤ character level + 1.
+  - **Wizard** (Prepare Spells): choose from the spellbook. Total levels prepared ≤ character level + 1. The spellbook starts with 3 first-level spells and gains one spell of the Wizard's level or lower each time they level up. The app reminds the player when the spellbook holds a different number but doesn't enforce it.
   - **Cleric** (Commune): choose from the deity's spells. Total levels ≤ character level + 1, and no spell above the character's level.
 - **Casting** rolls INT (Wizard) or WIS (Cleric). On 10+ the spell is cast and remains available. On 7–9 it's cast but the caster chooses one: draw unwelcome attention or put themselves in a spot, take −1 ongoing to cast spells until they next prepare, or forget the spell until they next prepare (or lose access, for Clerics).
+- **Forgotten spells** stay on the prepared list, marked forgotten, until the character prepares (or communes) again.
 - **Ongoing spells**: while maintaining one, take −1 to cast other spells (cumulative per ongoing spell).
 
 Spell data is in `dwai-api/internal/data/spells/`.

@@ -22,6 +22,11 @@ func (r *mutationResolver) Items(ctx context.Context) (*model.ItemMutation, erro
 	return &model.ItemMutation{}, nil
 }
 
+// Spells is the resolver for the spells field.
+func (r *mutationResolver) Spells(ctx context.Context) (*model.SpellMutation, error) {
+	return &model.SpellMutation{}, nil
+}
+
 // APIVersion is the resolver for the apiVersion field.
 func (r *queryResolver) APIVersion(ctx context.Context) (string, error) {
 	apiVersion := os.Getenv("API_VERSION")
@@ -56,6 +61,11 @@ func (r *queryResolver) LookTypes(ctx context.Context) (*model.LookTypeQuery, er
 // Moves is the resolver for the moves field.
 func (r *queryResolver) Moves(ctx context.Context) (*model.MoveQuery, error) {
 	return &model.MoveQuery{}, nil
+}
+
+// Spells is the resolver for the spells field.
+func (r *queryResolver) Spells(ctx context.Context) (*model.SpellQuery, error) {
+	return &model.SpellQuery{}, nil
 }
 
 // Mutation returns MutationResolver implementation.

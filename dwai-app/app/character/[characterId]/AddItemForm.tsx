@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@apollo/client/react";
-import { FC, FormEventHandler, useCallback, useMemo, useState } from "react";
+import { FC, FormEventHandler, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { Dropdown } from "@/components/Dropdown";
@@ -55,56 +55,43 @@ export const AddItemForm: FC<AddItemFormProps> = ({ characterId }) => {
   const [addItem, { loading }] = useMutation(ADD_ITEM_MUTATION);
 
   // Services (an inn stay, a blacksmith) aren't carried, so they're left out.
-  const templateItems = useMemo(
-    () =>
-      (data?.itemTemplates.all ?? [])
-        .filter((t) => t.type !== "service")
-        .map((t) => ({ label: t.label, value: t.key })),
-    [data],
-  );
+  const templateItems = (data?.itemTemplates.all ?? [])
+    .filter((t) => t.type !== "service")
+    .map((t) => ({ label: t.label, value: t.key }));
 
-  const submit = useCallback(
-    async (input: AddItemInput) => {
-      setErrors([]);
-      try {
-        await addItem({ variables: { characterId, input } });
-        return true;
-      } catch (error) {
-        setErrors(errorMessages(error));
-        return false;
-      }
-    },
-    [addItem, characterId],
-  );
+  const submit = async (input: AddItemInput) => {
+    setErrors([]);
+    try {
+      await addItem({ variables: { characterId, input } });
+      return true;
+    } catch (error) {
+      setErrors(errorMessages(error));
+      return false;
+    }
+  };
 
-  const handleAddTemplate = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      if (await submit({ count: Number(count), key: templateKey })) {
-        setCount("1");
-        setTemplateKey("");
-      }
-    },
-    [count, submit, templateKey],
-  );
+  const handleAddTemplate: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    if (await submit({ count: Number(count), key: templateKey })) {
+      setCount("1");
+      setTemplateKey("");
+    }
+  };
 
-  const handleAddCustom = useCallback<FormEventHandler<HTMLFormElement>>(
-    async (ev) => {
-      ev.preventDefault();
-      const input: AddItemInput = {
-        description: description || null,
-        key: "custom",
-        label,
-        tags: weight ? [{ key: "weight", quantity: Number(weight) }] : [],
-      };
-      if (await submit(input)) {
-        setDescription("");
-        setLabel("");
-        setWeight("");
-      }
-    },
-    [description, label, submit, weight],
-  );
+  const handleAddCustom: FormEventHandler<HTMLFormElement> = async (ev) => {
+    ev.preventDefault();
+    const input: AddItemInput = {
+      description: description || null,
+      key: "custom",
+      label,
+      tags: weight ? [{ key: "weight", quantity: Number(weight) }] : [],
+    };
+    if (await submit(input)) {
+      setDescription("");
+      setLabel("");
+      setWeight("");
+    }
+  };
 
   return (
     <Section title="Add Item">

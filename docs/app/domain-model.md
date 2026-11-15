@@ -18,7 +18,8 @@ How the Dungeon World concepts in [docs/game](../game/README.md) are represented
 | Debilities | `characters.debilities` (text array) | `Debility` | Stored by the API; the app applies the −1 to displayed modifiers |
 | Looks | `looks` table | `Look`, `LookType` | One per look type |
 | Owned items | `items`, `item_tags` tables | `Item` | `key` is a template key or `custom`; label, description, and tags override the template |
-| Spells | `internal/data/spells/*.yaml` | — | Loaded, not exposed yet (Milestone 3) |
+| Spells | `internal/data/spells/*.yaml` | `Spell` (`spells.byClass`) | Level 0 is a cantrip (Wizard) or rote (Cleric); `tags` are school and `ongoing` |
+| Spellbook, prepared spells | `spellbook_spells`, `prepared_spells` tables | `Character.spellbook`, `preparedSpells` (`PreparedSpell.isForgotten`), `expectedSpellbookSize`, `maxPreparedSpellLevels`, `preparedSpellLevels` | Spell rules in `internal/models/spell.go`; only Wizards have a spellbook |
 | Monsters, GM moves, fronts, hirelings | `internal/data/*.yaml`, `monsters/` | — | Reference only for now (Milestones 7, 8) |
 
 ## Rules Logic

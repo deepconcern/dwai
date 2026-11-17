@@ -209,6 +209,50 @@ models:
       modifier:
         resolver: true
 
+  Campaign:
+    fields:
+      characters:
+        resolver: true
+      gm:
+        resolver: true
+      myCharacter:
+        resolver: true
+      sessions:
+        resolver: true
+
+  CampaignMutation:
+    fields:
+      create:
+        resolver: true
+      delete:
+        resolver: true
+      endSession:
+        resolver: true
+      join:
+        resolver: true
+      leave:
+        resolver: true
+      regenerateInviteCode:
+        resolver: true
+      removeCharacter:
+        resolver: true
+      update:
+        resolver: true
+
+  CampaignQuery:
+    fields:
+      byId:
+        resolver: true
+      byInviteCode:
+        resolver: true
+      mine:
+        resolver: true
+
+  CampaignSession:
+    fields:
+      reports:
+        resolver: true
+
   Character:
     fields:
       advancedMoves:
@@ -216,6 +260,10 @@ models:
       armor:
         resolver: true
       availableAdvancedMoves:
+        resolver: true
+      bonds:
+        resolver: true
+      campaign:
         resolver: true
       characterClass:
         resolver: true
@@ -235,6 +283,8 @@ models:
         resolver: true
       maxPreparedSpellLevels:
         resolver: true
+      pendingSession:
+        resolver: true
       preparedSpellLevels:
         resolver: true
       preparedSpells:
@@ -242,6 +292,8 @@ models:
       raceMove:
         resolver: true
       spellbook:
+        resolver: true
+      viewerIsOwner:
         resolver: true
 
   CharacterClass:
@@ -258,11 +310,15 @@ models:
 
   CharacterMutation:
     fields:
+      addBond:
+        resolver: true
       adjustGold:
         resolver: true
       adjustXp:
         resolver: true
       create:
+        resolver: true
+      deleteBond:
         resolver: true
       heal:
         resolver: true
@@ -270,7 +326,11 @@ models:
         resolver: true
       setDebility:
         resolver: true
+      submitSessionReport:
+        resolver: true
       takeDamage:
+        resolver: true
+      updateBond:
         resolver: true
 
   CharacterQuery:

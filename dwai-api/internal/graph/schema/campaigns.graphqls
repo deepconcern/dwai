@@ -1,0 +1,158 @@
+"A campaign: a GM and the players' characters."
+type Campaign {
+  "The characters in the campaign, oldest first."
+  characters: [PartyMember!]!
+  "Optional notes about the campaign. Empty when not set."
+  description: String!
+  "The user who runs the campaign."
+  gm: User!
+  id: ID!
+  "The code in the campaign's join link. Only the GM sees it; null for players."
+  inviteCode: String
+  "Whether the logged-in user is the GM."
+  isGm: Boolean!
+  "The logged-in player's character in this campaign. Null for the GM."
+  myCharacter: Character
+  name: String!
+  "End of Session records, newest first."
+  sessions: [CampaignSession!]!
+}
+
+"What every campaign member sees of a character: no full sheet."
+type PartyMember {
+  "The alignment type (e.g. 'Good')."
+  alignmentType: String!
+  characterClass: CharacterClass!
+  hitPoints: Int!
+  id: ID!
+  looks: [Look!]!
+  maxHitPoints: Int!
+  name: String!
+  "The player who owns the character."
+  owner: User!
+  raceMove: Move!
+}
+
+"A bond one character wrote about another character in the same campaign."
+type Bond {
+  id: ID!
+  "When the bond was resolved at End of Session. Null while it's active."
+  resolvedAt: Time
+  "The character the bond is about."
+  target: PartyMember!
+  text: String!
+}
+
+"An End of Session checkbox and the reason written for it."
+type CheckedAnswer {
+  checked: Boolean!
+  "Why it was checked. Null when it wasn't."
+  reason: String
+}
+
+"One End of Session: the GM's group answers, and each player's report."
+type CampaignSession {
+  createdAt: Time!
+  id: ID!
+  "Did we learn something new and important about the world?"
+  learned: CheckedAnswer!
+  "Did we loot a memorable treasure?"
+  looted: CheckedAnswer!
+  "Sessions are numbered from 1 within a campaign."
+  number: Int!
+  "Did we overcome a notable monster or enemy?"
+  overcame: CheckedAnswer!
+  "Players' reports, in the order submitted."
+  reports: [SessionReport!]!
+}
+
+"A player's End of Session report for their character."
+type SessionReport {
+  alignment: CheckedAnswer!
+  "Whether a bond was resolved, and why."
+  bond: CheckedAnswer!
+  character: PartyMember!
+  createdAt: Time!
+  "The resolved bond's text. Null when no bond was resolved."
+  resolvedBondText: String
+  "XP marked: 1 per group 'yes', plus alignment and a resolved bond."
+  xpAwarded: Int!
+}
+
+"The campaign details shown on a join link, before joining."
+type CampaignInvite {
+  gm: User!
+  name: String!
+}
+
+"A campaign's editable details."
+input CampaignInput {
+  "Up to 2000 characters. Optional."
+  description: String! = ""
+  "1 to 100 characters, trimmed."
+  name: String!
+}
+
+"An End of Session checkbox. A checked box needs a reason."
+input CheckedInput {
+  checked: Boolean!
+  reason: String
+}
+
+"The GM's answers to End of Session's three group questions."
+input EndSessionInput {
+  learned: CheckedInput!
+  looted: CheckedInput!
+  overcame: CheckedInput!
+}
+
+"Namespace for campaign queries."
+type CampaignQuery {
+  "A campaign the logged-in user runs or plays in. Others are reported as not found."
+  byId(id: ID!): Campaign!
+  "The campaign an invite code joins, for the join page. Needs a logged-in user."
+  byInviteCode(code: String!): CampaignInvite!
+  "Campaigns the logged-in user runs or plays in, oldest first."
+  mine: [Campaign!]!
+}
+
+"Namespace for campaign mutations."
+type CampaignMutation {
+  "Creates a campaign run by the logged-in user."
+  create(input: CampaignInput!): Campaign!
+  "Deletes the campaign (GM only). Its characters are detached, not deleted; its bonds and sessions are deleted."
+  delete(id: ID!): Boolean!
+  "Starts End of Session (GM only): records the group answers as the next numbered session."
+  endSession(id: ID!, input: EndSessionInput!): CampaignSession!
+  "Attaches one of the logged-in user's characters to the campaign the code is for. The character can't already be in a campaign, and a player brings one character per campaign."
+  join(characterId: ID!, code: String!): Campaign!
+  "Detaches the logged-in user's character from its campaign, deleting bonds written by or about it."
+  leave(characterId: ID!): Character!
+  "Replaces the invite code (GM only), so the old link stops working."
+  regenerateInviteCode(id: ID!): Campaign!
+  "Detaches a player's character from the campaign (GM only), deleting bonds written by or about it."
+  removeCharacter(characterId: ID!, id: ID!): Campaign!
+  "Changes the campaign's name and description (GM only)."
+  update(id: ID!, input: CampaignInput!): Campaign!
+}
+
+"Input for writing a bond."
+input BondInput {
+  "Another character in the same campaign."
+  targetId: ID!
+  "1 to 500 characters, trimmed."
+  text: String!
+}
+
+"A player's End of Session report."
+input SessionReportInput {
+  alignment: CheckedInput!
+  "Why the bond was resolved. Required with resolvedBondId."
+  bondReason: String
+  "The new bond written in place of the resolved one. Required with resolvedBondId."
+  replacementBond: BondInput
+  "One of the character's active bonds that was resolved, if any."
+  resolvedBondId: ID
+  "The session being reported on: the campaign's latest."
+  sessionId: ID!
+}

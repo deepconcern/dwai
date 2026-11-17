@@ -1,6 +1,11 @@
+"An RFC 3339 timestamp."
+scalar Time
+
 type Query {
   "Current API version string."
   apiVersion: String!
+  "Queries for campaigns."
+  campaigns: CampaignQuery!
   "Queries for character classes (e.g. Fighter, Wizard)."
   characterClasses: CharacterClassQuery!
   "Queries for player characters."
@@ -20,6 +25,8 @@ type Query {
 type Mutation {
   "Mutations for logging in and out and registering."
   auth: AuthMutation!
+  "Mutations for campaigns, invites, and End of Session."
+  campaigns: CampaignMutation!
   "Mutations for player characters."
   characters: CharacterMutation!
   "Mutations for items owned by characters."

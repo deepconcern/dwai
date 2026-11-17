@@ -14,6 +14,38 @@ type AdvancedMove struct {
 	MoveKey     string
 }
 
+type Bond struct {
+	CampaignID        pgtype.UUID
+	CharacterID       pgtype.UUID
+	CreatedAt         pgtype.Timestamptz
+	ID                pgtype.UUID
+	ResolvedAt        pgtype.Timestamptz
+	TargetCharacterID pgtype.UUID
+	Text              string
+}
+
+type Campaign struct {
+	CreatedAt   pgtype.Timestamptz
+	Description string
+	GmID        pgtype.UUID
+	ID          pgtype.UUID
+	InviteCode  string
+	Name        string
+}
+
+type CampaignSession struct {
+	CampaignID     pgtype.UUID
+	CreatedAt      pgtype.Timestamptz
+	ID             pgtype.UUID
+	Learned        bool
+	LearnedReason  pgtype.Text
+	Looted         bool
+	LootedReason   pgtype.Text
+	Number         int32
+	Overcame       bool
+	OvercameReason pgtype.Text
+}
+
 type Character struct {
 	AlignmentDescription string
 	AlignmentType        string
@@ -33,6 +65,7 @@ type Character struct {
 	Level                int32
 	Xp                   int32
 	OwnerID              pgtype.UUID
+	CampaignID           pgtype.UUID
 }
 
 type Item struct {
@@ -80,6 +113,19 @@ type Session struct {
 	ExpiresAt pgtype.Timestamptz
 	TokenHash []byte
 	UserID    pgtype.UUID
+}
+
+type SessionReport struct {
+	AlignmentFulfilled bool
+	AlignmentReason    pgtype.Text
+	BondReason         pgtype.Text
+	CharacterID        pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	ID                 pgtype.UUID
+	ResolvedBondID     pgtype.UUID
+	ResolvedBondText   pgtype.Text
+	SessionID          pgtype.UUID
+	XpAwarded          int32
 }
 
 type SpellbookSpell struct {

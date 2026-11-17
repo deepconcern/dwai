@@ -15,9 +15,11 @@ import (
 // LoadersMiddleware), so cached results never outlive the request that
 // loaded them.
 type Loaders struct {
+	CampaignLoader                 *dataloadgen.Loader[pgtype.UUID, *db.Campaign]
 	CharacterLoader                *dataloadgen.Loader[pgtype.UUID, *db.Character]
 	LookLoader                     *dataloadgen.Loader[int32, *db.Look]
 	MoveCreationOptionChoiceLoader *dataloadgen.Loader[int32, *db.MoveCreationOptionChoice]
+	UserLoader                     *dataloadgen.Loader[pgtype.UUID, *db.User]
 }
 
 func NewLoaders(pool *pgxpool.Pool) *Loaders {
@@ -25,10 +27,14 @@ func NewLoaders(pool *pgxpool.Pool) *Loaders {
 	ll := NewLookLoader(db.New(pool))
 	mcocl := NewMoveCreationOptionChoiceLoader(db.New(pool))
 
+	queries := db.New(pool)
+
 	return &Loaders{
+		CampaignLoader:                 dataloadgen.NewMappedLoader(campaignFetcher(queries), dataloadgen.WithWait(time.Millisecond)),
 		CharacterLoader:                dataloadgen.NewMappedLoader(cl.loadCharacters, dataloadgen.WithWait(time.Millisecond)),
 		LookLoader:                     dataloadgen.NewMappedLoader(ll.loadLooks, dataloadgen.WithWait(time.Millisecond)),
 		MoveCreationOptionChoiceLoader: dataloadgen.NewMappedLoader(mcocl.loadMoveCreationOptionChoices, dataloadgen.WithWait(time.Millisecond)),
+		UserLoader:                     dataloadgen.NewMappedLoader(userFetcher(queries), dataloadgen.WithWait(time.Millisecond)),
 	}
 }
 

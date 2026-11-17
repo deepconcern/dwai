@@ -2,12 +2,13 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-11-12)
+## Status (2026-11-17)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
 - **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
 - **Done**: Milestone 3 (Character Sheet), spec #4 — HP with damage and healing, armor, load, gold, debilities, inventory, XP and level up with advanced moves, and Wizard and Cleric spells (spellbook, preparation within the level limit, forgotten spells). Derived stats and rules live in the API.
-- **Next**: Milestone 4 (Accounts & Auth).
+- **Done**: Milestone 4 (Accounts & Auth), spec #12 — local accounts (email and password, argon2id), server-side sessions in an HttpOnly cookie, characters owned by a user with the API enforcing ownership, and login/register pages with auth-aware navigation.
+- **Next**: Milestone 5 (Campaigns).
 
 ---
 
@@ -43,15 +44,15 @@ Everything a player changes during play. Bonds wait for campaigns.
 - [x] Spells for Wizard and Cleric: load the spell data, spellbook, prepare spells, level limits
 - [x] Move all derived stats (armor, load, max HP) to the API so the frontend and the future AI agents share one implementation
 
-### 4. Accounts & Auth ← next
+### 4. Accounts & Auth ✓
 
 Every later milestone needs to know who owns what.
 
-- [ ] Users table; register, log in, log out (local only: email + password with argon2/bcrypt hashing and a server-side session cookie)
-- [ ] Characters belong to a user; the API enforces ownership
-- [ ] Frontend: login/register pages, auth-aware navigation, redirect when logged out
+- [x] Users table; register, log in, log out (local only: email + password with argon2/bcrypt hashing and a server-side session cookie)
+- [x] Characters belong to a user; the API enforces ownership
+- [x] Frontend: login/register pages, auth-aware navigation, redirect when logged out
 
-### 5. Campaigns
+### 5. Campaigns ← next
 
 - [ ] Create a campaign (the creator becomes its GM)
 - [ ] Invite players (invite link/code); a player attaches one of their characters

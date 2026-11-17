@@ -14,6 +14,10 @@ const config: CodegenConfig = {
           unmaskFunctionName: "unmaskFragment",
         },
       },
+      config: {
+        // RFC 3339 timestamps, as the API sends them.
+        scalars: { Time: "string" },
+      },
       plugins: [],
     },
   },

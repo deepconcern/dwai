@@ -56,7 +56,7 @@ export const AbilitiesSection: FC<AbilitiesSectionProps> = ({ character }) => {
   };
 
   return (
-    <section>
+    <fieldset disabled={!character.viewerIsOwner}>
       <SectionTitle title="Abilities" />
       <div className="flex justify-around space-x-4">
         {character.abilities.map(({ ability, modifier, score }) => {
@@ -101,6 +101,6 @@ export const AbilitiesSection: FC<AbilitiesSectionProps> = ({ character }) => {
         })}
       </div>
       <ErrorList errors={errors} />
-    </section>
+    </fieldset>
   );
 };

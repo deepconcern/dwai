@@ -16,6 +16,11 @@ export const CharacterFragment = graphql(`
     availableAdvancedMoves {
       ...MoveFragment
     }
+    campaign {
+      id
+      isGm
+      name
+    }
     canLevelUp
     characterClass {
       damageDie
@@ -62,7 +67,9 @@ export const CharacterFragment = graphql(`
     spellbook {
       ...SpellFragment
     }
+    viewerIsOwner
     xp
     xpToLevel
+    ...CampaignCharacterFragment
   }
 `);

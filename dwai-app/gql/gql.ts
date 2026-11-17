@@ -33,12 +33,16 @@ type Documents = {
     "\n  query SpellsByClass($classKey: ID!) {\n    spells {\n      byClass(classKey: $classKey) {\n        ...SpellFragment\n      }\n    }\n  }\n": typeof types.SpellsByClassDocument,
     "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingGear {\n          default {\n            ...ItemOptionFragment\n          }\n          loadBase\n          options {\n            pick\n            choices {\n              ...ItemOptionFragment\n            }\n          }\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n    lookTypes {\n      all {\n        examples\n        key\n        name\n      }\n    }\n  }\n": typeof types.GetCharacterClassesForCreateDocument,
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": typeof types.CreateCharacterDocument,
-    "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetCharactersDocument,
+    "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetMyCharactersDocument,
+    "\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.LoginDocument,
+    "\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.RegisterDocument,
+    "\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n": typeof types.LogoutDocument,
     "\n  fragment CharacterFragment on Character {\n    abilities {\n      ability\n      modifier\n      score\n    }\n    advancedMoves {\n      ...MoveFragment\n    }\n    alignmentDescription\n    alignmentType\n    armor\n    availableAdvancedMoves {\n      ...MoveFragment\n    }\n    canLevelUp\n    characterClass {\n      damageDie\n      hpBase\n      key\n      name\n    }\n    classMoves {\n      ...MoveFragment\n    }\n    debilities\n    equipment {\n      ...ItemFragment\n    }\n    gold\n    hitPoints\n    id\n    expectedSpellbookSize\n    isDying\n    level\n    load\n    looks {\n      id\n      lookType {\n        key\n        name\n      }\n      value\n    }\n    maxHitPoints\n    maxLoad\n    maxPreparedSpellLevels\n    name\n    preparedSpellLevels\n    preparedSpells {\n      isForgotten\n      spell {\n        ...SpellFragment\n      }\n    }\n    raceMove {\n      ...MoveFragment\n    }\n    spellbook {\n      ...SpellFragment\n    }\n    xp\n    xpToLevel\n  }\n": typeof types.CharacterFragmentFragmentDoc,
     "\n  fragment ItemFragment on Item {\n    count\n    description\n    id\n    isWorn\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n    type\n  }\n": typeof types.ItemFragmentFragmentDoc,
     "\n  fragment ItemOptionFragment on ItemOption {\n    count\n    description\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n  }\n": typeof types.ItemOptionFragmentFragmentDoc,
     "\n  fragment MoveFragment on Move {\n    creationOptions {\n      choices {\n        isPicked\n        key\n        label\n      }\n      label\n      pick\n    }\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": typeof types.MoveFragmentFragmentDoc,
     "\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n": typeof types.SpellFragmentFragmentDoc,
+    "\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n": typeof types.MeDocument,
 };
 const documents: Documents = {
     "\n  mutation SetDebility($active: Boolean!, $debility: Debility!, $id: ID!) {\n    characters {\n      setDebility(active: $active, debility: $debility, id: $id) {\n        ...CharacterFragment\n      }\n    }\n  }\n": types.SetDebilityDocument,
@@ -60,12 +64,16 @@ const documents: Documents = {
     "\n  query SpellsByClass($classKey: ID!) {\n    spells {\n      byClass(classKey: $classKey) {\n        ...SpellFragment\n      }\n    }\n  }\n": types.SpellsByClassDocument,
     "\n  query GetCharacterClassesForCreate {\n    characterClasses {\n      all {\n        alignmentTemplates {\n          alignment\n          description\n        }\n        bonds\n        damageDie\n        hpBase\n        key\n        lookExamples {\n          examples\n          type\n        }\n        name\n        raceMoves {\n          key\n          ...MoveFragment\n        }\n        startingGear {\n          default {\n            ...ItemOptionFragment\n          }\n          loadBase\n          options {\n            pick\n            choices {\n              ...ItemOptionFragment\n            }\n          }\n        }\n        startingMoves {\n          key\n          ...MoveFragment\n        }\n      }\n    }\n    lookTypes {\n      all {\n        examples\n        key\n        name\n      }\n    }\n  }\n": types.GetCharacterClassesForCreateDocument,
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": types.CreateCharacterDocument,
-    "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n": types.GetCharactersDocument,
+    "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n": types.GetMyCharactersDocument,
+    "\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n": types.LoginDocument,
+    "\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n": types.RegisterDocument,
+    "\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n": types.LogoutDocument,
     "\n  fragment CharacterFragment on Character {\n    abilities {\n      ability\n      modifier\n      score\n    }\n    advancedMoves {\n      ...MoveFragment\n    }\n    alignmentDescription\n    alignmentType\n    armor\n    availableAdvancedMoves {\n      ...MoveFragment\n    }\n    canLevelUp\n    characterClass {\n      damageDie\n      hpBase\n      key\n      name\n    }\n    classMoves {\n      ...MoveFragment\n    }\n    debilities\n    equipment {\n      ...ItemFragment\n    }\n    gold\n    hitPoints\n    id\n    expectedSpellbookSize\n    isDying\n    level\n    load\n    looks {\n      id\n      lookType {\n        key\n        name\n      }\n      value\n    }\n    maxHitPoints\n    maxLoad\n    maxPreparedSpellLevels\n    name\n    preparedSpellLevels\n    preparedSpells {\n      isForgotten\n      spell {\n        ...SpellFragment\n      }\n    }\n    raceMove {\n      ...MoveFragment\n    }\n    spellbook {\n      ...SpellFragment\n    }\n    xp\n    xpToLevel\n  }\n": types.CharacterFragmentFragmentDoc,
     "\n  fragment ItemFragment on Item {\n    count\n    description\n    id\n    isWorn\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n    type\n  }\n": types.ItemFragmentFragmentDoc,
     "\n  fragment ItemOptionFragment on ItemOption {\n    count\n    description\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n  }\n": types.ItemOptionFragmentFragmentDoc,
     "\n  fragment MoveFragment on Move {\n    creationOptions {\n      choices {\n        isPicked\n        key\n        label\n      }\n      label\n      pick\n    }\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": types.MoveFragmentFragmentDoc,
     "\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n": types.SpellFragmentFragmentDoc,
+    "\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n": types.MeDocument,
 };
 
 /**
@@ -161,7 +169,19 @@ export function graphql(source: "\n  mutation CreateCharacter($input: CreateChar
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCharacters {\n    characters {\n      all {\n        id\n        name\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n"): (typeof documents)["\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -182,6 +202,10 @@ export function graphql(source: "\n  fragment MoveFragment on Move {\n    creati
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n"): (typeof documents)["\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

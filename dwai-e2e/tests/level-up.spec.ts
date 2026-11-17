@@ -1,8 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { createFighter } from "./helpers";
+import { createFighter, registerUser } from "./helpers";
 
 test.describe("leveling up", () => {
+  test.beforeEach(async ({ page }) => {
+    await registerUser(page);
+  });
+
   test("marks XP and levels up with a stat and an advanced move", async ({
     page,
   }) => {

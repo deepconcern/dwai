@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+import { registerUser } from "./helpers";
+
 test.describe("character creation", () => {
+  test.beforeEach(async ({ page }) => {
+    await registerUser(page);
+  });
+
   test("creates a character and shows its sheet", async ({ page }) => {
     await page.goto("/create-character");
 

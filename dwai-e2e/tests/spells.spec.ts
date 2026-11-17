@@ -1,8 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { createWizard } from "./helpers";
+import { createWizard, registerUser } from "./helpers";
 
 test.describe("spells", () => {
+  test.beforeEach(async ({ page }) => {
+    await registerUser(page);
+  });
+
   test("fills a Wizard's spellbook and prepares spells", async ({ page }) => {
     await createWizard(page, "Avon");
 

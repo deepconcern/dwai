@@ -45,8 +45,8 @@ export default defineConfig({
       command: `bun run dev --port ${APP_PORT}`,
       cwd: "../dwai-app",
       env: {
+        API_URI: API_URL,
         NEXT_DIST_DIR: ".next-e2e",
-        NEXT_PUBLIC_GRAPHQL_URI: API_URL,
       },
       reuseExistingServer: false,
       timeout: SERVER_STARTUP_TIMEOUT,

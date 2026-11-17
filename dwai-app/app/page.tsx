@@ -5,11 +5,12 @@ import { List } from "@/components/List";
 import { PageTitle } from "@/components/PageTitle";
 import { graphql } from "@/gql";
 import { query } from "@/lib/apollo-client";
+import { requireUser } from "@/lib/session";
 
 const GET_CHARACTERS_QUERY = graphql(`
-  query GetCharacters {
+  query GetMyCharacters {
     characters {
-      all {
+      mine {
         id
         name
       }
@@ -17,22 +18,25 @@ const GET_CHARACTERS_QUERY = graphql(`
   }
 `);
 
+/** Home: the logged-in user's characters. */
 export const Home = async () => {
+  await requireUser("/");
+
   const { data } = await query({
+    fetchPolicy: "no-cache",
     query: GET_CHARACTERS_QUERY,
   });
 
   return (
     <div className="p-4">
-      <PageTitle title="Home" />
+      <PageTitle title="My Characters" />
 
       <div className="flex gap-4">
         {/* Character List */}
         <div className="flex flex-1 flex-col gap-2">
-          <h3 className="font-semibold text-lg">Characters</h3>
-          {data && data.characters.all.length > 0 && (
+          {data && data.characters.mine.length > 0 && (
             <List
-              items={data.characters.all.map((character) => ({
+              items={data.characters.mine.map((character) => ({
                 content: (
                   <Link
                     href={`/character/${character.id}`}
@@ -45,8 +49,8 @@ export const Home = async () => {
               }))}
             />
           )}
-          {!data || data.characters.all.length === 0 ? (
-            <p>No characters found.</p>
+          {!data || data.characters.mine.length === 0 ? (
+            <p>You have no characters yet.</p>
           ) : null}
           <p>
             <ButtonLink href="/create-character">Create Character</ButtonLink>

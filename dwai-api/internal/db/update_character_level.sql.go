@@ -23,7 +23,7 @@ SET charisma = $2,
     wisdom = $9,
     xp = $10
 WHERE id = $1
-RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
+RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp, owner_id
 `
 
 type UpdateCharacterLevelParams struct {
@@ -71,6 +71,7 @@ func (q *Queries) UpdateCharacterLevel(ctx context.Context, arg UpdateCharacterL
 		&i.Debilities,
 		&i.Level,
 		&i.Xp,
+		&i.OwnerID,
 	)
 	return i, err
 }

@@ -12,7 +12,7 @@ import (
 )
 
 const loadCharacters = `-- name: LoadCharacters :many
-SELECT alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
+SELECT alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp, owner_id
 FROM characters
 WHERE id = ANY ($1::uuid [])
 `
@@ -44,6 +44,7 @@ func (q *Queries) LoadCharacters(ctx context.Context, dollar_1 []pgtype.UUID) ([
 			&i.Debilities,
 			&i.Level,
 			&i.Xp,
+			&i.OwnerID,
 		); err != nil {
 			return nil, err
 		}

@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
@@ -64,7 +65,21 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
+// Options configures the server.
+type Options struct {
+	// SecureCookie sets the session cookie's Secure attribute. Leave it off
+	// for local development over plain HTTP.
+	SecureCookie bool
+}
+
+// New builds the API's HTTP handler.
+func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Handler {
+	sessions := &auth.Sessions{
+		Now:          time.Now,
+		Pool:         pool,
+		SecureCookie: options.SecureCookie,
+	}
+
 	// Initialize the GraphQL server
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		CharacterClasses: gameData.CharacterClassMap,
@@ -72,6 +87,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		ItemTemplates:    gameData.ItemTemplateMap,
 		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),
 		PlayerMoves:      gameData.MoveMap,
+		Sessions:         sessions,
 		Spells:           gameData.SpellMap,
 		TagDefinitions:   gameData.TagDefinitionMap,
 	}}))
@@ -83,7 +99,8 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		presented := graphql.DefaultErrorPresenter(ctx, err)
 
 		level := slog.LevelError
-		if presented.Extensions["code"] == models.ValidationErrorCode {
+		switch presented.Extensions["code"] {
+		case auth.UnauthenticatedErrorCode, models.ValidationErrorCode:
 			level = slog.LevelWarn
 		}
 
@@ -118,7 +135,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData) http.Handler {
 		}
 	})
 	mux.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
-	mux.Handle("/graphql", models.LoadersMiddleware(pool, srv))
+	mux.Handle("/graphql", sessions.Middleware(models.LoadersMiddleware(pool, srv)))
 
 	return loggingMiddleware(cors.Default().Handler(mux))
 

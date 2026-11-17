@@ -23,10 +23,6 @@ import (
 
 // Add is the resolver for the add field.
 func (r *itemMutationResolver) Add(ctx context.Context, obj *model.ItemMutation, characterID string, input model.AddItemInput) (*model.Character, error) {
-	if addValidationErrors(ctx, models.ValidateAddItemInput(input, r.ItemTemplates, r.TagDefinitions)) {
-		return nil, nil
-	}
-
 	uuid, err := parseCharacterID(characterID)
 	if err != nil {
 		return nil, err
@@ -35,6 +31,10 @@ func (r *itemMutationResolver) Add(ctx context.Context, obj *model.ItemMutation,
 	character, _, err := r.loadCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
+	}
+
+	if addValidationErrors(ctx, models.ValidateAddItemInput(input, r.ItemTemplates, r.TagDefinitions)) {
+		return nil, nil
 	}
 
 	toText := func(s *string) pgtype.Text {
@@ -97,17 +97,16 @@ func (r *itemMutationResolver) Remove(ctx context.Context, obj *model.ItemMutati
 		return nil, fmt.Errorf("invalid item ID: %w", err)
 	}
 
-	characterID, err := db.New(r.DbPool).DeleteItem(ctx, int32(itemId))
+	character, err := r.loadItemCharacter(ctx, int32(itemId))
 	if err != nil {
+		return nil, err
+	}
+
+	if _, err := db.New(r.DbPool).DeleteItem(ctx, int32(itemId)); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("item with ID '%d' not found", itemId)
 		}
 		return nil, fmt.Errorf("failed to remove item with ID '%d': %w", itemId, err)
-	}
-
-	character, _, err := r.loadCharacter(ctx, characterID)
-	if err != nil {
-		return nil, err
 	}
 
 	return models.ToCharacterObject(character), nil
@@ -115,13 +114,17 @@ func (r *itemMutationResolver) Remove(ctx context.Context, obj *model.ItemMutati
 
 // SetCount is the resolver for the setCount field.
 func (r *itemMutationResolver) SetCount(ctx context.Context, obj *model.ItemMutation, count int32, id string) (*model.Item, error) {
-	if err := models.ValidateItemCount(count); err != nil {
-		return nil, validationError(ctx, err)
-	}
-
 	itemId, err := strconv.ParseInt(id, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("invalid item ID: %w", err)
+	}
+
+	if _, err := r.loadItemCharacter(ctx, int32(itemId)); err != nil {
+		return nil, err
+	}
+
+	if err := models.ValidateItemCount(count); err != nil {
+		return nil, validationError(ctx, err)
 	}
 
 	queries := db.New(r.DbPool)
@@ -152,6 +155,10 @@ func (r *itemMutationResolver) SetWorn(ctx context.Context, obj *model.ItemMutat
 	itemId, err := strconv.ParseInt(id, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("invalid item ID: %w", err)
+	}
+
+	if _, err := r.loadItemCharacter(ctx, int32(itemId)); err != nil {
+		return nil, err
 	}
 
 	queries := db.New(r.DbPool)

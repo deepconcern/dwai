@@ -12,7 +12,8 @@ INSERT INTO characters (
         name,
         race_move_key,
         strength,
-        wisdom
+        wisdom,
+        owner_id
     )
 VALUES (
         $1,
@@ -27,6 +28,7 @@ VALUES (
         $10,
         $11,
         $12,
-        $13
+        $13,
+        $14
     )
 RETURNING id;

@@ -170,7 +170,7 @@ func TestCreateCharacterRejectsInvalidInput(t *testing.T) {
 				t.Errorf("no %s error for field %q in %v", models.ValidationErrorCode, tt.wantField, errs)
 			}
 
-			if all := allCharacters(t, c); len(all) != 0 {
+			if all := myCharacters(t, c); len(all) != 0 {
 				t.Errorf("invalid input stored %d characters", len(all))
 			}
 		})
@@ -212,7 +212,7 @@ func TestCharacterLoaderCacheIsPerRequest(t *testing.T) {
 
 // Lists several characters at once, so the dataloaders batch their looks and
 // equipment; each must end up attached to the right character.
-func TestCharactersAll(t *testing.T) {
+func TestCharactersMine(t *testing.T) {
 	t.Parallel()
 
 	c, _ := env.NewClient(t)
@@ -226,15 +226,15 @@ func TestCharactersAll(t *testing.T) {
 		created[character.ID] = character
 	}
 
-	all := allCharacters(t, c)
+	all := myCharacters(t, c)
 	if len(all) != len(created) {
-		t.Fatalf("characters.all returned %d characters, want %d", len(all), len(created))
+		t.Fatalf("characters.mine returned %d characters, want %d", len(all), len(created))
 	}
 
 	for _, got := range all {
 		input, ok := inputs[got.ID]
 		if !ok {
-			t.Errorf("characters.all returned unknown character %s", got.ID)
+			t.Errorf("characters.mine returned unknown character %s", got.ID)
 			continue
 		}
 

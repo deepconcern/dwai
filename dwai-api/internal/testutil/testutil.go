@@ -11,12 +11,17 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"maps"
+	"net/http"
+	"net/http/cookiejar"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
 	server "github.com/deepconcern/dwai/dwai-api/internal"
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/migrate"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	"github.com/jackc/pgx/v5"
@@ -47,11 +52,13 @@ type Env struct {
 // NewEnv starts the Postgres container, applies the migrations to the
 // template database, and loads the game data. Call Close when done.
 func NewEnv(ctx context.Context) (env *Env, err error) {
-	env = &Env{}
+	// "return nil, err" sets env to nil before deferred calls run, so the
+	// cleanup holds its own reference.
+	partial := &Env{}
+	env = partial
 	defer func() {
 		if err != nil {
-			_ = env.Close()
-			env = nil
+			_ = partial.Close()
 		}
 	}()
 
@@ -97,6 +104,10 @@ func NewEnv(ctx context.Context) (env *Env, err error) {
 func (e *Env) Close() error {
 	if e.admin != nil {
 		e.admin.Close()
+	}
+
+	if e.container == nil {
+		return nil
 	}
 
 	return testcontainers.TerminateContainer(e.container)
@@ -165,15 +176,27 @@ func (e *Env) createDatabase(ctx context.Context) (string, error) {
 	return name, nil
 }
 
-// NewClient creates a fresh database (see NewDB) and returns a GraphQL client
-// that sends requests through the real server handler, plus the pool for
-// asserting on database state directly.
-func (e *Env) NewClient(t testing.TB) (*client.Client, *pgxpool.Pool) {
+// NewServer creates a fresh database (see NewDB) and returns the real server
+// handler for it, plus the pool for asserting on database state directly.
+func (e *Env) NewServer(t testing.TB) (http.Handler, *pgxpool.Pool) {
 	t.Helper()
 
 	pool := e.NewDB(t)
 
-	return client.New(server.New(pool, e.GameData), client.Path("/graphql")), pool
+	return server.New(pool, e.GameData, server.Options{}), pool
+}
+
+// NewClient creates a fresh database (see NewDB), registers a user, and
+// returns a GraphQL client logged in as them, plus the pool for asserting on
+// database state directly.
+func (e *Env) NewClient(t testing.TB) (*client.Client, *pgxpool.Pool) {
+	t.Helper()
+
+	h, pool := e.NewServer(t)
+	browser := NewBrowser(h)
+	browser.Register(t, "player@example.com")
+
+	return browser.Client, pool
 }
 
 func (e *Env) databaseURI(name string) string {
@@ -181,4 +204,88 @@ func (e *Env) databaseURI(name string) string {
 	u.Path = "/" + name
 
 	return u.String()
+}
+
+// TestPassword is the password Browser.Register gives every account.
+const TestPassword = "correct horse battery staple"
+
+// siteURL is where a Browser's cookies are scoped. The handler never sees
+// it; it only keys the cookie jar.
+var siteURL = &url.URL{Scheme: "http", Host: "localhost", Path: "/"}
+
+// Browser sends GraphQL requests through a handler and keeps the cookies it
+// sets, as a browser would, so it stays logged in across requests.
+type Browser struct {
+	// Client sends requests with the browser's cookies.
+	Client *client.Client
+	// Jar holds the cookies the server has set.
+	Jar http.CookieJar
+}
+
+// NewBrowser returns a logged-out Browser for the handler.
+func NewBrowser(h http.Handler) *Browser {
+	jar, _ := cookiejar.New(nil) // never fails with nil options
+
+	return &Browser{
+		Client: client.New(&jarHandler{jar: jar, next: h}, client.Path("/graphql")),
+		Jar:    jar,
+	}
+}
+
+// Register creates an account through the API (display name "Player",
+// password TestPassword), which logs the browser in as it.
+func (b *Browser) Register(t testing.TB, email string) {
+	t.Helper()
+
+	var resp struct {
+		Auth struct {
+			Register struct{ ID string }
+		}
+	}
+	err := b.Client.Post(
+		`mutation ($input: RegisterInput!) { auth { register(input: $input) { id } } }`,
+		&resp,
+		client.Var("input", map[string]any{
+			"displayName": "Player",
+			"email":       email,
+			"password":    TestPassword,
+		}),
+	)
+	if err != nil {
+		t.Fatalf("register %s: %v", email, err)
+	}
+}
+
+// SessionCookie returns the browser's session cookie, or nil.
+func (b *Browser) SessionCookie() *http.Cookie {
+	for _, c := range b.Jar.Cookies(siteURL) {
+		if c.Name == auth.CookieName {
+			return c
+		}
+	}
+
+	return nil
+}
+
+// jarHandler adds a cookie jar's cookies to each request and stores the
+// cookies each response sets.
+type jarHandler struct {
+	jar  http.CookieJar
+	next http.Handler
+}
+
+func (h *jarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, c := range h.jar.Cookies(siteURL) {
+		r.AddCookie(c)
+	}
+
+	rec := httptest.NewRecorder()
+	h.next.ServeHTTP(rec, r)
+
+	resp := rec.Result()
+	h.jar.SetCookies(siteURL, resp.Cookies())
+
+	maps.Copy(w.Header(), resp.Header)
+	w.WriteHeader(resp.StatusCode)
+	_, _ = w.Write(rec.Body.Bytes())
 }

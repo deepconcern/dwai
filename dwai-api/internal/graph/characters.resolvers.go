@@ -14,13 +14,13 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"github.com/vikstrous/dataloadgen"
 )
 
 // Modifier is the resolver for the modifier field.
@@ -417,6 +417,11 @@ func (r *characterMutationResolver) AdjustXp(ctx context.Context, obj *model.Cha
 
 // Create is the resolver for the create field.
 func (r *characterMutationResolver) Create(ctx context.Context, obj *model.CharacterMutation, input model.CreateCharacterInput) (*model.Character, error) {
+	user, err := auth.RequireUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Parse ability scores from the input slice into individual vars.
 	var charisma, constitution, dexterity, intelligence, strength, wisdom int32
 	for _, ab := range input.Abilities {
@@ -503,6 +508,7 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 		HitPoints:            hitPoints,
 		Intelligence:         intelligence,
 		Name:                 input.Name,
+		OwnerID:              user.ID,
 		RaceMoveKey:          input.RaceMoveKey,
 		Strength:             strength,
 		Wisdom:               wisdom,
@@ -742,52 +748,43 @@ func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.C
 	return characterUpdated(ctx, row), nil
 }
 
-// All is the resolver for the all field.
-func (r *characterQueryResolver) All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error) {
-	queries := db.New(r.DbPool)
-
-	// Database query for all characters
-
-	rows, err := queries.SelectAllCharacters(ctx)
+// ByID is the resolver for the byId field.
+func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Extract characters from rows
-
-	characterModels := make([]*db.Character, len(rows))
-	for i := range rows {
-		characterModels[i] = &rows[i]
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
 	}
 
-	// Build characters and prime the loader cache
+	return models.ToCharacterObject(character), nil
+}
 
-	characters := make([]*model.Character, len(characterModels))
-	loaders := models.LoadersFor(ctx)
-	for i, characterModel := range characterModels {
-		loaders.CharacterLoader.Prime(characterModel.ID, characterModel)
-		characters[i] = models.ToCharacterObject(characterModel)
+// Mine is the resolver for the mine field.
+func (r *characterQueryResolver) Mine(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error) {
+	user, err := auth.RequireUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.New(r.DbPool).SelectCharactersByOwner(ctx, user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load characters: %w", err)
+	}
+
+	// Build characters and prime the loader cache, so field resolvers don't
+	// load them again.
+	characters := make([]*model.Character, len(rows))
+	loader := models.LoadersFor(ctx).CharacterLoader
+	for i := range rows {
+		loader.Prime(rows[i].ID, &rows[i])
+		characters[i] = models.ToCharacterObject(&rows[i])
 	}
 
 	return characters, nil
-}
-
-// ByID is the resolver for the byId field.
-func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error) {
-	var uuid pgtype.UUID
-	if err := uuid.Scan(id); err != nil {
-		return nil, fmt.Errorf("invalid UUID: %w", err)
-	}
-
-	m, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, uuid)
-	if err != nil {
-		if errors.Is(err, dataloadgen.ErrNotFound) {
-			return nil, fmt.Errorf("character with ID '%s' not found", id)
-		}
-		return nil, err
-	}
-
-	return models.ToCharacterObject(m), nil
 }
 
 // LookType is the resolver for the lookType field.

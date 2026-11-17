@@ -15,7 +15,7 @@ const updateCharacterGold = `-- name: UpdateCharacterGold :one
 UPDATE characters
 SET gold = $2
 WHERE id = $1
-RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
+RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp, owner_id
 `
 
 type UpdateCharacterGoldParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) UpdateCharacterGold(ctx context.Context, arg UpdateCharacterGo
 		&i.Debilities,
 		&i.Level,
 		&i.Xp,
+		&i.OwnerID,
 	)
 	return i, err
 }

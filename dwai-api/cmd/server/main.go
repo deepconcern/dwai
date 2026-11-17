@@ -6,8 +6,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 
 	server "github.com/deepconcern/dwai/dwai-api/internal"
+	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/deepconcern/dwai/dwai-api/internal/migrate"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	"github.com/joho/godotenv"
@@ -80,7 +82,19 @@ func main() {
 		fatal("failed to load game data", err)
 	}
 
-	handler := server.New(pool, gameData)
+	// Clear out expired sessions (they're also deleted when next presented)
+
+	if n, err := db.New(pool).DeleteExpiredSessions(context.Background()); err != nil {
+		fatal("failed to delete expired sessions", err)
+	} else if n > 0 {
+		slog.Info("deleted expired sessions", "count", n)
+	}
+
+	// COOKIE_SECURE=true marks the session cookie Secure, for serving over
+	// HTTPS. It's off by default for local development over plain HTTP.
+	secureCookie, _ := strconv.ParseBool(os.Getenv("COOKIE_SECURE"))
+
+	handler := server.New(pool, gameData, server.Options{SecureCookie: secureCookie})
 
 	// Run the server
 

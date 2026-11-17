@@ -16,19 +16,19 @@ func TestSmoke(t *testing.T) {
 			All []struct{ Key string }
 		}
 		Characters struct {
-			All []struct{ ID string }
+			Mine []struct{ ID string }
 		}
 	}
 	c.MustPost(`{
 		characterClasses { all { key } }
-		characters { all { id } }
+		characters { mine { id } }
 	}`, &resp)
 
 	if len(resp.CharacterClasses.All) == 0 {
 		t.Error("characterClasses.all is empty; game data didn't load")
 	}
-	if len(resp.Characters.All) != 0 {
-		t.Errorf("characters.all = %d characters on a fresh database, want 0", len(resp.Characters.All))
+	if len(resp.Characters.Mine) != 0 {
+		t.Errorf("characters.mine = %d characters for a new user, want 0", len(resp.Characters.Mine))
 	}
 }
 

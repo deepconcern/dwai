@@ -128,9 +128,9 @@ query ($id: ID!) {
 	characters { byId(id: $id) { ...CharacterFields } }
 }` + characterFields
 
-const allCharactersQuery = `
+const myCharactersQuery = `
 {
-	characters { all { ...CharacterFields } }
+	characters { mine { ...CharacterFields } }
 }` + characterFields
 
 // createCharacter creates a character through the API, failing the test on
@@ -163,19 +163,19 @@ func characterByID(t *testing.T, c *client.Client, id string) characterResponse 
 	return resp.Characters.ByID
 }
 
-// allCharacters lists every character through the API, failing the test on
+// myCharacters lists the logged-in user's characters through the API, failing the test on
 // any error.
-func allCharacters(t *testing.T, c *client.Client) []characterResponse {
+func myCharacters(t *testing.T, c *client.Client) []characterResponse {
 	t.Helper()
 
 	var resp struct {
-		Characters struct{ All []characterResponse }
+		Characters struct{ Mine []characterResponse }
 	}
-	if err := c.Post(allCharactersQuery, &resp); err != nil {
+	if err := c.Post(myCharactersQuery, &resp); err != nil {
 		t.Fatalf("list characters: %v", err)
 	}
 
-	return resp.Characters.All
+	return resp.Characters.Mine
 }
 
 // postErrors sends a request that's expected to fail and returns its GraphQL

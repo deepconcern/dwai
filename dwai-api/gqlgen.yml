@@ -196,6 +196,14 @@ models:
 
   # Custom models
 
+  AuthMutation:
+    fields:
+      login:
+        resolver: true
+      logout:
+        resolver: true
+      register:
+        resolver: true
   AbilityScore:
     fields:
       modifier:
@@ -267,9 +275,9 @@ models:
 
   CharacterQuery:
     fields:
-      all:
-        resolver: true
       byId:
+        resolver: true
+      mine:
         resolver: true
 
   ItemMutation:

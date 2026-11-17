@@ -199,10 +199,10 @@ input TakeDamageInput {
 
 "Namespace for character queries."
 type CharacterQuery {
-  "Returns all characters."
-  all: [Character!]!
-  "Returns a single character by ID, or null if not found."
+  "Returns one of the logged-in user's characters by ID. Another user's character is reported as not found."
   byId(id: ID!): Character!
+  "Returns the logged-in user's characters, oldest first."
+  mine: [Character!]!
 }
 
 "Namespace for character mutations."

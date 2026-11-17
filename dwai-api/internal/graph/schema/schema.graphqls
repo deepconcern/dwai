@@ -9,6 +9,8 @@ type Query {
   itemTemplates: ItemTemplateQuery!
   "Queries for look types used when building a character's appearance."
   lookTypes: LookTypeQuery!
+  "The logged-in user, or null when logged out."
+  me: User
   "Queries for moves available to characters."
   moves: MoveQuery!
   "Queries for Wizard and Cleric spells."
@@ -16,6 +18,8 @@ type Query {
 }
 
 type Mutation {
+  "Mutations for logging in and out and registering."
+  auth: AuthMutation!
   "Mutations for player characters."
   characters: CharacterMutation!
   "Mutations for items owned by characters."

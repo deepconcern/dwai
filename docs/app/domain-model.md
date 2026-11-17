@@ -20,6 +20,9 @@ How the Dungeon World concepts in [docs/game](../game/README.md) are represented
 | Owned items | `items`, `item_tags` tables | `Item` | `key` is a template key or `custom`; label, description, and tags override the template |
 | Spells | `internal/data/spells/*.yaml` | `Spell` (`spells.byClass`) | Level 0 is a cantrip (Wizard) or rote (Cleric); `tags` are school and `ongoing` |
 | Spellbook, prepared spells | `spellbook_spells`, `prepared_spells` tables | `Character.spellbook`, `preparedSpells` (`PreparedSpell.isForgotten`), `expectedSpellbookSize`, `maxPreparedSpellLevels`, `preparedSpellLevels` | Spell rules in `internal/models/spell.go`; only Wizards have a spellbook |
+| Users | `users` table | `User` (`me`, `auth.register`/`login`/`logout`) | Email (unique ignoring case), display name, argon2id password hash. Hashing, tokens, and sessions in `internal/auth` |
+| Sessions | `sessions` table | — (the `dwai_session` cookie) | Stores a SHA-256 hash of the cookie's token; 30 days, sliding |
+| Character ownership | `characters.owner_id` | `characters.mine` | Only the owner can read or change a character, its items, and its spells; others get "not found" (`loadCharacter` in `internal/graph/helpers.go`) |
 | Monsters, GM moves, fronts, hirelings | `internal/data/*.yaml`, `monsters/` | — | Reference only for now (Milestones 7, 8) |
 
 ## Rules Logic

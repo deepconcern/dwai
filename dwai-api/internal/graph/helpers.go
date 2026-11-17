@@ -8,13 +8,20 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vikstrous/dataloadgen"
 )
+
+// errNotFound is wrapped by errors for a character or item that doesn't
+// exist or belongs to another user. Its text completes the message, as in
+// "character with ID '…' not found".
+var errNotFound = errors.New("not found")
 
 // parseCharacterID parses a character's GraphQL ID.
 func parseCharacterID(id string) (pgtype.UUID, error) {
@@ -26,13 +33,21 @@ func parseCharacterID(id string) (pgtype.UUID, error) {
 	return uuid, nil
 }
 
-// loadCharacter loads a character's row and its class.
+// loadCharacter loads a character's row and its class. It's the ownership
+// check for every character, item, and spell resolver: it requires a
+// logged-in user, and reports another user's character as not found, so IDs
+// aren't confirmed to exist.
 func (r *Resolver) loadCharacter(ctx context.Context, id pgtype.UUID) (*db.Character, *models.CharacterClassModel, error) {
-	character, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, id)
+	user, err := auth.RequireUser(ctx)
 	if err != nil {
-		if errors.Is(err, dataloadgen.ErrNotFound) {
-			return nil, nil, fmt.Errorf("character with ID '%s' not found", id.String())
-		}
+		return nil, nil, err
+	}
+
+	character, err := models.LoadersFor(ctx).CharacterLoader.Load(ctx, id)
+	if errors.Is(err, dataloadgen.ErrNotFound) || (err == nil && character.OwnerID != user.ID) {
+		return nil, nil, fmt.Errorf("character with ID '%s' %w", id.String(), errNotFound)
+	}
+	if err != nil {
 		return nil, nil, err
 	}
 
@@ -42,6 +57,42 @@ func (r *Resolver) loadCharacter(ctx context.Context, id pgtype.UUID) (*db.Chara
 	}
 
 	return character, &class, nil
+}
+
+// loadItemCharacter loads the character that owns an item, checking that it
+// belongs to the logged-in user (see loadCharacter). An item on another
+// user's character is reported as not found.
+func (r *Resolver) loadItemCharacter(ctx context.Context, itemID int32) (*db.Character, error) {
+	if _, err := auth.RequireUser(ctx); err != nil {
+		return nil, err
+	}
+
+	characterID, err := db.New(r.DbPool).SelectItemCharacterID(ctx, itemID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, fmt.Errorf("item with ID '%d' %w", itemID, errNotFound)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to load item with ID '%d': %w", itemID, err)
+	}
+
+	character, _, err := r.loadCharacter(ctx, characterID)
+	if errors.Is(err, errNotFound) {
+		return nil, fmt.Errorf("item with ID '%d' %w", itemID, errNotFound)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return character, nil
+}
+
+// userObject converts a user row to a GraphQL object.
+func userObject(user *db.User) *model.User {
+	return &model.User{
+		DisplayName: user.DisplayName,
+		Email:       user.Email,
+		ID:          user.ID.String(),
+	}
 }
 
 // characterUpdated replaces the request's cached row for a character with
@@ -86,6 +137,12 @@ func (r *Resolver) characterItems(ctx context.Context, id pgtype.UUID) ([]*model
 	}
 
 	return items, nil
+}
+
+// errInvalidCredentials is the one error for a failed login, whether the
+// email or the password was wrong.
+func errInvalidCredentials(ctx context.Context) error {
+	return validationError(ctx, models.ValidationError{Message: "Invalid email or password"})
 }
 
 // validationError converts a rules error into a GraphQL error with the

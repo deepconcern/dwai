@@ -3,6 +3,7 @@ package graph
 //go:generate go tool gqlgen generate
 
 import (
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -18,6 +19,7 @@ type Resolver struct {
 	ItemTemplates    *models.ItemTemplateMap
 	LookTypes        *models.LookTypeMap
 	PlayerMoves      *models.MoveMap
+	Sessions         *auth.Sessions
 	Spells           *models.SpellMap
 	TagDefinitions   *models.TagDefinitionMap
 }

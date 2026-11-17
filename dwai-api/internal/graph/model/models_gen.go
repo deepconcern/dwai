@@ -51,6 +51,16 @@ type AlignmentTemplate struct {
 	Description string `json:"description"`
 }
 
+// Namespace for account mutations.
+type AuthMutation struct {
+	// Logs in and sets the session cookie. A wrong email or password gives the same error.
+	Login *User `json:"login"`
+	// Ends the current session and clears the cookie. Returns true, even when already logged out.
+	Logout bool `json:"logout"`
+	// Creates an account, logs in, and sets the session cookie.
+	Register *User `json:"register"`
+}
+
 // A player character in the game.
 type Character struct {
 	// The character's six core ability scores, one for each ability.
@@ -161,10 +171,10 @@ type CharacterMutation struct {
 
 // Namespace for character queries.
 type CharacterQuery struct {
-	// Returns all characters.
-	All []*Character `json:"all"`
-	// Returns a single character by ID, or null if not found.
+	// Returns one of the logged-in user's characters by ID. Another user's character is reported as not found.
 	ByID *Character `json:"byId"`
+	// Returns the logged-in user's characters, oldest first.
+	Mine []*Character `json:"mine"`
 }
 
 // Input for creating a new character.
@@ -296,6 +306,12 @@ type LevelUpInput struct {
 	AdvancedMoveKey string `json:"advancedMoveKey"`
 }
 
+// Credentials for logging in.
+type LoginInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // A single appearance choice made for a character.
 type Look struct {
 	// Unique identifier for this look entry.
@@ -406,6 +422,16 @@ type PreparedSpell struct {
 type Query struct {
 }
 
+// A new account's details.
+type RegisterInput struct {
+	// 1 to 50 characters, trimmed.
+	DisplayName string `json:"displayName"`
+	// Must be unique, ignoring case.
+	Email string `json:"email"`
+	// 8 to 128 characters.
+	Password string `json:"password"`
+}
+
 // A Wizard or Cleric spell.
 type Spell struct {
 	// What the spell does.
@@ -476,6 +502,15 @@ type TakeDamageInput struct {
 	IgnoresArmor bool `json:"ignoresArmor"`
 	// How much armor the damage ignores (the piercing tag).
 	Piercing int32 `json:"piercing"`
+}
+
+// A registered account.
+type User struct {
+	// The name shown to other players.
+	DisplayName string `json:"displayName"`
+	// The email the user logs in with, as entered at registration.
+	Email string `json:"email"`
+	ID    string `json:"id"`
 }
 
 // The six core ability scores used for all rolls and derived stats in Dungeon World.

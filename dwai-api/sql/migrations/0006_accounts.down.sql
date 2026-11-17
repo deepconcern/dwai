@@ -1,0 +1,3 @@
+ALTER TABLE characters DROP COLUMN IF EXISTS owner_id;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS users;

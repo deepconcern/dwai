@@ -1,5 +1,30 @@
 import { Page, expect } from "@playwright/test";
 
+/** The password every test account uses. */
+export const TEST_PASSWORD = "correct horse battery staple";
+
+/**
+ * Registers a new account through the UI with a unique email, which logs the
+ * browser in, and returns the email. Every run starts from an empty
+ * database, and each test registers its own user so tests can't see each
+ * other's characters.
+ */
+export const registerUser = async (page: Page, displayName = "Player") => {
+  const email = `player-${crypto.randomUUID()}@example.com`;
+
+  await page.goto("/register");
+  await page.getByLabel("Display name").fill(displayName);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(TEST_PASSWORD);
+  await page.getByRole("button", { name: "Register" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "My Characters" }),
+  ).toBeVisible();
+
+  return email;
+};
+
 /**
  * Creates a Fighter through the UI and waits for its sheet: CON 13 (23 HP),
  * STR 16 (max load 14), with scale armor (unworn), a shield (+1 armor), and

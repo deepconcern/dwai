@@ -25,7 +25,8 @@ INSERT INTO characters (
         name,
         race_move_key,
         strength,
-        wisdom
+        wisdom,
+        owner_id
     )
 VALUES (
         $1,
@@ -40,7 +41,8 @@ VALUES (
         $10,
         $11,
         $12,
-        $13
+        $13,
+        $14
     )
 RETURNING id
 `
@@ -59,6 +61,7 @@ type InsertCharacterParams struct {
 	RaceMoveKey          string
 	Strength             int32
 	Wisdom               int32
+	OwnerID              pgtype.UUID
 }
 
 func (q *Queries) InsertCharacter(ctx context.Context, arg InsertCharacterParams) (pgtype.UUID, error) {
@@ -76,6 +79,7 @@ func (q *Queries) InsertCharacter(ctx context.Context, arg InsertCharacterParams
 		arg.RaceMoveKey,
 		arg.Strength,
 		arg.Wisdom,
+		arg.OwnerID,
 	)
 	var id pgtype.UUID
 	err := row.Scan(&id)

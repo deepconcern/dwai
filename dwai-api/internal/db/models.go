@@ -32,6 +32,7 @@ type Character struct {
 	Debilities           []string
 	Level                int32
 	Xp                   int32
+	OwnerID              pgtype.UUID
 }
 
 type Item struct {
@@ -74,8 +75,23 @@ type PreparedSpell struct {
 	SpellKey    string
 }
 
+type Session struct {
+	CreatedAt pgtype.Timestamptz
+	ExpiresAt pgtype.Timestamptz
+	TokenHash []byte
+	UserID    pgtype.UUID
+}
+
 type SpellbookSpell struct {
 	CharacterID pgtype.UUID
 	ID          int32
 	SpellKey    string
+}
+
+type User struct {
+	CreatedAt    pgtype.Timestamptz
+	DisplayName  string
+	Email        string
+	ID           pgtype.UUID
+	PasswordHash string
 }

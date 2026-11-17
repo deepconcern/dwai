@@ -1,8 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { createFighter } from "./helpers";
+import { createFighter, registerUser } from "./helpers";
 
 test.describe("character sheet", () => {
+  test.beforeEach(async ({ page }) => {
+    await registerUser(page);
+  });
+
   test("takes damage with armor applied and heals", async ({ page }) => {
     await createFighter(page, "Brakka");
 

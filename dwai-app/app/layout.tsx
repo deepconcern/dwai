@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FC, PropsWithChildren } from "react";
 
 import { ApolloWrapper } from "@/components/ApolloWrapper";
+import { UserNav } from "@/components/UserNav";
 
 import "./index.css";
 
@@ -31,10 +32,11 @@ export const RootLayout: FC<PropsWithChildren> = ({ children }) => (
     >
       <body className="bg-black min-h-full flex flex-col text-white">
         <header className="bg-neutral-900 p-4">
-          <nav>
+          <nav className="flex items-center justify-between">
             <Link href="/">
               <h1 className="font-bold text-xl">Dungeon World AI</h1>
             </Link>
+            <UserNav />
           </nav>
         </header>
         <main className="bg-gray-900 flex-1 max-w-5xl mx-auto m-4 p-4 w-full">

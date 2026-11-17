@@ -15,7 +15,7 @@ const updateCharacterXp = `-- name: UpdateCharacterXp :one
 UPDATE characters
 SET xp = $2
 WHERE id = $1
-RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
+RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp, owner_id
 `
 
 type UpdateCharacterXpParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) UpdateCharacterXp(ctx context.Context, arg UpdateCharacterXpPa
 		&i.Debilities,
 		&i.Level,
 		&i.Xp,
+		&i.OwnerID,
 	)
 	return i, err
 }

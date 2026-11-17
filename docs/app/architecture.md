@@ -1,7 +1,7 @@
 # Architecture
 
 ```
-dwai-app (Next.js, :3000)  ──GraphQL (Apollo)──▶  dwai-api (Go/gqlgen, :5000)  ──pgx/sqlc──▶  PostgreSQL 18
+browser ──/graphql──▶ dwai-app (Next.js, :3000) ──rewrite / server components──▶ dwai-api (Go/gqlgen, :5000) ──pgx/sqlc──▶ PostgreSQL 18
                                                      │
                                                      └── embedded game data YAML (internal/data)
 ```
@@ -17,6 +17,13 @@ dwai-app (Next.js, :3000)  ──GraphQL (Apollo)──▶  dwai-api (Go/gqlgen,
 - **Game content** (classes, moves, items, tags, spells, monsters) is YAML embedded into the API binary and loaded into in-memory maps at startup. It's never stored in the database.
 - **Player data** (characters, looks, items, choices) is in Postgres. Rows store only the **keys** of the game content they reference (`character_class_key`, `race_move_key`, item `key`), and resolvers join them with the YAML at query time.
 - **The frontend** queries the API and generates TypeScript types from the running API's schema. It shows what the API computes, and may compute rules as display helpers (for example, applying debilities to the modifiers it shows, in `dwai-app/lib/debilities.ts`), but it generally doesn't enforce them. Like a pen-and-paper sheet, where a player can technically write whatever they want, there's a bit of an honor system, and it keeps mistakes easy to fix.
+
+## Accounts and Sessions
+
+- The browser only talks to the app's origin. `next.config.ts` rewrites `/graphql` to the API (`API_URI`, server-only), so the API's `dwai_session` cookie (HttpOnly, SameSite=Lax, `Secure` when `COOKIE_SECURE=true`) is first-party and no CORS is involved.
+- Server components query the API directly and forward the incoming request's cookies (`lib/apollo-client.ts`), so they run as the logged-in user.
+- `dwai-app/proxy.ts` redirects visitors with no session cookie to `/login?next=…`. That's only an optimistic check: pages call `requireUser` (`lib/session.ts`), which asks the API, to catch a cookie it no longer accepts. `next` is checked with `lib/safeNext.ts`, so it can't redirect off the site.
+- The API is the real check. `internal/auth` loads the session for each request; every character, item, and spell resolver requires a user and checks ownership, returning `UNAUTHENTICATED` when logged out and "not found" for another user's character. Game content stays public.
 
 ## Schema Changes Flow API → App
 

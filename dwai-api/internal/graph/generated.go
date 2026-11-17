@@ -30,6 +30,7 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	AbilityScore() AbilityScoreResolver
+	AuthMutation() AuthMutationResolver
 	Character() CharacterResolver
 	CharacterClass() CharacterClassResolver
 	CharacterClassQuery() CharacterClassQueryResolver
@@ -59,6 +60,12 @@ type ComplexityRoot struct {
 	AlignmentTemplate struct {
 		Alignment   func(childComplexity int) int
 		Description func(childComplexity int) int
+	}
+
+	AuthMutation struct {
+		Login    func(childComplexity int, input model.LoginInput) int
+		Logout   func(childComplexity int) int
+		Register func(childComplexity int, input model.RegisterInput) int
 	}
 
 	Character struct {
@@ -124,8 +131,8 @@ type ComplexityRoot struct {
 	}
 
 	CharacterQuery struct {
-		All  func(childComplexity int) int
 		ByID func(childComplexity int, id string) int
+		Mine func(childComplexity int) int
 	}
 
 	CreationOption struct {
@@ -235,6 +242,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		Auth       func(childComplexity int) int
 		Characters func(childComplexity int) int
 		Items      func(childComplexity int) int
 		Spells     func(childComplexity int) int
@@ -251,6 +259,7 @@ type ComplexityRoot struct {
 		Characters       func(childComplexity int) int
 		ItemTemplates    func(childComplexity int) int
 		LookTypes        func(childComplexity int) int
+		Me               func(childComplexity int) int
 		Moves            func(childComplexity int) int
 		Spells           func(childComplexity int) int
 	}
@@ -286,10 +295,21 @@ type ComplexityRoot struct {
 		Name     func(childComplexity int) int
 		Quantity func(childComplexity int) int
 	}
+
+	User struct {
+		DisplayName func(childComplexity int) int
+		Email       func(childComplexity int) int
+		ID          func(childComplexity int) int
+	}
 }
 
 type AbilityScoreResolver interface {
 	Modifier(ctx context.Context, obj *model.AbilityScore) (int32, error)
+}
+type AuthMutationResolver interface {
+	Login(ctx context.Context, obj *model.AuthMutation, input model.LoginInput) (*model.User, error)
+	Logout(ctx context.Context, obj *model.AuthMutation) (bool, error)
+	Register(ctx context.Context, obj *model.AuthMutation, input model.RegisterInput) (*model.User, error)
 }
 type CharacterResolver interface {
 	AdvancedMoves(ctx context.Context, obj *model.Character) ([]*model.Move, error)
@@ -331,8 +351,8 @@ type CharacterMutationResolver interface {
 	TakeDamage(ctx context.Context, obj *model.CharacterMutation, id string, input model.TakeDamageInput) (*model.Character, error)
 }
 type CharacterQueryResolver interface {
-	All(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error)
 	ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error)
+	Mine(ctx context.Context, obj *model.CharacterQuery) ([]*model.Character, error)
 }
 type ItemMutationResolver interface {
 	Add(ctx context.Context, obj *model.ItemMutation, characterID string, input model.AddItemInput) (*model.Character, error)
@@ -355,6 +375,7 @@ type MoveQueryResolver interface {
 	ByType(ctx context.Context, obj *model.MoveQuery, typeArg string) ([]*model.Move, error)
 }
 type MutationResolver interface {
+	Auth(ctx context.Context) (*model.AuthMutation, error)
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
 	Items(ctx context.Context) (*model.ItemMutation, error)
 	Spells(ctx context.Context) (*model.SpellMutation, error)
@@ -365,6 +386,7 @@ type QueryResolver interface {
 	Characters(ctx context.Context) (*model.CharacterQuery, error)
 	ItemTemplates(ctx context.Context) (*model.ItemTemplateQuery, error)
 	LookTypes(ctx context.Context) (*model.LookTypeQuery, error)
+	Me(ctx context.Context) (*model.User, error)
 	Moves(ctx context.Context) (*model.MoveQuery, error)
 	Spells(ctx context.Context) (*model.SpellQuery, error)
 }
@@ -423,6 +445,35 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.AlignmentTemplate.Description(childComplexity), true
+
+	case "AuthMutation.login":
+		if e.ComplexityRoot.AuthMutation.Login == nil {
+			break
+		}
+
+		args, err := ec.field_AuthMutation_login_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.AuthMutation.Login(childComplexity, args["input"].(model.LoginInput)), true
+	case "AuthMutation.logout":
+		if e.ComplexityRoot.AuthMutation.Logout == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AuthMutation.Logout(childComplexity), true
+	case "AuthMutation.register":
+		if e.ComplexityRoot.AuthMutation.Register == nil {
+			break
+		}
+
+		args, err := ec.field_AuthMutation_register_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.AuthMutation.Register(childComplexity, args["input"].(model.RegisterInput)), true
 
 	case "Character.abilities":
 		if e.ComplexityRoot.Character.Abilities == nil {
@@ -768,12 +819,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CharacterMutation.TakeDamage(childComplexity, args["id"].(string), args["input"].(model.TakeDamageInput)), true
 
-	case "CharacterQuery.all":
-		if e.ComplexityRoot.CharacterQuery.All == nil {
-			break
-		}
-
-		return e.ComplexityRoot.CharacterQuery.All(childComplexity), true
 	case "CharacterQuery.byId":
 		if e.ComplexityRoot.CharacterQuery.ByID == nil {
 			break
@@ -785,6 +830,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CharacterQuery.ByID(childComplexity, args["id"].(string)), true
+	case "CharacterQuery.mine":
+		if e.ComplexityRoot.CharacterQuery.Mine == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CharacterQuery.Mine(childComplexity), true
 
 	case "CreationOption.choices":
 		if e.ComplexityRoot.CreationOption.Choices == nil {
@@ -1197,6 +1248,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.MoveQuery.ByType(childComplexity, args["type"].(string)), true
 
+	case "Mutation.auth":
+		if e.ComplexityRoot.Mutation.Auth == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Mutation.Auth(childComplexity), true
 	case "Mutation.characters":
 		if e.ComplexityRoot.Mutation.Characters == nil {
 			break
@@ -1260,6 +1317,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.LookTypes(childComplexity), true
+	case "Query.me":
+		if e.ComplexityRoot.Query.Me == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.Me(childComplexity), true
 	case "Query.moves":
 		if e.ComplexityRoot.Query.Moves == nil {
 			break
@@ -1405,6 +1468,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Tag.Quantity(childComplexity), true
 
+	case "User.displayName":
+		if e.ComplexityRoot.User.DisplayName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.User.DisplayName(childComplexity), true
+	case "User.email":
+		if e.ComplexityRoot.User.Email == nil {
+			break
+		}
+
+		return e.ComplexityRoot.User.Email(childComplexity), true
+	case "User.id":
+		if e.ComplexityRoot.User.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.User.ID(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -1418,8 +1500,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateCharacterInput,
 		ec.unmarshalInputGearOptionChoiceInput,
 		ec.unmarshalInputLevelUpInput,
+		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputMoveCreationOptionChoiceInput,
 		ec.unmarshalInputNewLookInput,
+		ec.unmarshalInputRegisterInput,
 		ec.unmarshalInputTagInput,
 		ec.unmarshalInputTakeDamageInput,
 	)
@@ -1496,7 +1580,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls" "schema/spells.graphqls"
+//go:embed "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls" "schema/spells.graphqls" "schema/users.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1515,6 +1599,7 @@ var sources = []*ast.Source{
 	{Name: "schema/moves.graphqls", Input: sourceData("schema/moves.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
 	{Name: "schema/spells.graphqls", Input: sourceData("schema/spells.graphqls"), BuiltIn: false},
+	{Name: "schema/users.graphqls", Input: sourceData("schema/users.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1542,6 +1627,18 @@ func (ec *executionContext) childFields_AlignmentTemplate(ctx context.Context, f
 		return ec.fieldContext_AlignmentTemplate_description(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type AlignmentTemplate", field.Name)
+}
+
+func (ec *executionContext) childFields_AuthMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "login":
+		return ec.fieldContext_AuthMutation_login(ctx, field)
+	case "logout":
+		return ec.fieldContext_AuthMutation_logout(ctx, field)
+	case "register":
+		return ec.fieldContext_AuthMutation_register(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AuthMutation", field.Name)
 }
 
 func (ec *executionContext) childFields_Character(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1670,10 +1767,10 @@ func (ec *executionContext) childFields_CharacterMutation(ctx context.Context, f
 
 func (ec *executionContext) childFields_CharacterQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
-	case "all":
-		return ec.fieldContext_CharacterQuery_all(ctx, field)
 	case "byId":
 		return ec.fieldContext_CharacterQuery_byId(ctx, field)
+	case "mine":
+		return ec.fieldContext_CharacterQuery_mine(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CharacterQuery", field.Name)
 }
@@ -1950,6 +2047,18 @@ func (ec *executionContext) childFields_Tag(ctx context.Context, field graphql.C
 	return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 }
 
+func (ec *executionContext) childFields_User(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "displayName":
+		return ec.fieldContext_User_displayName(ctx, field)
+	case "email":
+		return ec.fieldContext_User_email(ctx, field)
+	case "id":
+		return ec.fieldContext_User_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+}
+
 func (ec *executionContext) childFields___Directive(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "name":
@@ -2065,6 +2174,34 @@ func (ec *executionContext) childFields___Type(ctx context.Context, field graphq
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_AuthMutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.LoginInput, error) {
+			return ec.unmarshalNLoginInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLoginInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_AuthMutation_register_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.RegisterInput, error) {
+			return ec.unmarshalNRegisterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐRegisterInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_CharacterClassQuery_byKey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -2657,6 +2794,117 @@ func (ec *executionContext) _AlignmentTemplate_description(ctx context.Context, 
 }
 func (ec *executionContext) fieldContext_AlignmentTemplate_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("AlignmentTemplate", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AuthMutation_login(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AuthMutation_login(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.AuthMutation().Login(ctx, obj, fc.Args["input"].(model.LoginInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.User) graphql.Marshaler {
+			return ec.marshalNUser2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AuthMutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_AuthMutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuthMutation_logout(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AuthMutation_logout(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.AuthMutation().Logout(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AuthMutation_logout(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AuthMutation", field, true, true, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _AuthMutation_register(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AuthMutation_register(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.AuthMutation().Register(ctx, obj, fc.Args["input"].(model.RegisterInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.User) graphql.Marshaler {
+			return ec.marshalNUser2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AuthMutation_register(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_AuthMutation_register_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Character_abilities(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
@@ -4139,38 +4387,6 @@ func (ec *executionContext) fieldContext_CharacterMutation_takeDamage(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _CharacterQuery_all(ctx context.Context, field graphql.CollectedField, obj *model.CharacterQuery) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CharacterQuery_all(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.CharacterQuery().All(ctx, obj)
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Character) graphql.Marshaler {
-			return ec.marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_CharacterQuery_all(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CharacterQuery",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Character(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _CharacterQuery_byId(ctx context.Context, field graphql.CollectedField, obj *model.CharacterQuery) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4211,6 +4427,38 @@ func (ec *executionContext) fieldContext_CharacterQuery_byId(ctx context.Context
 	if fc.Args, err = ec.field_CharacterQuery_byId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CharacterQuery_mine(ctx context.Context, field graphql.CollectedField, obj *model.CharacterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CharacterQuery_mine(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.CharacterQuery().Mine(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Character) graphql.Marshaler {
+			return ec.marshalNCharacter2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCharacterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CharacterQuery_mine(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CharacterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Character(ctx, field)
+		},
 	}
 	return fc, nil
 }
@@ -5852,6 +6100,38 @@ func (ec *executionContext) fieldContext_MoveQuery_byType(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_auth(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_auth(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Mutation().Auth(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.AuthMutation) graphql.Marshaler {
+			return ec.marshalNAuthMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAuthMutation(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_auth(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AuthMutation(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_characters(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6149,6 +6429,38 @@ func (ec *executionContext) fieldContext_Query_lookTypes(_ context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_LookTypeQuery(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_me(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().Me(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.User) graphql.Marshaler {
+			return ec.marshalOUser2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_User(ctx, field)
 		},
 	}
 	return fc, nil
@@ -6806,6 +7118,75 @@ func (ec *executionContext) _Tag_quantity(ctx context.Context, field graphql.Col
 }
 func (ec *executionContext) fieldContext_Tag_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Tag", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _User_displayName(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_User_displayName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DisplayName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_User_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("User", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_User_email(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Email, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_User_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("User", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_User_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_User_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("User", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -8139,6 +8520,43 @@ func (ec *executionContext) unmarshalInputLevelUpInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj any) (model.LoginInput, error) {
+	var it model.LoginInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMoveCreationOptionChoiceInput(ctx context.Context, obj any) (model.MoveCreationOptionChoiceInput, error) {
 	var it model.MoveCreationOptionChoiceInput
 	if obj == nil {
@@ -8215,6 +8633,50 @@ func (ec *executionContext) unmarshalInputNewLookInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Value = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj any) (model.RegisterInput, error) {
+	var it model.RegisterInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"displayName", "email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "displayName":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DisplayName = data
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
 		}
 	}
 	return it, nil
@@ -8417,6 +8879,148 @@ func (ec *executionContext) _AlignmentTemplate(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var authMutationImplementors = []string{"AuthMutation"}
+
+func (ec *executionContext) _AuthMutation(ctx context.Context, sel ast.SelectionSet, obj *model.AuthMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AuthMutation")
+		case "login":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutation_login(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "logout":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutation_logout(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "register":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutation_register(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9637,7 +10241,7 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CharacterQuery")
-		case "all":
+		case "byId":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9646,7 +10250,7 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CharacterQuery_all(ctx, field, obj)
+				res = ec._CharacterQuery_byId(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9673,7 +10277,7 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "byId":
+		case "mine":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9682,7 +10286,7 @@ func (ec *executionContext) _CharacterQuery(ctx context.Context, sel ast.Selecti
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CharacterQuery_byId(ctx, field, obj)
+				res = ec._CharacterQuery_mine(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -10849,6 +11453,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "auth":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_auth(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "characters":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_characters(ctx, field)
@@ -11057,6 +11668,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "me":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_me(ctx, field)
 				return res
 			}
 
@@ -11548,6 +12178,55 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var userImplementors = []string{"User"}
+
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("User")
+		case "displayName":
+			out.Values[i] = ec._User_displayName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "email":
+			out.Values[i] = ec._User_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "id":
+			out.Values[i] = ec._User_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var __DirectiveImplementors = []string{"__Directive"}
 
 func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionSet, obj *introspection.Directive) graphql.Marshaler {
@@ -11968,6 +12647,20 @@ func (ec *executionContext) marshalNAlignmentTemplate2ᚖgithubᚗcomᚋdeepconc
 		return graphql.Null
 	}
 	return ec._AlignmentTemplate(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAuthMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAuthMutation(ctx context.Context, sel ast.SelectionSet, v model.AuthMutation) graphql.Marshaler {
+	return ec._AuthMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuthMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAuthMutation(ctx context.Context, sel ast.SelectionSet, v *model.AuthMutation) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AuthMutation(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
@@ -12455,6 +13148,11 @@ func (ec *executionContext) unmarshalNLevelUpInput2githubᚗcomᚋdeepconcernᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLoginInput(ctx context.Context, v any) (model.LoginInput, error) {
+	res, err := ec.unmarshalInputLoginInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNLook2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐLookᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Look) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -12661,6 +13359,11 @@ func (ec *executionContext) marshalNPreparedSpell2ᚖgithubᚗcomᚋdeepconcern�
 	return ec._PreparedSpell(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNRegisterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐRegisterInput(ctx context.Context, v any) (model.RegisterInput, error) {
+	res, err := ec.unmarshalInputRegisterInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNSpell2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐSpellᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Spell) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -12824,6 +13527,20 @@ func (ec *executionContext) unmarshalNTagInput2ᚖgithubᚗcomᚋdeepconcernᚋd
 func (ec *executionContext) unmarshalNTakeDamageInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTakeDamageInput(ctx context.Context, v any) (model.TakeDamageInput, error) {
 	res, err := ec.unmarshalInputTakeDamageInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -13038,6 +13755,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	_ = ctx
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

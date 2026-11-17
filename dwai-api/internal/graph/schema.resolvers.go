@@ -9,8 +9,14 @@ import (
 	"context"
 	"os"
 
+	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 )
+
+// Auth is the resolver for the auth field.
+func (r *mutationResolver) Auth(ctx context.Context) (*model.AuthMutation, error) {
+	return &model.AuthMutation{}, nil
+}
 
 // Characters is the resolver for the characters field.
 func (r *mutationResolver) Characters(ctx context.Context) (*model.CharacterMutation, error) {
@@ -56,6 +62,16 @@ func (r *queryResolver) ItemTemplates(ctx context.Context) (*model.ItemTemplateQ
 // LookTypes is the resolver for the lookTypes field.
 func (r *queryResolver) LookTypes(ctx context.Context) (*model.LookTypeQuery, error) {
 	return &model.LookTypeQuery{}, nil
+}
+
+// Me is the resolver for the me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	user := auth.UserFromContext(ctx)
+	if user == nil {
+		return nil, nil
+	}
+
+	return userObject(user), nil
 }
 
 // Moves is the resolver for the moves field.

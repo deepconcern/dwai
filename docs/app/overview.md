@@ -23,7 +23,7 @@ What dwai deliberately doesn't copy: a marketplace or paywalled content (the SRD
 
 ## Status
 
-See [`ROADMAP.md`](../../ROADMAP.md) for the authoritative status. In short, as of November 2026: character creation and a read-only sheet are done, the test foundation is nearly done, and the stateful character sheet (Milestone 3) is next.
+See [`ROADMAP.md`](../../ROADMAP.md) for the authoritative status. In short, as of November 2026: character creation, the test foundation, the stateful character sheet, and accounts (Milestones 1 to 4) are done, and campaigns (Milestone 5) are next.
 
 ## Guiding Principles
 

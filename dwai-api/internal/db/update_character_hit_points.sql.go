@@ -15,7 +15,7 @@ const updateCharacterHitPoints = `-- name: UpdateCharacterHitPoints :one
 UPDATE characters
 SET hit_points = $2
 WHERE id = $1
-RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp
+RETURNING alignment_description, alignment_type, character_class_key, charisma, constitution, dexterity, gold, hit_points, id, intelligence, name, race_move_key, strength, wisdom, debilities, level, xp, owner_id
 `
 
 type UpdateCharacterHitPointsParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) UpdateCharacterHitPoints(ctx context.Context, arg UpdateCharac
 		&i.Debilities,
 		&i.Level,
 		&i.Xp,
+		&i.OwnerID,
 	)
 	return i, err
 }

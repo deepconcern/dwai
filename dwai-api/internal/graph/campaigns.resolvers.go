@@ -179,6 +179,8 @@ func (r *campaignMutationResolver) EndSession(ctx context.Context, obj *model.Ca
 		return nil, fmt.Errorf("failed to record End of Session for campaign with ID '%s': %w", id, err)
 	}
 
+	logCampaignActivity(ctx, r.DbPool, uuid, auth.UserFromContext(ctx), fmt.Sprintf("started End of Session %d", row.Number))
+
 	return sessionObject(&row), nil
 }
 

@@ -80,6 +80,25 @@ type BondInput struct {
 	Text string `json:"text"`
 }
 
+// A bonus the player can add to rolls: +N forward or +N ongoing. The player chooses which apply to each roll.
+type Bonus struct {
+	// Positive for a bonus, negative for a penalty.
+	Amount int32     `json:"amount"`
+	ID     string    `json:"id"`
+	Kind   BonusKind `json:"kind"`
+	// What it's for, e.g. 'Aid from Lux'.
+	Label string `json:"label"`
+}
+
+// Input for adding a bonus.
+type BonusInput struct {
+	// From -10 to 10, not 0.
+	Amount int32     `json:"amount"`
+	Kind   BonusKind `json:"kind"`
+	// 1 to 100 characters, trimmed.
+	Label string `json:"label"`
+}
+
 // A campaign: a GM and the players' characters.
 type Campaign struct {
 	// The characters in the campaign, oldest first.
@@ -98,6 +117,8 @@ type Campaign struct {
 	Name        string     `json:"name"`
 	// End of Session records, newest first.
 	Sessions []*CampaignSession `json:"sessions"`
+	// Chat messages the logged-in user may see, newest page first: up to limit (1 to 100) before the given message ID.
+	Messages *MessagePage `json:"messages"`
 }
 
 // A campaign's editable details.
@@ -132,6 +153,12 @@ type CampaignMutation struct {
 	RemoveCharacter *Campaign `json:"removeCharacter"`
 	// Changes the campaign's name and description (GM only).
 	Update *Campaign `json:"update"`
+	// Posts a chat message or whisper.
+	PostMessage *Message `json:"postMessage"`
+	// Posts a damage roll by the logged-in player's character.
+	PostDamage *Message `json:"postDamage"`
+	// Posts a move roll by the logged-in player's character.
+	PostRoll *Message `json:"postRoll"`
 }
 
 // Namespace for campaign queries.
@@ -228,6 +255,8 @@ type Character struct {
 	Xp int32 `json:"xp"`
 	// XP needed to level up: the current level + 7.
 	XpToLevel int32 `json:"xpToLevel"`
+	// Bonuses the player can add to rolls, oldest first.
+	Bonuses []*Bonus `json:"bonuses"`
 }
 
 // A playable character class as defined by the Dungeon World ruleset (e.g. Fighter, Wizard).
@@ -282,6 +311,10 @@ type CharacterMutation struct {
 	TakeDamage *Character `json:"takeDamage"`
 	// Changes the text of one of the character's bonds and returns the character.
 	UpdateBond *Character `json:"updateBond"`
+	// Adds a bonus to the character.
+	AddBonus *Character `json:"addBonus"`
+	// Removes one of the character's bonuses.
+	RemoveBonus *Character `json:"removeBonus"`
 }
 
 // Namespace for character queries.
@@ -345,6 +378,35 @@ type CreationOptionChoice struct {
 	Key string `json:"key"`
 	// Human-readable label for this choice (e.g. 'Flail').
 	Label string `json:"label"`
+}
+
+// A damage roll by the logged-in player's character. Give dice or diceTotal, not both.
+type DamageRollInput struct {
+	// Up to 10 dice of d4, d6, d8, d10, d12, or d20.
+	Dice []*DieInput `json:"dice,omitempty"`
+	// The total from physical dice, from 0 to 100.
+	DiceTotal *int32 `json:"diceTotal,omitempty"`
+	// Only the roller and the GM see it.
+	GmOnly bool `json:"gmOnly"`
+	// The damage expression, e.g. 'd10+1d4'. 1 to 60 characters.
+	Label string `json:"label"`
+	// Flat modifiers, e.g. +2.
+	Modifiers []*ModifierInput `json:"modifiers"`
+}
+
+// One die the app rolled.
+type Die struct {
+	// Shown but not counted, like the lower die of a best-of roll.
+	Dropped bool  `json:"dropped"`
+	Sides   int32 `json:"sides"`
+	Value   int32 `json:"value"`
+}
+
+// One die the app rolled.
+type DieInput struct {
+	Dropped bool  `json:"dropped"`
+	Sides   int32 `json:"sides"`
+	Value   int32 `json:"value"`
 }
 
 // The GM's answers to End of Session's three group questions.
@@ -474,6 +536,66 @@ type LookType struct {
 	Examples []string `json:"examples"`
 }
 
+// A message in a campaign's table chat.
+type Message struct {
+	// Who posted it: their character's name, or 'GM'.
+	AuthorName string `json:"authorName"`
+	// Whether the GM posted it (or made the change, for an activity line).
+	AuthorIsGm bool `json:"authorIsGm"`
+	// What was written, or an activity line's description. Empty for rolls.
+	Body string `json:"body"`
+	// The author's character (for chat and rolls) or the character an activity line is about. Null for the GM's own messages.
+	CharacterID *string `json:"characterId,omitempty"`
+	// The character's name, as for characterId.
+	CharacterName *string   `json:"characterName,omitempty"`
+	CreatedAt     time.Time `json:"createdAt"`
+	// Only the author and the GM see it.
+	GmOnly bool        `json:"gmOnly"`
+	ID     string      `json:"id"`
+	Kind   MessageKind `json:"kind"`
+	// Out of character: table talk, not the character speaking.
+	Ooc bool `json:"ooc"`
+	// Move and damage rolls only.
+	Roll *Roll `json:"roll,omitempty"`
+	// Whether the logged-in user posted it.
+	ViewerIsAuthor bool `json:"viewerIsAuthor"`
+	// A whisper's recipient: 'GM', or a character's name. Null for messages everyone sees.
+	WhisperTo *string `json:"whisperTo,omitempty"`
+}
+
+// A chat message. A whisper goes to the GM (from a player) or to one player's character (from the GM).
+type MessageInput struct {
+	// 1 to 2000 characters, trimmed.
+	Body string `json:"body"`
+	Ooc  bool   `json:"ooc"`
+	// GM only: whisper to this character's player.
+	WhisperToCharacterID *string `json:"whisperToCharacterId,omitempty"`
+	// Players only: whisper to the GM.
+	WhisperToGm bool `json:"whisperToGm"`
+}
+
+// A page of chat messages.
+type MessagePage struct {
+	// Whether there are older messages before this page.
+	HasMore bool `json:"hasMore"`
+	// Oldest first.
+	Messages []*Message `json:"messages"`
+}
+
+// A value the player chose to add to a roll: a stat, a debility, a bonus.
+type Modifier struct {
+	Label string `json:"label"`
+	Value int32  `json:"value"`
+}
+
+// A value to add to a roll.
+type ModifierInput struct {
+	// 1 to 60 characters.
+	Label string `json:"label"`
+	// From -20 to 20.
+	Value int32 `json:"value"`
+}
+
 // An action or ability a character can perform, as defined by the Dungeon World ruleset.
 type Move struct {
 	// Creation options the player must choose when taking this move, if any.
@@ -582,6 +704,41 @@ type RegisterInput struct {
 	Password string `json:"password"`
 }
 
+// A move roll or damage roll, with its full breakdown.
+type Roll struct {
+	// The result band. Move rolls only.
+	Band *RollBand `json:"band,omitempty"`
+	// The dice the app rolled. Null when the player entered a total.
+	Dice []*Die `json:"dice,omitempty"`
+	// The counted dice, or the total the player entered.
+	DiceTotal int32 `json:"diceTotal"`
+	// What was rolled, e.g. 'Hack and Slash', 'Roll +DEX', or 'd10+1d4'.
+	Label string `json:"label"`
+	// The modifiers the player chose, in order.
+	Modifiers []*Modifier `json:"modifiers"`
+	// The move rolled, for its outcome text. Null for generic and damage rolls.
+	Move   *Move      `json:"move,omitempty"`
+	Source RollSource `json:"source"`
+	// diceTotal plus every modifier.
+	Total int32 `json:"total"`
+}
+
+// A 2d6 move roll by the logged-in player's character. Give dice (the app rolled) or diceTotal (physical dice), not both.
+type RollInput struct {
+	// Exactly two six-sided dice.
+	Dice []*DieInput `json:"dice,omitempty"`
+	// The 2d6 total, from 2 to 12.
+	DiceTotal *int32 `json:"diceTotal,omitempty"`
+	// Only the roller and the GM see it.
+	GmOnly bool `json:"gmOnly"`
+	// What's rolled, e.g. 'Hack and Slash' or 'Roll +DEX'. 1 to 60 characters.
+	Label string `json:"label"`
+	// The modifiers the player chose. Nothing else is added.
+	Modifiers []*ModifierInput `json:"modifiers"`
+	// The move rolled, if any. It must be a basic, special, or class move.
+	MoveKey *string `json:"moveKey,omitempty"`
+}
+
 // A player's End of Session report for their character.
 type SessionReport struct {
 	Alignment *CheckedAnswer `json:"alignment"`
@@ -650,6 +807,9 @@ type StartingGear struct {
 	Default []*ItemOption `json:"default"`
 	// Pick-N option groups the player chooses from during character creation.
 	Options []*GearOptionGroup `json:"options"`
+}
+
+type Subscription struct {
 }
 
 // A tag describing a property of an equipment item. Simple tags (e.g. 'close', 'worn') have no quantity; quantified tags (e.g. cost, weight, armor) carry a numeric value.
@@ -759,6 +919,64 @@ func (e Ability) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// Whether a bonus applies to the next roll or until it's removed.
+type BonusKind string
+
+const (
+	// Applies to the next roll it fits. The player removes it once used.
+	BonusKindForward BonusKind = "FORWARD"
+	// Applies until the player removes it.
+	BonusKindOngoing BonusKind = "ONGOING"
+)
+
+var AllBonusKind = []BonusKind{
+	BonusKindForward,
+	BonusKindOngoing,
+}
+
+func (e BonusKind) IsValid() bool {
+	switch e {
+	case BonusKindForward, BonusKindOngoing:
+		return true
+	}
+	return false
+}
+
+func (e BonusKind) String() string {
+	return string(e)
+}
+
+func (e *BonusKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BonusKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BonusKind", str)
+	}
+	return nil
+}
+
+func (e BonusKind) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *BonusKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e BonusKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 // A named condition that gives -1 to one stat's modifier until it's removed.
 type Debility string
 
@@ -824,6 +1042,189 @@ func (e *Debility) UnmarshalJSON(b []byte) error {
 }
 
 func (e Debility) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// What a chat message is.
+type MessageKind string
+
+const (
+	// A sheet change, such as XP marked or damage taken, logged automatically.
+	MessageKindActivity MessageKind = "ACTIVITY"
+	// Something a player or the GM wrote.
+	MessageKindChat MessageKind = "CHAT"
+	// A damage roll.
+	MessageKindDamage MessageKind = "DAMAGE"
+	// A move roll (2d6 plus the modifiers the player chose).
+	MessageKindRoll MessageKind = "ROLL"
+)
+
+var AllMessageKind = []MessageKind{
+	MessageKindActivity,
+	MessageKindChat,
+	MessageKindDamage,
+	MessageKindRoll,
+}
+
+func (e MessageKind) IsValid() bool {
+	switch e {
+	case MessageKindActivity, MessageKindChat, MessageKindDamage, MessageKindRoll:
+		return true
+	}
+	return false
+}
+
+func (e MessageKind) String() string {
+	return string(e)
+}
+
+func (e *MessageKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MessageKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MessageKind", str)
+	}
+	return nil
+}
+
+func (e MessageKind) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *MessageKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e MessageKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// A 2d6 roll's result band (docs/game/rules.md § Rolls).
+type RollBand string
+
+const (
+	// 6 or less.
+	RollBandMiss RollBand = "MISS"
+	// 10 or more: a full success.
+	RollBandStrongHit RollBand = "STRONG_HIT"
+	// 7 to 9: a partial success.
+	RollBandWeakHit RollBand = "WEAK_HIT"
+)
+
+var AllRollBand = []RollBand{
+	RollBandMiss,
+	RollBandStrongHit,
+	RollBandWeakHit,
+}
+
+func (e RollBand) IsValid() bool {
+	switch e {
+	case RollBandMiss, RollBandStrongHit, RollBandWeakHit:
+		return true
+	}
+	return false
+}
+
+func (e RollBand) String() string {
+	return string(e)
+}
+
+func (e *RollBand) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RollBand(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RollBand", str)
+	}
+	return nil
+}
+
+func (e RollBand) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *RollBand) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e RollBand) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// How a roll was made.
+type RollSource string
+
+const (
+	// The app rolled, and each die is shown.
+	RollSourceApp RollSource = "APP"
+	// The player rolled physical dice and entered the total.
+	RollSourceManual RollSource = "MANUAL"
+)
+
+var AllRollSource = []RollSource{
+	RollSourceApp,
+	RollSourceManual,
+}
+
+func (e RollSource) IsValid() bool {
+	switch e {
+	case RollSourceApp, RollSourceManual:
+		return true
+	}
+	return false
+}
+
+func (e RollSource) String() string {
+	return string(e)
+}
+
+func (e *RollSource) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RollSource(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RollSource", str)
+	}
+	return nil
+}
+
+func (e RollSource) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *RollSource) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e RollSource) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

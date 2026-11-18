@@ -5,6 +5,7 @@ package graph
 import (
 	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/realtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,6 +15,8 @@ import (
 // here.
 
 type Resolver struct {
+	// Broker delivers new chat messages to subscriptions.
+	Broker           *realtime.Broker
 	CharacterClasses *models.CharacterClassMap
 	DbPool           *pgxpool.Pool
 	ItemTemplates    *models.ItemTemplateMap

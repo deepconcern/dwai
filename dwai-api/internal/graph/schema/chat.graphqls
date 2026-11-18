@@ -1,0 +1,211 @@
+"What a chat message is."
+enum MessageKind {
+  "A sheet change, such as XP marked or damage taken, logged automatically."
+  ACTIVITY
+  "Something a player or the GM wrote."
+  CHAT
+  "A damage roll."
+  DAMAGE
+  "A move roll (2d6 plus the modifiers the player chose)."
+  ROLL
+}
+
+"A 2d6 roll's result band (docs/game/rules.md § Rolls)."
+enum RollBand {
+  "6 or less."
+  MISS
+  "10 or more: a full success."
+  STRONG_HIT
+  "7 to 9: a partial success."
+  WEAK_HIT
+}
+
+"How a roll was made."
+enum RollSource {
+  "The app rolled, and each die is shown."
+  APP
+  "The player rolled physical dice and entered the total."
+  MANUAL
+}
+
+"Whether a bonus applies to the next roll or until it's removed."
+enum BonusKind {
+  "Applies to the next roll it fits. The player removes it once used."
+  FORWARD
+  "Applies until the player removes it."
+  ONGOING
+}
+
+"A bonus the player can add to rolls: +N forward or +N ongoing. The player chooses which apply to each roll."
+type Bonus {
+  "Positive for a bonus, negative for a penalty."
+  amount: Int!
+  id: ID!
+  kind: BonusKind!
+  "What it's for, e.g. 'Aid from Lux'."
+  label: String!
+}
+
+"One die the app rolled."
+type Die {
+  "Shown but not counted, like the lower die of a best-of roll."
+  dropped: Boolean!
+  sides: Int!
+  value: Int!
+}
+
+"A value the player chose to add to a roll: a stat, a debility, a bonus."
+type Modifier {
+  label: String!
+  value: Int!
+}
+
+"A move roll or damage roll, with its full breakdown."
+type Roll {
+  "The result band. Move rolls only."
+  band: RollBand
+  "The dice the app rolled. Null when the player entered a total."
+  dice: [Die!]
+  "The counted dice, or the total the player entered."
+  diceTotal: Int!
+  "What was rolled, e.g. 'Hack and Slash', 'Roll +DEX', or 'd10+1d4'."
+  label: String!
+  "The modifiers the player chose, in order."
+  modifiers: [Modifier!]!
+  "The move rolled, for its outcome text. Null for generic and damage rolls."
+  move: Move
+  source: RollSource!
+  "diceTotal plus every modifier."
+  total: Int!
+}
+
+"A message in a campaign's table chat."
+type Message {
+  "Who posted it: their character's name, or 'GM'."
+  authorName: String!
+  "Whether the GM posted it (or made the change, for an activity line)."
+  authorIsGm: Boolean!
+  "What was written, or an activity line's description. Empty for rolls."
+  body: String!
+  "The author's character (for chat and rolls) or the character an activity line is about. Null for the GM's own messages."
+  characterId: ID
+  "The character's name, as for characterId."
+  characterName: String
+  createdAt: Time!
+  "Only the author and the GM see it."
+  gmOnly: Boolean!
+  id: ID!
+  kind: MessageKind!
+  "Out of character: table talk, not the character speaking."
+  ooc: Boolean!
+  "Move and damage rolls only."
+  roll: Roll
+  "Whether the logged-in user posted it."
+  viewerIsAuthor: Boolean!
+  "A whisper's recipient: 'GM', or a character's name. Null for messages everyone sees."
+  whisperTo: String
+}
+
+"A page of chat messages."
+type MessagePage {
+  "Whether there are older messages before this page."
+  hasMore: Boolean!
+  "Oldest first."
+  messages: [Message!]!
+}
+
+"A value to add to a roll."
+input ModifierInput {
+  "1 to 60 characters."
+  label: String!
+  "From -20 to 20."
+  value: Int!
+}
+
+"One die the app rolled."
+input DieInput {
+  dropped: Boolean! = false
+  sides: Int!
+  value: Int!
+}
+
+"A chat message. A whisper goes to the GM (from a player) or to one player's character (from the GM)."
+input MessageInput {
+  "1 to 2000 characters, trimmed."
+  body: String!
+  ooc: Boolean! = false
+  "GM only: whisper to this character's player."
+  whisperToCharacterId: ID
+  "Players only: whisper to the GM."
+  whisperToGm: Boolean! = false
+}
+
+"A 2d6 move roll by the logged-in player's character. Give dice (the app rolled) or diceTotal (physical dice), not both."
+input RollInput {
+  "Exactly two six-sided dice."
+  dice: [DieInput!]
+  "The 2d6 total, from 2 to 12."
+  diceTotal: Int
+  "Only the roller and the GM see it."
+  gmOnly: Boolean! = false
+  "What's rolled, e.g. 'Hack and Slash' or 'Roll +DEX'. 1 to 60 characters."
+  label: String!
+  "The modifiers the player chose. Nothing else is added."
+  modifiers: [ModifierInput!]! = []
+  "The move rolled, if any. It must be a basic, special, or class move."
+  moveKey: ID
+}
+
+"A damage roll by the logged-in player's character. Give dice or diceTotal, not both."
+input DamageRollInput {
+  "Up to 10 dice of d4, d6, d8, d10, d12, or d20."
+  dice: [DieInput!]
+  "The total from physical dice, from 0 to 100."
+  diceTotal: Int
+  "Only the roller and the GM see it."
+  gmOnly: Boolean! = false
+  "The damage expression, e.g. 'd10+1d4'. 1 to 60 characters."
+  label: String!
+  "Flat modifiers, e.g. +2."
+  modifiers: [ModifierInput!]! = []
+}
+
+"Input for adding a bonus."
+input BonusInput {
+  "From -10 to 10, not 0."
+  amount: Int!
+  kind: BonusKind!
+  "1 to 100 characters, trimmed."
+  label: String!
+}
+
+extend type Campaign {
+  "Chat messages the logged-in user may see, newest page first: up to limit (1 to 100) before the given message ID."
+  messages(before: ID, limit: Int! = 50): MessagePage!
+}
+
+extend type CampaignMutation {
+  "Posts a chat message or whisper."
+  postMessage(id: ID!, input: MessageInput!): Message!
+  "Posts a damage roll by the logged-in player's character."
+  postDamage(id: ID!, input: DamageRollInput!): Message!
+  "Posts a move roll by the logged-in player's character."
+  postRoll(id: ID!, input: RollInput!): Message!
+}
+
+extend type Character {
+  "Bonuses the player can add to rolls, oldest first."
+  bonuses: [Bonus!]!
+}
+
+extend type CharacterMutation {
+  "Adds a bonus to the character."
+  addBonus(id: ID!, input: BonusInput!): Character!
+  "Removes one of the character's bonuses."
+  removeBonus(bonusId: ID!): Character!
+}
+
+type Subscription {
+  "New chat messages in a campaign the logged-in user belongs to, as they're posted. Only messages the user may see are sent."
+  campaignMessages(campaignId: ID!): Message!
+}

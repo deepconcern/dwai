@@ -49,6 +49,13 @@ func LoadersMiddleware(pool *pgxpool.Pool, next http.Handler) http.Handler {
 	})
 }
 
+// WithLoaders returns a context with fresh Loaders, for work outside a
+// request's lifetime, such as each message a subscription delivers (a
+// WebSocket connection's request context lasts as long as the connection).
+func WithLoaders(ctx context.Context, pool *pgxpool.Pool) context.Context {
+	return context.WithValue(ctx, loadersKey{}, NewLoaders(pool))
+}
+
 // LoadersFor returns the request's Loaders. It panics if the request didn't
 // go through LoadersMiddleware.
 func LoadersFor(ctx context.Context) *Loaders {

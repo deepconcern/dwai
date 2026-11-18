@@ -518,6 +518,8 @@ func (r *characterMutationResolver) AddBond(ctx context.Context, obj *model.Char
 		return nil, fmt.Errorf("failed to add a bond for character with ID '%s': %w", id, err)
 	}
 
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), "wrote a bond about "+target.Name)
+
 	return models.ToCharacterObject(character), nil
 }
 
@@ -542,6 +544,8 @@ func (r *characterMutationResolver) AdjustXp(ctx context.Context, obj *model.Cha
 	if err != nil {
 		return nil, fmt.Errorf("failed to update XP for character with ID '%s': %w", id, err)
 	}
+
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), xpText(delta))
 
 	return characterUpdated(ctx, row), nil
 }
@@ -738,6 +742,8 @@ func (r *characterMutationResolver) DeleteBond(ctx context.Context, obj *model.C
 		return nil, fmt.Errorf("failed to delete bond with ID '%s': %w", bondID, err)
 	}
 
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), "deleted a bond about "+bondTargetName(ctx, bond))
+
 	return models.ToCharacterObject(character), nil
 }
 
@@ -762,6 +768,8 @@ func (r *characterMutationResolver) Heal(ctx context.Context, obj *model.Charact
 	if err != nil {
 		return nil, fmt.Errorf("failed to update HP for character with ID '%s': %w", id, err)
 	}
+
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), fmt.Sprintf("healed %d HP, HP %d → %d", amount, character.HitPoints, hitPoints))
 
 	return characterUpdated(ctx, row), nil
 }
@@ -831,6 +839,8 @@ func (r *characterMutationResolver) LevelUp(ctx context.Context, obj *model.Char
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), levelUpText(class, row.Level, input))
+
 	return characterUpdated(ctx, row), nil
 }
 
@@ -853,6 +863,8 @@ func (r *characterMutationResolver) SetDebility(ctx context.Context, obj *model.
 	if err != nil {
 		return nil, fmt.Errorf("failed to update debilities for character with ID '%s': %w", id, err)
 	}
+
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), debilityText(debility, active))
 
 	return characterUpdated(ctx, row), nil
 }
@@ -971,6 +983,14 @@ func (r *characterMutationResolver) SubmitSessionReport(ctx context.Context, obj
 		return nil, fmt.Errorf("failed to add XP to character with ID '%s': %w", id, err)
 	}
 
+	// Logged in the same transaction: the report is one-way, so its log line
+	// shouldn't be lost.
+	var resolvedAbout string
+	if replacementTarget != nil {
+		resolvedAbout = bondTargetName(ctx, &resolved)
+	}
+	logActivity(ctx, tx, character, auth.UserFromContext(ctx), sessionReportText(session.Number, xp, report.Alignment.Checked, resolvedAbout))
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
@@ -1004,12 +1024,15 @@ func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.C
 		return nil, err
 	}
 
-	hitPoints := models.ApplyDamage(character.HitPoints, damage, models.Armor(items))
+	armor := models.Armor(items)
+	hitPoints := models.ApplyDamage(character.HitPoints, damage, armor)
 
 	row, err := db.New(r.DbPool).UpdateCharacterHitPoints(ctx, db.UpdateCharacterHitPointsParams{HitPoints: hitPoints, ID: uuid})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update HP for character with ID '%s': %w", id, err)
 	}
+
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), damageText(damage, armor, character.HitPoints, hitPoints))
 
 	return characterUpdated(ctx, row), nil
 }
@@ -1029,6 +1052,8 @@ func (r *characterMutationResolver) UpdateBond(ctx context.Context, obj *model.C
 	if err := db.New(r.DbPool).UpdateBondText(ctx, db.UpdateBondTextParams{ID: bond.ID, Text: trimmed}); err != nil {
 		return nil, fmt.Errorf("failed to update bond with ID '%s': %w", bondID, err)
 	}
+
+	logActivity(ctx, r.DbPool, character, auth.UserFromContext(ctx), "edited a bond about "+bondTargetName(ctx, bond))
 
 	return models.ToCharacterObject(character), nil
 }

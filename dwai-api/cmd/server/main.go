@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	server "github.com/deepconcern/dwai/dwai-api/internal"
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
@@ -17,6 +18,7 @@ import (
 
 const defaultHost = "0.0.0.0"
 const defaultPort = "5000"
+const defaultAppOrigins = "http://localhost:3000"
 
 // newLogger builds the default logger, using LOG_LEVEL (debug, info, warn,
 // error) if set.
@@ -94,7 +96,17 @@ func main() {
 	// HTTPS. It's off by default for local development over plain HTTP.
 	secureCookie, _ := strconv.ParseBool(os.Getenv("COOKIE_SECURE"))
 
-	handler := server.New(pool, gameData, server.Options{SecureCookie: secureCookie})
+	// APP_ORIGINS lists the web app's origins, comma-separated, which may open
+	// the chat's WebSocket.
+	appOrigins := os.Getenv("APP_ORIGINS")
+	if appOrigins == "" {
+		appOrigins = defaultAppOrigins
+	}
+
+	handler := server.New(pool, gameData, server.Options{
+		AllowedOrigins: strings.Split(appOrigins, ","),
+		SecureCookie:   secureCookie,
+	})
 
 	// Run the server
 

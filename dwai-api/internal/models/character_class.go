@@ -112,6 +112,20 @@ type CharacterClassModel struct {
 
 type CharacterClassMap map[string]CharacterClassModel
 
+// FindMove returns the class's race, starting, or advanced move with the
+// key, or nil.
+func (m *CharacterClassModel) FindMove(key string) *ClassMoveModel {
+	for _, moves := range [][]*ClassMoveModel{m.RaceMoves, m.StartingMoves, m.AdvancedMoves25, m.AdvancedMoves610} {
+		for _, move := range moves {
+			if move.Key == key {
+				return move
+			}
+		}
+	}
+
+	return nil
+}
+
 func (m *CharacterClassModel) ToObject() *model.CharacterClass {
 	// Build alignment templates
 

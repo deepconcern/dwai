@@ -215,6 +215,8 @@ models:
         resolver: true
       gm:
         resolver: true
+      messages:
+        resolver: true
       myCharacter:
         resolver: true
       sessions:
@@ -223,6 +225,12 @@ models:
   CampaignMutation:
     fields:
       create:
+        resolver: true
+      postDamage:
+        resolver: true
+      postMessage:
+        resolver: true
+      postRoll:
         resolver: true
       delete:
         resolver: true
@@ -248,6 +256,11 @@ models:
       mine:
         resolver: true
 
+  PartyMember:
+    fields:
+      bondCount:
+        resolver: true
+
   CampaignSession:
     fields:
       reports:
@@ -262,6 +275,8 @@ models:
       availableAdvancedMoves:
         resolver: true
       bonds:
+        resolver: true
+      bonuses:
         resolver: true
       campaign:
         resolver: true
@@ -312,6 +327,8 @@ models:
     fields:
       addBond:
         resolver: true
+      addBonus:
+        resolver: true
       adjustGold:
         resolver: true
       adjustXp:
@@ -323,6 +340,8 @@ models:
       heal:
         resolver: true
       levelUp:
+        resolver: true
+      removeBonus:
         resolver: true
       setDebility:
         resolver: true

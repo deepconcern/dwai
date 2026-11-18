@@ -55,7 +55,7 @@ func run() error {
 		addr = defaultAddr
 	}
 
-	srv := &http.Server{Addr: addr, Handler: server.New(pool, env.GameData, server.Options{})}
+	srv := &http.Server{Addr: addr, Handler: server.New(pool, env.GameData, server.Options{AllowedOrigins: []string{os.Getenv("E2E_APP_ORIGIN")}})}
 
 	go func() {
 		<-ctx.Done()

@@ -33,7 +33,7 @@ export default defineConfig({
       // container.
       command: `go build -tags e2e -o ${API_BINARY} ./cmd/e2eserver && exec ${API_BINARY}`,
       cwd: "../dwai-api",
-      env: { E2E_ADDR: `localhost:${API_PORT}` },
+      env: { E2E_ADDR: `localhost:${API_PORT}`, E2E_APP_ORIGIN: APP_URL },
       gracefulShutdown: { signal: "SIGTERM", timeout: 15 * 1000 },
       reuseExistingServer: false,
       timeout: SERVER_STARTUP_TIMEOUT,

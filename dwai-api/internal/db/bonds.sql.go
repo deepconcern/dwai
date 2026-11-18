@@ -11,6 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countBondsInvolvingCharacter = `-- name: CountBondsInvolvingCharacter :one
+SELECT count(*)::integer
+FROM bonds
+WHERE character_id = $1
+    OR target_character_id = $1
+`
+
+// Bonds written by or about a character: what leaving its campaign deletes.
+func (q *Queries) CountBondsInvolvingCharacter(ctx context.Context, characterID pgtype.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, countBondsInvolvingCharacter, characterID)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const deleteBond = `-- name: DeleteBond :exec
 DELETE FROM bonds
 WHERE id = $1

@@ -1,11 +1,16 @@
 package server
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
+	"net/url"
 	"runtime/debug"
+	"slices"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -17,6 +22,8 @@ import (
 	"github.com/deepconcern/dwai/dwai-api/internal/auth"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
+	"github.com/deepconcern/dwai/dwai-api/internal/realtime"
+	"github.com/gorilla/websocket"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -33,6 +40,19 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+// Hijack hands the connection over for a WebSocket upgrade, which needs the
+// underlying writer's http.Hijacker.
+func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := rw.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, errors.New("the response writer can't be hijacked")
+	}
+
+	rw.statusCode = http.StatusSwitchingProtocols
+
+	return hijacker.Hijack()
 }
 
 // loggingMiddleware logs one line per request once it completes. GraphQL
@@ -67,6 +87,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 // Options configures the server.
 type Options struct {
+	// AllowedOrigins are the web app's origins (e.g.
+	// "http://localhost:3000"), which may open the chat's WebSocket. A
+	// connection with no Origin header (not a browser), or from the API's own
+	// host, is always allowed.
+	AllowedOrigins []string
 	// SecureCookie sets the session cookie's Secure attribute. Leave it off
 	// for local development over plain HTTP.
 	SecureCookie bool
@@ -82,6 +107,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 
 	// Initialize the GraphQL server
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+		Broker:           realtime.NewBroker(pool),
 		CharacterClasses: gameData.CharacterClassMap,
 		DbPool:           pool,
 		ItemTemplates:    gameData.ItemTemplateMap,
@@ -112,6 +138,15 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 		return gqlerror.Errorf("internal server error")
 	})
 
+	// Subscriptions (the table chat) run over WebSocket, logged in by the
+	// session cookie on the upgrade request (see sessions.Middleware below).
+	// The keep-alive also tells clients the connection is still up.
+	srv.AddTransport(transport.Websocket{
+		KeepAlivePingInterval: 10 * time.Second,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool { return allowedOrigin(r, options.AllowedOrigins) },
+		},
+	})
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
@@ -139,6 +174,20 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 
 	return loggingMiddleware(cors.Default().Handler(mux))
 
+}
+
+// allowedOrigin reports whether a WebSocket upgrade may proceed. The session
+// cookie authenticates it, so a page on another site mustn't be able to open
+// one on a user's behalf.
+func allowedOrigin(r *http.Request, allowed []string) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" || slices.Contains(allowed, origin) {
+		return true
+	}
+
+	u, err := url.Parse(origin)
+
+	return err == nil && u.Host == r.Host
 }
 
 func NewPool(ctx context.Context, database_uri string) (*pgxpool.Pool, error) {

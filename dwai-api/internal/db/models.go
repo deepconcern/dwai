@@ -33,6 +33,21 @@ type Campaign struct {
 	Name        string
 }
 
+type CampaignMessage struct {
+	AuthorUserID         pgtype.UUID
+	Body                 string
+	CampaignID           pgtype.UUID
+	CharacterID          pgtype.UUID
+	CreatedAt            pgtype.Timestamptz
+	GmOnly               bool
+	ID                   pgtype.UUID
+	Kind                 string
+	Ooc                  bool
+	RecipientCharacterID pgtype.UUID
+	RecipientUserID      pgtype.UUID
+	Roll                 []byte
+}
+
 type CampaignSession struct {
 	CampaignID     pgtype.UUID
 	CreatedAt      pgtype.Timestamptz
@@ -66,6 +81,15 @@ type Character struct {
 	Xp                   int32
 	OwnerID              pgtype.UUID
 	CampaignID           pgtype.UUID
+}
+
+type CharacterBonus struct {
+	Amount      int32
+	CharacterID pgtype.UUID
+	CreatedAt   pgtype.Timestamptz
+	ID          pgtype.UUID
+	Kind        string
+	Label       string
 }
 
 type Item struct {

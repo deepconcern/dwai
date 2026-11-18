@@ -152,7 +152,8 @@ For GraphQL behavior, follow the integration tests in [`internal/graph/campaigns
 
 ### Code
 
-- Put rules in the API. The frontend may validate for a better UX, but the API enforces every rule too.
+- The API owns data integrity (a Fighter can't be given spells, a bond's target must be in the same campaign) and logs what players do. Judgment calls belong to the table: the app suggests (a stat, a debility, the bonuses that apply) and the player decides, like a pen-and-paper sheet. A few rules stay strict: the stat array, prepared-spell limits, and End of Session reasons. The frontend may validate for a better UX, but the API checks everything it enforces.
+- Make actions reversible (mark XP / unmark XP). An action that can't be undone directly is a one-way action: call it out in the spec, and confirm it in the UI when it loses data. The current list is in [docs/app/architecture.md](docs/app/architecture.md#the-honor-system).
 - Never hand-edit generated code; change the source and regenerate.
 - Alphabetize where order doesn't matter (fields, props, imports, lists), as the existing code does.
 - Game content keys are stable IDs stored in the database; don't rename them casually.

@@ -16,6 +16,9 @@ export const CharacterFragment = graphql(`
     availableAdvancedMoves {
       ...MoveFragment
     }
+    bonuses {
+      ...BonusFragment
+    }
     campaign {
       id
       isGm

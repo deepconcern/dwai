@@ -124,6 +124,10 @@ export const SessionReportDialog: FC<SessionReportDialogProps> = ({
         <h2 className="text-xl">
           End of Session {session.number}: {character.name}
         </h2>
+        <p className="text-gray-400 text-sm" role="note">
+          This can&apos;t be undone. If something&apos;s wrong afterwards,
+          unmark XP or rewrite a bond on your sheet.
+        </p>
 
         <section>
           <h3 className="font-semibold">The group&apos;s answers</h3>

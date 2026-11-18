@@ -179,6 +179,8 @@ func (r *campaignMutationResolver) EndSession(ctx context.Context, obj *model.Ca
 		return nil, fmt.Errorf("failed to record End of Session for campaign with ID '%s': %w", id, err)
 	}
 
+	logCampaignActivity(ctx, r.DbPool, uuid, auth.UserFromContext(ctx), fmt.Sprintf("started End of Session %d", row.Number))
+
 	return sessionObject(&row), nil
 }
 
@@ -420,6 +422,21 @@ func (r *campaignSessionResolver) Reports(ctx context.Context, obj *model.Campai
 	return reports, nil
 }
 
+// BondCount is the resolver for the bondCount field.
+func (r *partyMemberResolver) BondCount(ctx context.Context, obj *model.PartyMember) (int32, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := db.New(r.DbPool).CountBondsInvolvingCharacter(ctx, uuid)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count bonds for character with ID '%s': %w", obj.ID, err)
+	}
+
+	return count, nil
+}
+
 // Campaign returns CampaignResolver implementation.
 func (r *Resolver) Campaign() CampaignResolver { return &campaignResolver{r} }
 
@@ -432,7 +449,11 @@ func (r *Resolver) CampaignQuery() CampaignQueryResolver { return &campaignQuery
 // CampaignSession returns CampaignSessionResolver implementation.
 func (r *Resolver) CampaignSession() CampaignSessionResolver { return &campaignSessionResolver{r} }
 
+// PartyMember returns PartyMemberResolver implementation.
+func (r *Resolver) PartyMember() PartyMemberResolver { return &partyMemberResolver{r} }
+
 type campaignResolver struct{ *Resolver }
 type campaignMutationResolver struct{ *Resolver }
 type campaignQueryResolver struct{ *Resolver }
 type campaignSessionResolver struct{ *Resolver }
+type partyMemberResolver struct{ *Resolver }

@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { Browser, Page, expect } from "@playwright/test";
 
 /** The password every test account uses. */
 export const TEST_PASSWORD = "correct horse battery staple";
@@ -112,4 +112,29 @@ export const createWizard = async (page: Page, name: string) => {
   await page.getByRole("button", { name: "Create Character" }).click();
 
   await expect(page.getByRole("heading", { exact: true, name })).toBeVisible();
+};
+
+/** A logged-in page in its own browser context, so each user has a cookie. */
+export const newUser = async (browser: Browser, displayName: string) => {
+  const page = await (await browser.newContext()).newPage();
+  await registerUser(page, displayName);
+
+  return page;
+};
+
+/** Joins the campaign at the invite path with the named character. */
+export const joinWith = async (
+  page: Page,
+  invitePath: string,
+  name: string,
+) => {
+  await page.goto(invitePath);
+  await expect(
+    page.getByRole("heading", { name: "Join The Lost Mines" }),
+  ).toBeVisible();
+  await page.getByLabel("Character").selectOption({ label: name });
+  await page.getByRole("button", { name: "Join" }).click();
+  await expect(
+    page.getByRole("heading", { name: "The Lost Mines" }),
+  ).toBeVisible();
 };

@@ -1,27 +1,6 @@
-import { Browser, Page, expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { createFighter, registerUser } from "./helpers";
-
-/** A logged-in page in its own browser context, so each user has a cookie. */
-const newUser = async (browser: Browser, displayName: string) => {
-  const page = await (await browser.newContext()).newPage();
-  await registerUser(page, displayName);
-
-  return page;
-};
-
-/** Joins the campaign at the invite path with the named character. */
-const joinWith = async (page: Page, invitePath: string, name: string) => {
-  await page.goto(invitePath);
-  await expect(
-    page.getByRole("heading", { name: "Join The Lost Mines" }),
-  ).toBeVisible();
-  await page.getByLabel("Character").selectOption({ label: name });
-  await page.getByRole("button", { name: "Join" }).click();
-  await expect(
-    page.getByRole("heading", { name: "The Lost Mines" }),
-  ).toBeVisible();
-};
+import { createFighter, joinWith, newUser } from "./helpers";
 
 test("a GM runs a campaign through End of Session", async ({ browser }) => {
   // The GM starts a campaign and shares the invite link.

@@ -24,7 +24,7 @@ Steps 4 and 5 of the [workflow](../../../docs/workflow/README.md).
 1. Branch from up-to-date `main` (for example `spec-<issue number>-<short-name>`), unless you were given a branch.
 2. Follow the spec. Read `AGENTS.md` for the app you're in, and `docs/game/` for any rules. Use [`add-graphql-field`](../add-graphql-field/SKILL.md) and [`add-db-migration`](../add-db-migration/SKILL.md) when they apply.
 3. If the spec turns out to be wrong or incomplete, stop and ask (a comment on the issue and a message to Wyatt). Don't silently change scope.
-4. Write tests for each requirement. Never skip or weaken a test to pass.
+4. Test first: turn each Given/When/Then acceptance criterion into a test, see it fail, then implement until it passes. Follow [Testing](../../../AGENTS.md#testing). Never skip or weaken a test to pass.
 5. Update `ROADMAP.md` if the work checks off roadmap items.
 6. Run `make check`. If something can't run in your environment (for example Docker), note it in the PR.
 7. Self-review with [`review-pr`](../review-pr/SKILL.md).

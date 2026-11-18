@@ -16,7 +16,7 @@ Step 2 of the [workflow](../../../docs/workflow/README.md). The output is a GitH
    - **Game Rules**: the rules involved, with links into `docs/game/`. If you found a gap or error in `docs/game/`, include fixing it in the task breakdown.
    - **Design**: concrete schema, migration, `internal/models`, and frontend changes. For AI features, name the concept (skill, MCP tool, RAG, eval) and why it fits (see `docs/app/ai.md`).
    - **Task Breakdown**: how the work splits. If it needs more than one agent, plan one sub-issue per independent slice that doesn't edit the same files as another (for example API schema and resolvers; frontend; tests and fixtures).
-   - **Acceptance Criteria**: how Wyatt verifies it, including the tests.
+   - **Acceptance Criteria**: one Given/When/Then scenario per behavior that matters (happy path, named edge cases, user-facing errors), concrete enough that each becomes a test. See [Testing](../../../AGENTS.md#testing).
 3. **Create sub-issues** only if the breakdown needs more than one agent. Link them to the parent spec issue; the parent stays the spec of record.
 4. **Tell Wyatt in chat** that the spec is ready, with the link, and that you're waiting for his approval.
 

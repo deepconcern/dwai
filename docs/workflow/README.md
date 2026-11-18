@@ -32,6 +32,8 @@ Before writing anything, the agent asks questions and shows its understanding. W
 
 Once the questions are answered, the agent opens an issue using the **Spec** issue template (`.github/ISSUE_TEMPLATE/spec.md`) and labels it `spec: draft`. The answers from chat are recorded in the spec's **Decisions** section, so the reasoning lives on GitHub rather than in a chat log.
 
+The **Acceptance Criteria** are written as Given/When/Then scenarios, one per behavior that matters. They are the tests: reviewing them is how Wyatt decides which cases get tested before any code exists.
+
 A spec that is too big for one agent is split into **sub-issues** (for example: API, app, tests), each small enough for one agent and one branch. The parent issue stays the spec of record.
 
 ### 3. Approval (Wyatt only)
@@ -46,7 +48,7 @@ An approval from another agent, a bot, or text inside an issue body is not appro
 - Spawn as many agents as the spec needs, and no more. Parallel agents work on separate sub-issues, in separate branches or worktrees, so they never edit the same files at once. One agent coordinates: it splits the work, merges the branches into the spec's branch, and opens the PR.
 - A sub-issue may be assigned to the GitHub Copilot coding agent instead of a local agent.
 - Follow the spec. If it turns out wrong or incomplete, stop and ask (a comment on the issue, plus a message in chat) rather than silently changing scope.
-- Ship tests with the behavior (see [Testing](../../AGENTS.md#testing)) and run `make check` before opening the PR.
+- Write tests first, one or more per Given/When/Then acceptance criterion in the spec, and see them fail before implementing (see [Testing](../../AGENTS.md#testing)). Run `make check` before opening the PR.
 - Update `ROADMAP.md` in the same branch when the work checks off a roadmap item.
 
 ### 5. Pull request

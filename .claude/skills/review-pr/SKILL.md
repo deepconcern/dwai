@@ -12,7 +12,7 @@ Follow the checklist in [docs/workflow/reviewing.md](../../../docs/workflow/revi
 3. Rules are computed in `dwai-api/internal/models`, not only in the frontend.
 4. Generated code is regenerated (gqlgen, sqlc, `dwai-app/gql/`), not hand-edited.
 5. No merged migration was edited; new ones have a working `.down.sql`.
-6. New behavior has tests; no test was skipped or weakened.
+6. New behavior has tests: one per acceptance criterion, each would fail if its behavior broke, none assumes what the spec doesn't say. No test was skipped or weakened.
 7. Per-app conventions in each `AGENTS.md` are followed.
 8. Inputs are validated server-side; for AI features, chat is treated as untrusted.
 

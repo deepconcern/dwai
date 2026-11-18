@@ -653,3 +653,34 @@ func TestStrangersCantSubscribe(t *testing.T) {
 		t.Fatalf("subscription error = %v, want not found", err)
 	}
 }
+
+func TestPartyMemberBondCount(t *testing.T) {
+	t.Parallel()
+
+	tb := newTable(t)
+
+	// Given Ana wrote a bond about Bo and Bo wrote one about Ana, each is
+	// involved in both, which is what leaving the campaign would delete.
+	addBond(t, tb.ana, tb.anaID, tb.boID, "Bo has my back.")
+	addBond(t, tb.bo, tb.boID, tb.anaID, "Ana owes me.")
+
+	var resp struct {
+		Campaigns struct {
+			ByID struct {
+				Characters []struct {
+					Name      string
+					BondCount int32
+				}
+			}
+		}
+	}
+	if err := tb.gm.Post(`query ($id: ID!) { campaigns { byId(id: $id) { characters { name bondCount } } } }`, &resp, client.Var("id", tb.campaign.ID)); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range resp.Campaigns.ByID.Characters {
+		if c.BondCount != 2 {
+			t.Errorf("%s bondCount = %d, want 2", c.Name, c.BondCount)
+		}
+	}
+}

@@ -256,6 +256,11 @@ models:
       mine:
         resolver: true
 
+  PartyMember:
+    fields:
+      bondCount:
+        resolver: true
+
   CampaignSession:
     fields:
       reports:

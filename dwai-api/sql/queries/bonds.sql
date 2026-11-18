@@ -34,3 +34,10 @@ WHERE id = $1;
 DELETE FROM bonds
 WHERE character_id = $1
     OR target_character_id = $1;
+
+-- name: CountBondsInvolvingCharacter :one
+-- Bonds written by or about a character: what leaving its campaign deletes.
+SELECT count(*)::integer
+FROM bonds
+WHERE character_id = $1
+    OR target_character_id = $1;

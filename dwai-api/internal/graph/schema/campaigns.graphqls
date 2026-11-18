@@ -22,6 +22,8 @@ type Campaign {
 type PartyMember {
   "The alignment type (e.g. 'Good')."
   alignmentType: String!
+  "Bonds written by or about the character (resolved ones too), which leaving the campaign deletes."
+  bondCount: Int!
   characterClass: CharacterClass!
   hitPoints: Int!
   id: ID!

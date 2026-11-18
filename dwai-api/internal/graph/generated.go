@@ -47,6 +47,7 @@ type ResolverRoot interface {
 	LookTypeQuery() LookTypeQueryResolver
 	MoveQuery() MoveQueryResolver
 	Mutation() MutationResolver
+	PartyMember() PartyMemberResolver
 	Query() QueryResolver
 	SpellMutation() SpellMutationResolver
 	SpellQuery() SpellQueryResolver
@@ -367,6 +368,7 @@ type ComplexityRoot struct {
 
 	PartyMember struct {
 		AlignmentType  func(childComplexity int) int
+		BondCount      func(childComplexity int) int
 		CharacterClass func(childComplexity int) int
 		HitPoints      func(childComplexity int) int
 		ID             func(childComplexity int) int
@@ -577,6 +579,9 @@ type MutationResolver interface {
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
 	Items(ctx context.Context) (*model.ItemMutation, error)
 	Spells(ctx context.Context) (*model.SpellMutation, error)
+}
+type PartyMemberResolver interface {
+	BondCount(ctx context.Context, obj *model.PartyMember) (int32, error)
 }
 type QueryResolver interface {
 	APIVersion(ctx context.Context) (string, error)
@@ -2043,6 +2048,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.PartyMember.AlignmentType(childComplexity), true
+	case "PartyMember.bondCount":
+		if e.ComplexityRoot.PartyMember.BondCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyMember.BondCount(childComplexity), true
 	case "PartyMember.characterClass":
 		if e.ComplexityRoot.PartyMember.CharacterClass == nil {
 			break
@@ -3150,6 +3161,8 @@ func (ec *executionContext) childFields_PartyMember(ctx context.Context, field g
 	switch field.Name {
 	case "alignmentType":
 		return ec.fieldContext_PartyMember_alignmentType(ctx, field)
+	case "bondCount":
+		return ec.fieldContext_PartyMember_bondCount(ctx, field)
 	case "characterClass":
 		return ec.fieldContext_PartyMember_characterClass(ctx, field)
 	case "hitPoints":
@@ -10183,6 +10196,29 @@ func (ec *executionContext) _PartyMember_alignmentType(ctx context.Context, fiel
 }
 func (ec *executionContext) fieldContext_PartyMember_alignmentType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("PartyMember", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _PartyMember_bondCount(ctx context.Context, field graphql.CollectedField, obj *model.PartyMember) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartyMember_bondCount(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.PartyMember().BondCount(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartyMember_bondCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartyMember", field, true, true, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _PartyMember_characterClass(ctx context.Context, field graphql.CollectedField, obj *model.PartyMember) (ret graphql.Marshaler) {
@@ -18404,47 +18440,83 @@ func (ec *executionContext) _PartyMember(ctx context.Context, sel ast.SelectionS
 		case "alignmentType":
 			out.Values[i] = ec._PartyMember_alignmentType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "bondCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PartyMember_bondCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "characterClass":
 			out.Values[i] = ec._PartyMember_characterClass(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "hitPoints":
 			out.Values[i] = ec._PartyMember_hitPoints(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "id":
 			out.Values[i] = ec._PartyMember_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "looks":
 			out.Values[i] = ec._PartyMember_looks(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "maxHitPoints":
 			out.Values[i] = ec._PartyMember_maxHitPoints(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._PartyMember_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "owner":
 			out.Values[i] = ec._PartyMember_owner(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "raceMove":
 			out.Values[i] = ec._PartyMember_raceMove(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

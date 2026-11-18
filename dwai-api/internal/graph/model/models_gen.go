@@ -671,7 +671,9 @@ type NewLookInput struct {
 // What every campaign member sees of a character: no full sheet.
 type PartyMember struct {
 	// The alignment type (e.g. 'Good').
-	AlignmentType  string          `json:"alignmentType"`
+	AlignmentType string `json:"alignmentType"`
+	// Bonds written by or about the character (resolved ones too), which leaving the campaign deletes.
+	BondCount      int32           `json:"bondCount"`
 	CharacterClass *CharacterClass `json:"characterClass"`
 	HitPoints      int32           `json:"hitPoints"`
 	ID             string          `json:"id"`

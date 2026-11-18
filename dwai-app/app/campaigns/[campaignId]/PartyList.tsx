@@ -47,7 +47,8 @@ export type PartyListProps = {
 /**
  * The party: each character's summary. The GM can open full sheets and
  * remove characters; a player can leave with their own character. Either
- * way the character is kept, and bonds by or about it are deleted.
+ * way the character is kept, and bonds by or about it are deleted, which
+ * can't be undone, so both ask for confirmation first.
  */
 export const PartyList: FC<PartyListProps> = ({
   campaignId,
@@ -57,6 +58,10 @@ export const PartyList: FC<PartyListProps> = ({
   onChanged,
 }) => {
   const router = useRouter();
+  const [confirming, setConfirming] = useState<{
+    action: "leave" | "remove";
+    characterId: string;
+  } | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [leave] = useMutation(LEAVE_CAMPAIGN_MUTATION);
   const [removeCharacter] = useMutation(REMOVE_CHARACTER_MUTATION);
@@ -65,6 +70,7 @@ export const PartyList: FC<PartyListProps> = ({
     setErrors([]);
     try {
       await leave({ variables: { characterId } });
+      setConfirming(null);
       router.push("/campaigns");
     } catch (error) {
       setErrors(errorMessages(error));
@@ -75,6 +81,7 @@ export const PartyList: FC<PartyListProps> = ({
     setErrors([]);
     try {
       await removeCharacter({ variables: { characterId, id: campaignId } });
+      setConfirming(null);
       onChanged();
     } catch (error) {
       setErrors(errorMessages(error));
@@ -119,14 +126,63 @@ export const PartyList: FC<PartyListProps> = ({
                 </p>
               </div>
               {isGm && (
-                <Button onClick={() => handleRemove(character.id)}>
+                <Button
+                  onClick={() =>
+                    setConfirming({
+                      action: "remove",
+                      characterId: character.id,
+                    })
+                  }
+                >
                   Remove
                 </Button>
               )}
               {character.id === myCharacterId && (
-                <Button onClick={() => handleLeave(character.id)}>
+                <Button
+                  onClick={() =>
+                    setConfirming({
+                      action: "leave",
+                      characterId: character.id,
+                    })
+                  }
+                >
                   Leave Campaign
                 </Button>
+              )}
+              {confirming?.characterId === character.id && (
+                <div
+                  aria-label="Are you sure?"
+                  className="basis-full border border-red-500 flex flex-col gap-2 p-2 rounded"
+                  role="alertdialog"
+                >
+                  <p>
+                    Are you sure?{" "}
+                    {confirming.action === "leave"
+                      ? `Leaving takes ${character.name} out of the campaign`
+                      : `Removing takes ${character.name} out of the campaign`}{" "}
+                    and deletes{" "}
+                    {character.bondCount === 1
+                      ? "1 bond"
+                      : `${character.bondCount} bonds`}{" "}
+                    written by or about {character.name}. This can&apos;t be
+                    undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setConfirming(null)}>Cancel</Button>
+                    <Button
+                      className="bg-red-600"
+                      onClick={() =>
+                        confirming.action === "leave"
+                          ? handleLeave(character.id)
+                          : handleRemove(character.id)
+                      }
+                    >
+                      {confirming.action === "leave"
+                        ? "Yes, leave"
+                        : `Yes, remove ${character.name}`}
+                    </Button>
+                  </div>
+                </div>
               )}
             </li>
           ))}

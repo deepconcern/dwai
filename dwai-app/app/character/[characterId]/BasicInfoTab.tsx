@@ -10,6 +10,7 @@ import { CharacterFragmentFragment } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
 
 import { BondsSection } from "./BondsSection";
+import { BonusesSection } from "./BonusesSection";
 import { ExperienceSection } from "./ExperienceSection";
 import { HealthSection } from "./HealthSection";
 
@@ -35,6 +36,7 @@ export const BasicInfoTab: FC<BasicInfoProps> = ({ character }) => {
   return (
     <div className="flex flex-col space-y-4">
       <ExperienceSection character={character} />
+      <BonusesSection character={character} />
       <div className="flex space-x-4">
         <HealthSection character={character} />
         <Section className="flex-1" title="Damage">

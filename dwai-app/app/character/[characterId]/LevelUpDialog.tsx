@@ -82,6 +82,9 @@ export const LevelUpDialog: FC<LevelUpDialogProps> = ({
         onSubmit={handleSubmit}
       >
         <h2 className="text-xl">Level up to {character.level + 1}</h2>
+        <p className="text-gray-400 text-sm" role="note">
+          This can&apos;t be undone.
+        </p>
         <Dropdown
           aria-label="Ability to raise"
           items={abilityOptions}

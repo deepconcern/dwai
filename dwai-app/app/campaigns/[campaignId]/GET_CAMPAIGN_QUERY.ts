@@ -6,6 +6,7 @@ export const GET_CAMPAIGN_QUERY = graphql(`
       byId(id: $id) {
         characters {
           alignmentType
+          bondCount
           characterClass {
             name
           }
@@ -34,6 +35,7 @@ export const GET_CAMPAIGN_QUERY = graphql(`
         myCharacter {
           id
           ...CampaignCharacterFragment
+          ...CharacterFragment
         }
         name
         sessions {
@@ -69,6 +71,14 @@ export const GET_CAMPAIGN_QUERY = graphql(`
             xpAwarded
           }
         }
+      }
+    }
+    moves {
+      basicMoves: byType(type: "basic") {
+        ...MoveFragment
+      }
+      specialMoves: byType(type: "special") {
+        ...MoveFragment
       }
     }
   }

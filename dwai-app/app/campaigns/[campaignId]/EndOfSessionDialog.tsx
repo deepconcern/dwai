@@ -77,6 +77,10 @@ export const EndOfSessionDialog: FC<EndOfSessionDialogProps> = ({
         onSubmit={handleSubmit}
       >
         <h2 className="text-xl">End of Session</h2>
+        <p className="text-gray-400 text-sm" role="note">
+          This can&apos;t be undone. XP can still be marked or unmarked on each
+          sheet afterwards.
+        </p>
         <p>
           Answer as a group. Each &quot;yes&quot; is 1 XP for every character.
           Players then report their alignment and bonds. Any report still open

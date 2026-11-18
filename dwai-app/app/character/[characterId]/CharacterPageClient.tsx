@@ -7,6 +7,7 @@ import { FC, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { PageTitle } from "@/components/PageTitle";
+import { RollPanel } from "@/components/RollPanel";
 import { SessionReportDialog } from "@/components/SessionReportDialog";
 import { CampaignCharacterFragment } from "@/fragments/CampaignCharacterFragment";
 import { CharacterFragment } from "@/fragments/CharacterFragment";
@@ -82,6 +83,15 @@ export const CharacterPageClient: FC<CharacterPageClientProps> = ({
 
       <div className="flex flex-col space-y-4">
         <AbilitiesSection character={character} />
+
+        {character.viewerIsOwner && character.campaign && (
+          <RollPanel
+            basicMoves={data.moves.basicMoves}
+            campaignId={character.campaign.id}
+            character={character}
+            specialMoves={data.moves.specialMoves}
+          />
+        )}
 
         <CharacterTabs
           basicMoves={data.moves.basicMoves}

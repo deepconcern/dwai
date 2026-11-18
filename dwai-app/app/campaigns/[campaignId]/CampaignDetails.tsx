@@ -134,8 +134,8 @@ export const CampaignDetails: FC<CampaignDetailsProps> = ({ campaign }) => {
             {confirmingDelete ? (
               <>
                 <span>
-                  Delete this campaign? Characters are kept, but bonds and
-                  sessions are lost.
+                  Delete this campaign? Characters are kept, but bonds,
+                  sessions, and the chat are lost. This can&apos;t be undone.
                 </span>
                 <Button disabled={deleting} onClick={handleDelete}>
                   Yes, delete

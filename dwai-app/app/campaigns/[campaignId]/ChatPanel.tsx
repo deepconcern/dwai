@@ -91,6 +91,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ campaign }) => {
   const [whisperTo, setWhisperTo] = useState("");
   const listRef = useRef<HTMLOListElement>(null);
   const stickToBottom = useRef(true);
+  const subscriptionFailed = useRef(false);
 
   const variables = { id: campaign.id };
   const { client, data, fetchMore, loading, refetch } = useQuery(
@@ -101,7 +102,15 @@ export const ChatPanel: FC<ChatPanelProps> = ({ campaign }) => {
     POST_MESSAGE_MUTATION,
   );
 
-  useSubscription(CAMPAIGN_MESSAGES_SUBSCRIPTION, {
+  const { restart } = useSubscription(CAMPAIGN_MESSAGES_SUBSCRIPTION, {
+    // The API ends the subscription of a reader who fell too far behind.
+    // Start again and reload what was missed, unless it ended in an error
+    // (such as being removed from the campaign), which a retry won't fix.
+    onComplete: () => {
+      if (subscriptionFailed.current) return;
+      restart();
+      void refetch();
+    },
     onData: ({ data: { data: received } }) => {
       if (!received) return;
       client.cache.updateQuery(
@@ -125,6 +134,9 @@ export const ChatPanel: FC<ChatPanelProps> = ({ campaign }) => {
             },
           },
       );
+    },
+    onError: () => {
+      subscriptionFailed.current = true;
     },
     variables: { campaignId: campaign.id },
   });

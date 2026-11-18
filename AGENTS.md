@@ -85,6 +85,71 @@ Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats,
 
 New behavior ships with tests for it. Pure rules logic gets unit tests; GraphQL behavior gets API integration tests; frontend logic gets `bun test` tests. Never skip, disable, or loosen a test to get a green build. Per-app testing conventions are in each app's `AGENTS.md`.
 
+A good test reads like a rule from the spec, and fails when that rule breaks. How to get there:
+
+- **Write the tests first, from the spec.** Each Given/When/Then acceptance criterion in the spec issue becomes at least one test, written and failing before the implementation. Tests derived from the code only restate the code, including its mistakes.
+- **Test only the cases that matter:** the happy path, the edge cases the spec or `docs/game/` names (band edges, empty, maximum), and the errors a user can actually hit. Don't add a test because a branch exists, and don't test Go, React, gqlgen, or other library behavior.
+- **Test behavior through the public interface.** Call the exported function or send the GraphQL request, and assert on what a caller sees. Don't assert on internals, call order, or private state.
+- **Don't mock code we own.** Use the real `internal/models` logic and a real database (the integration tests already give each test its own). Fake only what's outside our control, such as the clock or randomness, and only when the test needs it.
+- **One behavior per test, laid out Arrange, Act, Assert.** The test name states the rule (`"subtracts 1 when the ability's debility is active"`), not the method. Keep values literal and local, so a reader can check them against the rulebook without running anything.
+- **No unstated assumptions.** Every expected value must come from the spec, `docs/game/`, or the test's own setup. If you'd have to guess what the right answer is, ask rather than encoding the guess.
+- **Go: table-driven tests** with `t.Run` when several inputs share one behavior. **App: `describe` per function, `test` per rule.**
+- **Fewer, clearer tests beat coverage.** Delete a test that duplicates another or would still pass with the behavior broken.
+
+Before calling the work done, review each test and ask: *would this fail if the behavior broke?* and *does it assume anything the spec doesn't say?* Fix or delete any test that fails either question.
+
+Models to copy, from [`internal/models/campaign_test.go`](dwai-api/internal/models/campaign_test.go) (each case is a rule from the spec, checked through the exported function):
+
+```go
+func TestValidateCampaignInput(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		input      models.CampaignInput
+		want       models.CampaignInput
+		wantFields []string
+	}{
+		{"valid, trimmed", models.CampaignInput{Name: "  The Lost Mines ", Description: " Goblins. "}, models.CampaignInput{Name: "The Lost Mines", Description: "Goblins."}, nil},
+		{"blank name", models.CampaignInput{Name: "   "}, models.CampaignInput{}, []string{"name"}},
+		{"long name", models.CampaignInput{Name: strings.Repeat("a", 101)}, models.CampaignInput{Name: strings.Repeat("a", 101)}, []string{"name"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, errs := models.ValidateCampaignInput(tt.input)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("input (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.wantFields, fields(errs), cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("error fields (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+```
+
+and [`dwai-app/lib/debilities.test.ts`](dwai-app/lib/debilities.test.ts) (one rule per test, named as the rule):
+
+```ts
+describe("effectiveModifier", () => {
+  test("subtracts 1 when the ability's debility is active", () => {
+    expect(effectiveModifier("STRENGTH", 2, ["WEAK"])).toBe(1);
+  });
+
+  test("ignores debilities for other abilities", () => {
+    expect(effectiveModifier("STRENGTH", 2, ["SHAKY"])).toBe(2);
+  });
+
+  test("can take a modifier below -3", () => {
+    expect(effectiveModifier("CHARISMA", -3, ["SCARRED"])).toBe(-4);
+  });
+});
+```
+
+For GraphQL behavior, follow the integration tests in [`internal/graph/campaigns_test.go`](dwai-api/internal/graph/campaigns_test.go), which act as real users through the server handler.
+
 ### Code
 
 - Put rules in the API. The frontend may validate for a better UX, but the API enforces every rule too.

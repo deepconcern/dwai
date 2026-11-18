@@ -51,7 +51,12 @@ labels: ["spec: draft"]
 
 ## Acceptance Criteria
 
-<!-- How Wyatt will verify it. Include the tests that will prove each requirement. -->
+<!--
+One scenario per behavior that matters, as Given / When / Then. Each becomes a test, written (and failing) before the implementation.
+Cover the happy path, the edge cases worth naming, and the errors a user can hit. Leave out cases nobody needs.
+Example:
+- [ ] Given a Fighter with Weak, when the sheet shows Strength 16, then the modifier reads +1.
+-->
 
+- [ ] Given …, when …, then …
 - [ ] `make check` passes
-- [ ]

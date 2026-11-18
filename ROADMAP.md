@@ -2,14 +2,15 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-11-17)
+## Status (2026-11-18)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
 - **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
 - **Done**: Milestone 3 (Character Sheet), spec #4 — HP with damage and healing, armor, load, gold, debilities, inventory, XP and level up with advanced moves, and Wizard and Cleric spells (spellbook, preparation within the level limit, forgotten spells). Derived stats and rules live in the API.
 - **Done**: Milestone 4 (Accounts & Auth), spec #12 — local accounts (email and password, argon2id), server-side sessions in an HttpOnly cookie, characters owned by a user with the API enforcing ownership, and login/register pages with auth-aware navigation.
 - **Done**: Milestone 5 (Campaigns), spec #14 — campaigns run by a GM, reusable invite links, one character per player, bonds about other party members, the GM's read-only view of every sheet with HP and XP adjustments, and End of Session (group questions, alignment, and bond resolution, each with a logged reason) awarding XP.
-- **Next**: Milestone 6 (Table Chat & Rolls).
+- **Done**: Milestone 6 (Table Chat & Rolls), spec #16 — a live table chat (WebSocket subscriptions with Postgres LISTEN/NOTIFY), whispers and GM-only rolls, move and damage rolls with a full breakdown (rolled by the app or entered from physical dice), named forward/ongoing bonuses, a Mark XP button on a miss, and an activity log of sheet changes. The honor system is now the rule: the API keeps data integrity and logs; players decide.
+- **Next**: Milestone 7 (Monsters).
 
 ---
 
@@ -61,16 +62,16 @@ Every later milestone needs to know who owns what.
 - [x] The GM views every character sheet in the campaign (read-only), and can adjust HP/XP if desired
 - [x] End of Session flow: alignment, bonds, and group questions → XP
 
-### 6. Table Chat & Rolls ← next
+### 6. Table Chat & Rolls ✓
 
 The core loop of play, and the interface the AI agents will use later.
 
-- [ ] Campaign chat with realtime delivery (gqlgen subscriptions over WebSocket)
-- [ ] Roll a move from the sheet; the API rolls 2d6 + modifier (forward/ongoing applied) and posts the result to chat
-- [ ] Damage rolls posted to chat
-- [ ] GM-only messages / whispers
+- [x] Campaign chat with realtime delivery (gqlgen subscriptions over WebSocket)
+- [x] Roll a move from the sheet: 2d6 (rolled by the app or entered from physical dice) + the modifiers the player chooses (stat, debility, forward/ongoing), posted to chat with its breakdown
+- [x] Damage rolls posted to chat
+- [x] GM-only messages / whispers
 
-### 7. Monsters
+### 7. Monsters ← next
 
 Before fronts, because encounters are built from monsters.
 

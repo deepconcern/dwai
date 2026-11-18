@@ -12,6 +12,8 @@ All resolution is **2d6 + a stat modifier** (plus any forward/ongoing bonuses):
 | 7–9 | Partial success: success with a cost, a hard choice, or a reduced effect |
 | 6− (miss) | Failure. The GM makes a move against the players, and the player marks 1 XP |
 
+The app suggests the stat a move names and the bonuses and debility that might apply, but the player chooses what's added, and may roll physical dice and enter the total. A miss offers a Mark XP button; nothing is marked automatically (see [the honor system](../app/architecture.md#the-honor-system)).
+
 Some moves add a **12+** result with an exceptional outcome (usually from advanced moves).
 
 ### Bonuses

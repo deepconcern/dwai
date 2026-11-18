@@ -92,12 +92,14 @@ A short ethos chosen at creation from the class's options (Good, Lawful, Neutral
 
 ## Bonds
 
-Template sentences that name other party members ("___ has my back when things go wrong"). They only exist within a campaign. At End of Session a player may resolve a bond, gaining 1 XP and writing a new one. Aid or Interfere rolls +bond with the character being helped.
+Template sentences that name other party members ("___ has my back when things go wrong"). They only exist within a campaign. The class's templates are a starting point; players write them freely, and how many to have is up to the table. At End of Session a player may resolve one bond (if the bonded character's player agrees), gaining 1 XP and writing a new one. Aid or Interfere rolls +bond with the character being helped.
+
+In dwai, the other player's agreement is table talk: the app doesn't ask for it.
 
 ## XP and Levels
 
 - Mark 1 XP on every miss.
-- At **End of Session**, mark 1 XP for each "yes": did we learn something new and important about the world, overcome a notable monster or enemy, or loot a memorable treasure? Plus 1 XP for fulfilling your alignment, and 1 XP for each resolved bond.
+- At **End of Session**, mark 1 XP for each "yes": did we learn something new and important about the world, overcome a notable monster or enemy, or loot a memorable treasure? Plus 1 XP for fulfilling your alignment, and 1 XP for resolving a bond (one per session, per the End of Session move).
 - **Level Up** (during downtime) when XP ≥ current level + 7: subtract level + 7 from XP, gain a level, choose an advanced move, and raise one stat score by 1 (maximum 18). Max HP rises if CON changed.
 - Maximum level is 10.
 

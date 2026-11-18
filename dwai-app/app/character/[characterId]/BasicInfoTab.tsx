@@ -9,6 +9,7 @@ import { unmaskFragment } from "@/gql";
 import { CharacterFragmentFragment } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
 
+import { BondsSection } from "./BondsSection";
 import { ExperienceSection } from "./ExperienceSection";
 import { HealthSection } from "./HealthSection";
 
@@ -75,9 +76,7 @@ export const BasicInfoTab: FC<BasicInfoProps> = ({ character }) => {
       </div>
 
       <div className="flex space-x-4">
-        <Section className="flex-1" title="Bonds">
-          TODO (only available during campaign)
-        </Section>
+        <BondsSection character={character} />
         <Section className="flex-1" title="Looks">
           <List
             items={character.looks.map((look) => ({

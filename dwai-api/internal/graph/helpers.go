@@ -34,9 +34,10 @@ func parseCharacterID(id string) (pgtype.UUID, error) {
 }
 
 // loadCharacter loads a character's row and its class. It's the ownership
-// check for every character, item, and spell resolver: it requires a
-// logged-in user, and reports another user's character as not found, so IDs
-// aren't confirmed to exist.
+// check for every change only a character's owner may make (and so every
+// item and spell resolver): it requires a logged-in user, and reports
+// another user's character as not found, so IDs aren't confirmed to exist.
+// Reads use loadViewableCharacter, which also lets the campaign's GM in.
 func (r *Resolver) loadCharacter(ctx context.Context, id pgtype.UUID) (*db.Character, *models.CharacterClassModel, error) {
 	user, err := auth.RequireUser(ctx)
 	if err != nil {
@@ -51,12 +52,22 @@ func (r *Resolver) loadCharacter(ctx context.Context, id pgtype.UUID) (*db.Chara
 		return nil, nil, err
 	}
 
-	class, ok := (*r.CharacterClasses)[character.CharacterClassKey]
-	if !ok {
-		return nil, nil, fmt.Errorf("no character class with key '%s'", character.CharacterClassKey)
+	class, err := r.classOf(character)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return character, &class, nil
+	return character, class, nil
+}
+
+// classOf returns a character's class.
+func (r *Resolver) classOf(character *db.Character) (*models.CharacterClassModel, error) {
+	class, ok := (*r.CharacterClasses)[character.CharacterClassKey]
+	if !ok {
+		return nil, fmt.Errorf("no character class with key '%s'", character.CharacterClassKey)
+	}
+
+	return &class, nil
 }
 
 // loadItemCharacter loads the character that owns an item, checking that it

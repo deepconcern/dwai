@@ -17,6 +17,7 @@ import { MoveFragment } from "@/fragments/MoveFragment";
 import { graphql, unmaskFragment } from "@/gql";
 import { Ability } from "@/gql/graphql";
 import { capitalize } from "@/lib/capitalize";
+import { safeNext } from "@/lib/safeNext";
 
 import { GearChoice } from "./GearChoice";
 import {
@@ -258,7 +259,12 @@ export default function CreateCharacterPage() {
     }
 
     if (data) {
-      router.push(`/character/${data.characters.create.id}`);
+      // A join link sends players here with ?next=/join/<code>, to come back
+      // and pick the new character.
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(
+        next ? safeNext(next) : `/character/${data.characters.create.id}`,
+      );
     }
   };
 

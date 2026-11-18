@@ -75,7 +75,10 @@ export const ExperienceSection: FC<ExperienceSectionProps> = ({
           >
             -1 XP
           </Button>
-          <Button disabled={!character.canLevelUp} onClick={handleOpen}>
+          <Button
+            disabled={!character.canLevelUp || !character.viewerIsOwner}
+            onClick={handleOpen}
+          >
             Level Up
           </Button>
         </div>

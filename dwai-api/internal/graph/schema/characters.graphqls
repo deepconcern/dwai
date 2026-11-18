@@ -62,6 +62,10 @@ type Character {
   availableAdvancedMoves: [Move!]!
   "Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken."
   armor: Int!
+  "Active (unresolved) bonds, oldest first."
+  bonds: [Bond!]!
+  "The campaign the character is in, if any."
+  campaign: Campaign
   "Whether the character has the XP to level up and isn't at the maximum level."
   canLevelUp: Boolean!
   "The character's class (e.g. Fighter, Wizard)."
@@ -102,8 +106,12 @@ type Character {
   preparedSpells: [PreparedSpell!]!
   "The character's race move."
   raceMove: Move!
+  "The campaign's latest End of Session, while this character hasn't reported on it."
+  pendingSession: CampaignSession
   "Leveled spells in a Wizard's spellbook. Empty for other classes."
   spellbook: [Spell!]!
+  "Whether the logged-in user owns the character. False for a GM viewing a player's sheet, which is read-only except for HP and XP."
+  viewerIsOwner: Boolean!
   "Experience points toward the next level."
   xp: Int!
   "XP needed to level up: the current level + 7."
@@ -199,7 +207,7 @@ input TakeDamageInput {
 
 "Namespace for character queries."
 type CharacterQuery {
-  "Returns one of the logged-in user's characters by ID. Another user's character is reported as not found."
+  "Returns one of the logged-in user's characters by ID, or a character in a campaign they run. Any other character is reported as not found."
   byId(id: ID!): Character!
   "Returns the logged-in user's characters, oldest first."
   mine: [Character!]!
@@ -209,16 +217,24 @@ type CharacterQuery {
 type CharacterMutation {
   "Adds delta (positive or negative) to the character's gold. The result can't be negative."
   adjustGold(delta: Int!, id: ID!): Character!
-  "Adds delta (positive or negative) to the character's XP. The result can't be negative."
+  "Writes a bond about another character in the same campaign."
+  addBond(id: ID!, input: BondInput!): Character!
+  "Adds delta (positive or negative) to the character's XP. The result can't be negative. The campaign's GM may call it too."
   adjustXp(delta: Int!, id: ID!): Character!
   "Creates a new character and returns it."
   create(input: CreateCharacterInput!): Character!
-  "Heals the character by amount, up to their maximum HP."
+  "Deletes one of the character's bonds and returns the character."
+  deleteBond(bondId: ID!): Character!
+  "Heals the character by amount, up to their maximum HP. The campaign's GM may call it too."
   heal(amount: Int!, id: ID!): Character!
   "Levels up: spends level + 7 XP, raises the level and one ability score by 1, and adds an advanced move (losing any move it replaces)."
   levelUp(id: ID!, input: LevelUpInput!): Character!
   "Sets or clears one debility."
   setDebility(active: Boolean!, debility: Debility!, id: ID!): Character!
-  "Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0."
+  "Submits the character's End of Session report, marking XP for the group's answers, a fulfilled alignment, and a resolved bond (which is replaced by a new one)."
+  submitSessionReport(id: ID!, input: SessionReportInput!): Character!
+  "Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0. The campaign's GM may call it too."
   takeDamage(id: ID!, input: TakeDamageInput!): Character!
+  "Changes the text of one of the character's bonds and returns the character."
+  updateBond(bondId: ID!, text: String!): Character!
 }

@@ -18,7 +18,9 @@ import (
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
+	"github.com/jackc/pgerrcode"
 	pgx "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -35,7 +37,7 @@ func (r *characterResolver) AdvancedMoves(ctx context.Context, obj *model.Charac
 		return nil, err
 	}
 
-	_, class, err := r.loadCharacter(ctx, uuid)
+	_, class, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +57,7 @@ func (r *characterResolver) AvailableAdvancedMoves(ctx context.Context, obj *mod
 		return nil, err
 	}
 
-	character, class, err := r.loadCharacter(ctx, uuid)
+	character, class, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +85,63 @@ func (r *characterResolver) Armor(ctx context.Context, obj *model.Character) (in
 	}
 
 	return models.Armor(items), nil
+}
+
+// Bonds is the resolver for the bonds field.
+func (r *characterResolver) Bonds(ctx context.Context, obj *model.Character) ([]*model.Bond, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, _, err := r.loadViewableCharacter(ctx, uuid); err != nil {
+		return nil, err
+	}
+
+	rows, err := db.New(r.DbPool).SelectActiveBondsByCharacter(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load bonds for character with ID '%s': %w", obj.ID, err)
+	}
+
+	bonds := make([]*model.Bond, len(rows))
+	for i, row := range rows {
+		target, err := r.partyMemberByID(ctx, row.TargetCharacterID)
+		if err != nil {
+			return nil, err
+		}
+
+		bonds[i] = &model.Bond{ID: row.ID.String(), Target: target, Text: row.Text}
+	}
+
+	return bonds, nil
+}
+
+// Campaign is the resolver for the campaign field.
+func (r *characterResolver) Campaign(ctx context.Context, obj *model.Character) (*model.Campaign, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	if !character.CampaignID.Valid {
+		return nil, nil
+	}
+
+	user, err := auth.RequireUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	campaign, err := models.LoadersFor(ctx).CampaignLoader.Load(ctx, character.CampaignID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the campaign for character with ID '%s': %w", obj.ID, err)
+	}
+
+	return campaignObject(campaign, user), nil
 }
 
 // CharacterClass is the resolver for the characterClass field.
@@ -179,7 +238,7 @@ func (r *characterResolver) ExpectedSpellbookSize(ctx context.Context, obj *mode
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +296,7 @@ func (r *characterResolver) MaxHitPoints(ctx context.Context, obj *model.Charact
 		return 0, err
 	}
 
-	character, class, err := r.loadCharacter(ctx, uuid)
+	character, class, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return 0, err
 	}
@@ -252,7 +311,7 @@ func (r *characterResolver) MaxLoad(ctx context.Context, obj *model.Character) (
 		return 0, err
 	}
 
-	character, class, err := r.loadCharacter(ctx, uuid)
+	character, class, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return 0, err
 	}
@@ -267,7 +326,7 @@ func (r *characterResolver) MaxPreparedSpellLevels(ctx context.Context, obj *mod
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +347,7 @@ func (r *characterResolver) PreparedSpellLevels(ctx context.Context, obj *model.
 		return 0, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return 0, err
 	}
@@ -308,7 +367,7 @@ func (r *characterResolver) PreparedSpells(ctx context.Context, obj *model.Chara
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -345,6 +404,26 @@ func (r *characterResolver) RaceMove(ctx context.Context, obj *model.Character) 
 	return characterClassModel.RaceMoves[raceMoveIndex].ToObject(), nil
 }
 
+// PendingSession is the resolver for the pendingSession field.
+func (r *characterResolver) PendingSession(ctx context.Context, obj *model.Character) (*model.CampaignSession, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := r.pendingSession(ctx, character)
+	if err != nil || session == nil {
+		return nil, err
+	}
+
+	return sessionObject(session), nil
+}
+
 // Spellbook is the resolver for the spellbook field.
 func (r *characterResolver) Spellbook(ctx context.Context, obj *model.Character) ([]*model.Spell, error) {
 	uuid, err := parseCharacterID(obj.ID)
@@ -352,7 +431,7 @@ func (r *characterResolver) Spellbook(ctx context.Context, obj *model.Character)
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -363,6 +442,21 @@ func (r *characterResolver) Spellbook(ctx context.Context, obj *model.Character)
 	}
 
 	return spellObjects(r.Spells.SpellsByKey(character.CharacterClassKey, keys)), nil
+}
+
+// ViewerIsOwner is the resolver for the viewerIsOwner field.
+func (r *characterResolver) ViewerIsOwner(ctx context.Context, obj *model.Character) (bool, error) {
+	uuid, err := parseCharacterID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
+	if err != nil {
+		return false, err
+	}
+
+	return character.OwnerID == auth.UserFromContext(ctx).ID, nil
 }
 
 // AdjustGold is the resolver for the adjustGold field.
@@ -390,6 +484,43 @@ func (r *characterMutationResolver) AdjustGold(ctx context.Context, obj *model.C
 	return characterUpdated(ctx, row), nil
 }
 
+// AddBond is the resolver for the addBond field.
+func (r *characterMutationResolver) AddBond(ctx context.Context, obj *model.CharacterMutation, id string, input model.BondInput) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	if err := requireCampaign(character); err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	target, err := bondTarget(ctx, character, input.TargetID, "targetId")
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	text, err := models.ValidateBondText("text", input.Text)
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	if _, err := db.New(r.DbPool).InsertBond(ctx, db.InsertBondParams{
+		CampaignID:        character.CampaignID,
+		CharacterID:       uuid,
+		TargetCharacterID: target.ID,
+		Text:              text,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to add a bond for character with ID '%s': %w", id, err)
+	}
+
+	return models.ToCharacterObject(character), nil
+}
+
 // AdjustXp is the resolver for the adjustXp field.
 func (r *characterMutationResolver) AdjustXp(ctx context.Context, obj *model.CharacterMutation, delta int32, id string) (*model.Character, error) {
 	uuid, err := parseCharacterID(id)
@@ -397,7 +528,7 @@ func (r *characterMutationResolver) AdjustXp(ctx context.Context, obj *model.Cha
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -596,6 +727,20 @@ func (r *characterMutationResolver) Create(ctx context.Context, obj *model.Chara
 	return models.ToCharacterObject(characterModel), nil
 }
 
+// DeleteBond is the resolver for the deleteBond field.
+func (r *characterMutationResolver) DeleteBond(ctx context.Context, obj *model.CharacterMutation, bondID string) (*model.Character, error) {
+	bond, character, err := r.loadOwnBond(ctx, bondID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.New(r.DbPool).DeleteBond(ctx, bond.ID); err != nil {
+		return nil, fmt.Errorf("failed to delete bond with ID '%s': %w", bondID, err)
+	}
+
+	return models.ToCharacterObject(character), nil
+}
+
 // Heal is the resolver for the heal field.
 func (r *characterMutationResolver) Heal(ctx context.Context, obj *model.CharacterMutation, amount int32, id string) (*model.Character, error) {
 	uuid, err := parseCharacterID(id)
@@ -603,7 +748,7 @@ func (r *characterMutationResolver) Heal(ctx context.Context, obj *model.Charact
 		return nil, err
 	}
 
-	character, class, err := r.loadCharacter(ctx, uuid)
+	character, class, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -712,6 +857,127 @@ func (r *characterMutationResolver) SetDebility(ctx context.Context, obj *model.
 	return characterUpdated(ctx, row), nil
 }
 
+// SubmitSessionReport is the resolver for the submitSessionReport field.
+func (r *characterMutationResolver) SubmitSessionReport(ctx context.Context, obj *model.CharacterMutation, id string, input model.SessionReportInput) (*model.Character, error) {
+	uuid, err := parseCharacterID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	character, _, err := r.loadCharacter(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	if err := requireCampaign(character); err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	session, err := r.pendingSession(ctx, character)
+	if err != nil {
+		return nil, err
+	}
+	if session == nil || session.ID.String() != input.SessionID {
+		return nil, validationError(ctx, models.ValidationError{Field: "sessionId", Message: "That End of Session is closed or already reported."})
+	}
+
+	report := models.SessionReport{Alignment: checkedInput(input.Alignment)}
+	if input.ResolvedBondID != nil {
+		report.Bond.Checked = true
+		if input.BondReason != nil {
+			report.Bond.Reason = *input.BondReason
+		}
+		if input.ReplacementBond != nil {
+			report.ReplacementBondText = input.ReplacementBond.Text
+		}
+	}
+
+	report, errs := models.ValidateSessionReport(report)
+
+	// The resolved bond must be one of the character's active bonds, and the
+	// replacement must be about another character in the campaign.
+	var resolved db.Bond
+	var replacementTarget *db.Character
+	if report.Bond.Checked {
+		resolved, err = db.New(r.DbPool).SelectBond(ctx, mustParseOptionalUUID(*input.ResolvedBondID))
+		if err != nil || resolved.CharacterID != uuid || resolved.ResolvedAt.Valid {
+			errs = append(errs, models.ValidationError{Field: "resolvedBondId", Message: "Choose one of your active bonds."})
+		}
+
+		targetID := ""
+		if input.ReplacementBond != nil {
+			targetID = input.ReplacementBond.TargetID
+		}
+		replacementTarget, err = bondTarget(ctx, character, targetID, "replacementBond.targetId")
+		var ve models.ValidationError
+		if errors.As(err, &ve) {
+			errs = append(errs, ve)
+		} else if err != nil {
+			return nil, err
+		}
+	}
+	if addValidationErrors(ctx, errs) {
+		return nil, nil
+	}
+
+	xp := models.EndOfSessionXP(groupAnswers(session).Yes(), report.Alignment.Checked, report.Bond.Checked)
+
+	tx, err := r.DbPool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to roll back End of Session report", "error", err)
+		}
+	}()
+
+	queries := db.New(tx)
+
+	params := db.InsertSessionReportParams{
+		AlignmentFulfilled: report.Alignment.Checked,
+		AlignmentReason:    optionalText(report.Alignment.Reason),
+		CharacterID:        uuid,
+		SessionID:          session.ID,
+		XpAwarded:          xp,
+	}
+	if report.Bond.Checked {
+		params.BondReason = optionalText(report.Bond.Reason)
+		params.ResolvedBondID = resolved.ID
+		params.ResolvedBondText = optionalText(resolved.Text)
+
+		if err := queries.ResolveBond(ctx, resolved.ID); err != nil {
+			return nil, fmt.Errorf("failed to resolve bond with ID '%s': %w", resolved.ID.String(), err)
+		}
+		if _, err := queries.InsertBond(ctx, db.InsertBondParams{
+			CampaignID:        character.CampaignID,
+			CharacterID:       uuid,
+			TargetCharacterID: replacementTarget.ID,
+			Text:              report.ReplacementBondText,
+		}); err != nil {
+			return nil, fmt.Errorf("failed to add the replacement bond: %w", err)
+		}
+	}
+
+	if _, err := queries.InsertSessionReport(ctx, params); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			return nil, validationError(ctx, models.ValidationError{Field: "sessionId", Message: "That End of Session is closed or already reported."})
+		}
+		return nil, fmt.Errorf("failed to save the End of Session report: %w", err)
+	}
+
+	row, err := queries.AddCharacterXp(ctx, db.AddCharacterXpParams{ID: uuid, Xp: xp})
+	if err != nil {
+		return nil, fmt.Errorf("failed to add XP to character with ID '%s': %w", id, err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return characterUpdated(ctx, row), nil
+}
+
 // TakeDamage is the resolver for the takeDamage field.
 func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.CharacterMutation, id string, input model.TakeDamageInput) (*model.Character, error) {
 	damage := models.DamageInput{
@@ -728,7 +994,7 @@ func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.C
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -748,6 +1014,25 @@ func (r *characterMutationResolver) TakeDamage(ctx context.Context, obj *model.C
 	return characterUpdated(ctx, row), nil
 }
 
+// UpdateBond is the resolver for the updateBond field.
+func (r *characterMutationResolver) UpdateBond(ctx context.Context, obj *model.CharacterMutation, bondID string, text string) (*model.Character, error) {
+	bond, character, err := r.loadOwnBond(ctx, bondID)
+	if err != nil {
+		return nil, err
+	}
+
+	trimmed, err := models.ValidateBondText("text", text)
+	if err != nil {
+		return nil, validationError(ctx, err)
+	}
+
+	if err := db.New(r.DbPool).UpdateBondText(ctx, db.UpdateBondTextParams{ID: bond.ID, Text: trimmed}); err != nil {
+		return nil, fmt.Errorf("failed to update bond with ID '%s': %w", bondID, err)
+	}
+
+	return models.ToCharacterObject(character), nil
+}
+
 // ByID is the resolver for the byId field.
 func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQuery, id string) (*model.Character, error) {
 	uuid, err := parseCharacterID(id)
@@ -755,7 +1040,7 @@ func (r *characterQueryResolver) ByID(ctx context.Context, obj *model.CharacterQ
 		return nil, err
 	}
 
-	character, _, err := r.loadCharacter(ctx, uuid)
+	character, _, err := r.loadViewableCharacter(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}

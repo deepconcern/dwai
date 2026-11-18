@@ -141,7 +141,10 @@ export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
   const warning = loadWarning(character.load, character.maxLoad);
 
   return (
-    <div className="flex flex-col space-y-4">
+    <fieldset
+      className="flex flex-col space-y-4"
+      disabled={!character.viewerIsOwner}
+    >
       <div className="flex space-x-4">
         <Section className="flex-1" title="Gold">
           <form
@@ -251,6 +254,6 @@ export const EquipmentTab: FC<EquipmentTabProps> = ({ character }) => {
       </table>
 
       <AddItemForm characterId={character.id} />
-    </div>
+    </fieldset>
   );
 };

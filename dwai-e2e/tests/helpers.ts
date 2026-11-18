@@ -70,7 +70,7 @@ export const createFighter = async (page: Page, name: string) => {
 
   await page.getByRole("button", { name: "Create Character" }).click();
 
-  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await expect(page.getByRole("heading", { exact: true, name })).toBeVisible();
 };
 
 /**
@@ -111,5 +111,5 @@ export const createWizard = async (page: Page, name: string) => {
 
   await page.getByRole("button", { name: "Create Character" }).click();
 
-  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await expect(page.getByRole("heading", { exact: true, name })).toBeVisible();
 };

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
 // A type representing a character's ability score, including the base score and the derived modifier.
@@ -61,6 +62,104 @@ type AuthMutation struct {
 	Register *User `json:"register"`
 }
 
+// A bond one character wrote about another character in the same campaign.
+type Bond struct {
+	ID string `json:"id"`
+	// When the bond was resolved at End of Session. Null while it's active.
+	ResolvedAt *time.Time `json:"resolvedAt,omitempty"`
+	// The character the bond is about.
+	Target *PartyMember `json:"target"`
+	Text   string       `json:"text"`
+}
+
+// Input for writing a bond.
+type BondInput struct {
+	// Another character in the same campaign.
+	TargetID string `json:"targetId"`
+	// 1 to 500 characters, trimmed.
+	Text string `json:"text"`
+}
+
+// A campaign: a GM and the players' characters.
+type Campaign struct {
+	// The characters in the campaign, oldest first.
+	Characters []*PartyMember `json:"characters"`
+	// Optional notes about the campaign. Empty when not set.
+	Description string `json:"description"`
+	// The user who runs the campaign.
+	Gm *User  `json:"gm"`
+	ID string `json:"id"`
+	// The code in the campaign's join link. Only the GM sees it; null for players.
+	InviteCode *string `json:"inviteCode,omitempty"`
+	// Whether the logged-in user is the GM.
+	IsGm bool `json:"isGm"`
+	// The logged-in player's character in this campaign. Null for the GM.
+	MyCharacter *Character `json:"myCharacter,omitempty"`
+	Name        string     `json:"name"`
+	// End of Session records, newest first.
+	Sessions []*CampaignSession `json:"sessions"`
+}
+
+// A campaign's editable details.
+type CampaignInput struct {
+	// Up to 2000 characters. Optional.
+	Description string `json:"description"`
+	// 1 to 100 characters, trimmed.
+	Name string `json:"name"`
+}
+
+// The campaign details shown on a join link, before joining.
+type CampaignInvite struct {
+	Gm   *User  `json:"gm"`
+	Name string `json:"name"`
+}
+
+// Namespace for campaign mutations.
+type CampaignMutation struct {
+	// Creates a campaign run by the logged-in user.
+	Create *Campaign `json:"create"`
+	// Deletes the campaign (GM only). Its characters are detached, not deleted; its bonds and sessions are deleted.
+	Delete bool `json:"delete"`
+	// Starts End of Session (GM only): records the group answers as the next numbered session.
+	EndSession *CampaignSession `json:"endSession"`
+	// Attaches one of the logged-in user's characters to the campaign the code is for. The character can't already be in a campaign, and a player brings one character per campaign.
+	Join *Campaign `json:"join"`
+	// Detaches the logged-in user's character from its campaign, deleting bonds written by or about it.
+	Leave *Character `json:"leave"`
+	// Replaces the invite code (GM only), so the old link stops working.
+	RegenerateInviteCode *Campaign `json:"regenerateInviteCode"`
+	// Detaches a player's character from the campaign (GM only), deleting bonds written by or about it.
+	RemoveCharacter *Campaign `json:"removeCharacter"`
+	// Changes the campaign's name and description (GM only).
+	Update *Campaign `json:"update"`
+}
+
+// Namespace for campaign queries.
+type CampaignQuery struct {
+	// A campaign the logged-in user runs or plays in. Others are reported as not found.
+	ByID *Campaign `json:"byId"`
+	// The campaign an invite code joins, for the join page. Needs a logged-in user.
+	ByInviteCode *CampaignInvite `json:"byInviteCode"`
+	// Campaigns the logged-in user runs or plays in, oldest first.
+	Mine []*Campaign `json:"mine"`
+}
+
+// One End of Session: the GM's group answers, and each player's report.
+type CampaignSession struct {
+	CreatedAt time.Time `json:"createdAt"`
+	ID        string    `json:"id"`
+	// Did we learn something new and important about the world?
+	Learned *CheckedAnswer `json:"learned"`
+	// Did we loot a memorable treasure?
+	Looted *CheckedAnswer `json:"looted"`
+	// Sessions are numbered from 1 within a campaign.
+	Number int32 `json:"number"`
+	// Did we overcome a notable monster or enemy?
+	Overcame *CheckedAnswer `json:"overcame"`
+	// Players' reports, in the order submitted.
+	Reports []*SessionReport `json:"reports"`
+}
+
 // A player character in the game.
 type Character struct {
 	// The character's six core ability scores, one for each ability.
@@ -75,6 +174,10 @@ type Character struct {
 	AvailableAdvancedMoves []*Move `json:"availableAdvancedMoves"`
 	// Total armor: the best worn armor, plus armor bonuses from worn armor and shields. Subtracted from damage taken.
 	Armor int32 `json:"armor"`
+	// Active (unresolved) bonds, oldest first.
+	Bonds []*Bond `json:"bonds"`
+	// The campaign the character is in, if any.
+	Campaign *Campaign `json:"campaign,omitempty"`
 	// Whether the character has the XP to level up and isn't at the maximum level.
 	CanLevelUp bool `json:"canLevelUp"`
 	// The character's class (e.g. Fighter, Wizard).
@@ -115,8 +218,12 @@ type Character struct {
 	PreparedSpells []*PreparedSpell `json:"preparedSpells"`
 	// The character's race move.
 	RaceMove *Move `json:"raceMove"`
+	// The campaign's latest End of Session, while this character hasn't reported on it.
+	PendingSession *CampaignSession `json:"pendingSession,omitempty"`
 	// Leveled spells in a Wizard's spellbook. Empty for other classes.
 	Spellbook []*Spell `json:"spellbook"`
+	// Whether the logged-in user owns the character. False for a GM viewing a player's sheet, which is read-only except for HP and XP.
+	ViewerIsOwner bool `json:"viewerIsOwner"`
 	// Experience points toward the next level.
 	Xp int32 `json:"xp"`
 	// XP needed to level up: the current level + 7.
@@ -155,26 +262,47 @@ type CharacterClass struct {
 type CharacterMutation struct {
 	// Adds delta (positive or negative) to the character's gold. The result can't be negative.
 	AdjustGold *Character `json:"adjustGold"`
-	// Adds delta (positive or negative) to the character's XP. The result can't be negative.
+	// Writes a bond about another character in the same campaign.
+	AddBond *Character `json:"addBond"`
+	// Adds delta (positive or negative) to the character's XP. The result can't be negative. The campaign's GM may call it too.
 	AdjustXp *Character `json:"adjustXp"`
 	// Creates a new character and returns it.
 	Create *Character `json:"create"`
-	// Heals the character by amount, up to their maximum HP.
+	// Deletes one of the character's bonds and returns the character.
+	DeleteBond *Character `json:"deleteBond"`
+	// Heals the character by amount, up to their maximum HP. The campaign's GM may call it too.
 	Heal *Character `json:"heal"`
 	// Levels up: spends level + 7 XP, raises the level and one ability score by 1, and adds an advanced move (losing any move it replaces).
 	LevelUp *Character `json:"levelUp"`
 	// Sets or clears one debility.
 	SetDebility *Character `json:"setDebility"`
-	// Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0.
+	// Submits the character's End of Session report, marking XP for the group's answers, a fulfilled alignment, and a resolved bond (which is replaced by a new one).
+	SubmitSessionReport *Character `json:"submitSessionReport"`
+	// Applies damage: armor (less piercing, unless ignored) is subtracted first, and HP doesn't drop below 0. The campaign's GM may call it too.
 	TakeDamage *Character `json:"takeDamage"`
+	// Changes the text of one of the character's bonds and returns the character.
+	UpdateBond *Character `json:"updateBond"`
 }
 
 // Namespace for character queries.
 type CharacterQuery struct {
-	// Returns one of the logged-in user's characters by ID. Another user's character is reported as not found.
+	// Returns one of the logged-in user's characters by ID, or a character in a campaign they run. Any other character is reported as not found.
 	ByID *Character `json:"byId"`
 	// Returns the logged-in user's characters, oldest first.
 	Mine []*Character `json:"mine"`
+}
+
+// An End of Session checkbox and the reason written for it.
+type CheckedAnswer struct {
+	Checked bool `json:"checked"`
+	// Why it was checked. Null when it wasn't.
+	Reason *string `json:"reason,omitempty"`
+}
+
+// An End of Session checkbox. A checked box needs a reason.
+type CheckedInput struct {
+	Checked bool    `json:"checked"`
+	Reason  *string `json:"reason,omitempty"`
 }
 
 // Input for creating a new character.
@@ -217,6 +345,13 @@ type CreationOptionChoice struct {
 	Key string `json:"key"`
 	// Human-readable label for this choice (e.g. 'Flail').
 	Label string `json:"label"`
+}
+
+// The GM's answers to End of Session's three group questions.
+type EndSessionInput struct {
+	Learned  *CheckedInput `json:"learned"`
+	Looted   *CheckedInput `json:"looted"`
+	Overcame *CheckedInput `json:"overcame"`
 }
 
 // A player's picks from one of a class's starting-gear pick-N option groups.
@@ -411,6 +546,21 @@ type NewLookInput struct {
 	Value string `json:"value"`
 }
 
+// What every campaign member sees of a character: no full sheet.
+type PartyMember struct {
+	// The alignment type (e.g. 'Good').
+	AlignmentType  string          `json:"alignmentType"`
+	CharacterClass *CharacterClass `json:"characterClass"`
+	HitPoints      int32           `json:"hitPoints"`
+	ID             string          `json:"id"`
+	Looks          []*Look         `json:"looks"`
+	MaxHitPoints   int32           `json:"maxHitPoints"`
+	Name           string          `json:"name"`
+	// The player who owns the character.
+	Owner    *User `json:"owner"`
+	RaceMove *Move `json:"raceMove"`
+}
+
 // A spell a character has prepared.
 type PreparedSpell struct {
 	// Whether the caster forgot it (a 7–9 casting choice) until they next prepare spells.
@@ -430,6 +580,32 @@ type RegisterInput struct {
 	Email string `json:"email"`
 	// 8 to 128 characters.
 	Password string `json:"password"`
+}
+
+// A player's End of Session report for their character.
+type SessionReport struct {
+	Alignment *CheckedAnswer `json:"alignment"`
+	// Whether a bond was resolved, and why.
+	Bond      *CheckedAnswer `json:"bond"`
+	Character *PartyMember   `json:"character"`
+	CreatedAt time.Time      `json:"createdAt"`
+	// The resolved bond's text. Null when no bond was resolved.
+	ResolvedBondText *string `json:"resolvedBondText,omitempty"`
+	// XP marked: 1 per group 'yes', plus alignment and a resolved bond.
+	XpAwarded int32 `json:"xpAwarded"`
+}
+
+// A player's End of Session report.
+type SessionReportInput struct {
+	Alignment *CheckedInput `json:"alignment"`
+	// Why the bond was resolved. Required with resolvedBondId.
+	BondReason *string `json:"bondReason,omitempty"`
+	// The new bond written in place of the resolved one. Required with resolvedBondId.
+	ReplacementBond *BondInput `json:"replacementBond,omitempty"`
+	// One of the character's active bonds that was resolved, if any.
+	ResolvedBondID *string `json:"resolvedBondId,omitempty"`
+	// The session being reported on: the campaign's latest.
+	SessionID string `json:"sessionId"`
 }
 
 // A Wizard or Cleric spell.

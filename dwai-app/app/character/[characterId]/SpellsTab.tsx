@@ -174,7 +174,10 @@ export const SpellsTab: FC<SpellsTabProps> = ({ character }) => {
   );
 
   return (
-    <div className="flex flex-col space-y-4">
+    <fieldset
+      className="flex flex-col space-y-4"
+      disabled={!character.viewerIsOwner}
+    >
       <ErrorList errors={errors} />
 
       <Section title={isCleric ? "Rotes" : "Cantrips"}>
@@ -281,6 +284,6 @@ export const SpellsTab: FC<SpellsTabProps> = ({ character }) => {
           title={isCleric ? "Commune" : "Prepare Spells"}
         />
       )}
-    </div>
+    </fieldset>
   );
 };

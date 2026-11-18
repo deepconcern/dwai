@@ -18,6 +18,11 @@ func (r *mutationResolver) Auth(ctx context.Context) (*model.AuthMutation, error
 	return &model.AuthMutation{}, nil
 }
 
+// Campaigns is the resolver for the campaigns field.
+func (r *mutationResolver) Campaigns(ctx context.Context) (*model.CampaignMutation, error) {
+	return &model.CampaignMutation{}, nil
+}
+
 // Characters is the resolver for the characters field.
 func (r *mutationResolver) Characters(ctx context.Context) (*model.CharacterMutation, error) {
 	return &model.CharacterMutation{}, nil
@@ -42,6 +47,11 @@ func (r *queryResolver) APIVersion(ctx context.Context) (string, error) {
 	}
 
 	return apiVersion, nil
+}
+
+// Campaigns is the resolver for the campaigns field.
+func (r *queryResolver) Campaigns(ctx context.Context) (*model.CampaignQuery, error) {
+	return &model.CampaignQuery{}, nil
 }
 
 // CharacterClasses is the resolver for the characterClasses field.

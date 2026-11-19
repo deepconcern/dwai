@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -33,6 +35,17 @@ func newLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
 }
 
+// loadDotEnv loads environment variables from the given .env files (".env"
+// if none). A missing file is fine: in a container the environment is set
+// directly and there's no .env file.
+func loadDotEnv(filenames ...string) error {
+	if err := godotenv.Load(filenames...); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+
+	return nil
+}
+
 // fatal logs an error and exits.
 func fatal(msg string, err error) {
 	slog.Error(msg, "error", err)
@@ -41,7 +54,7 @@ func fatal(msg string, err error) {
 
 func main() {
 	// Load the environment
-	if err := godotenv.Load(); err != nil {
+	if err := loadDotEnv(); err != nil {
 		fatal("failed to load .env file", err)
 	}
 

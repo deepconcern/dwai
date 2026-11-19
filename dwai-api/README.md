@@ -11,7 +11,11 @@ DATABASE_URI=postgres://user:password@localhost:5432/dwai
 HOST=0.0.0.0   # optional, defaults to 0.0.0.0
 PORT=5000      # optional, defaults to 5000
 LOG_LEVEL=info # optional: debug, info, warn, or error
+APP_ORIGINS=http://localhost:3000 # optional: web app origins allowed to open the chat WebSocket
+COOKIE_SECURE=false # optional: true when browsers reach the app over HTTPS
 ```
+
+A missing `.env` file is fine: in a container, set the variables directly. See [Run with Docker](../README.md#run-with-docker) for the image.
 
 ## Setup
 

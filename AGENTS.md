@@ -59,7 +59,8 @@ The API is the single source of truth for game rules and data. The frontend cons
 1. PostgreSQL 18+ (migrations use `uuidv7()`), with `DATABASE_URI` set for the API.
 2. `dwai-api`: `go run ./cmd/server` applies migrations on startup and serves GraphQL at `http://localhost:5000/graphql` (playground at `/playground`).
 3. `dwai-app`: `bun install`, `bun run codegen` (API must be running), `bun dev` serves `http://localhost:3000`. `API_URI` in `.env.local` points at the API (default `http://localhost:5000`); the browser reaches it through the app's `/graphql` rewrite, so log in at `http://localhost:3000`, not the API's port.
-4. Docker, for the API integration tests (`make test-integration`, also run by `make check`). They start their own Postgres container, so they don't need `DATABASE_URI`. The Playwright tests (`make test-e2e`) need Docker too.
+4. Or run the whole stack in containers with `docker compose up --build` (see [Run with Docker](README.md#run-with-docker)).
+5. Docker, for the API integration tests (`make test-integration`, also run by `make check`). They start their own Postgres container, so they don't need `DATABASE_URI`. The Playwright tests (`make test-e2e`) need Docker too.
 
 ## Commands
 

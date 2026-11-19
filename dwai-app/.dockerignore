@@ -1,0 +1,10 @@
+# Keep local installs, builds, and secrets out of the build context.
+coverage
+.env*
+*.md
+.next*
+next-env.d.ts
+node_modules
+out
+*.test.ts
+*.tsbuildinfo

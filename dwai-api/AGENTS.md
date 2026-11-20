@@ -50,7 +50,7 @@ YAML files in `internal/data/` are loaded at startup; they are not stored in the
 | `internal/data/tags.yaml`                 | Item tag definitions               | `Tag`                          |
 | `internal/data/spells/wizard_spells.yaml` | Wizard spell list                  | `Spell`                        |
 | `internal/data/spells/cleric_spells.yaml` | Cleric spell list                  | `Spell`                        |
-| `internal/data/monsters/*.yaml`           | Monster compendium                 | _(reference only)_             |
+| `internal/data/monsters/*.yaml`           | Monster compendium                 | `Monster`, `MonsterSetting`    |
 | `internal/data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
 | `internal/data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
 | `internal/data/hirelings.yaml`            | Hireling rules and types           | _(reference only)_             |
@@ -93,6 +93,19 @@ Spells are grouped by level under `cantrips` (level 0: Wizard cantrips, Cleric r
 | `tags`        | `tags`        | School (`evocation`, `illusion`, …) and `ongoing`               |
 | `options`     | `options`     | Choices the description refers to                               |
 | `description` | `description` | The spell's effect                                              |
+
+### Monster YAML
+
+Each file is one setting (`key` is the file name, `name` e.g. "Cavern Dwellers") with a `monsters` list.
+
+| YAML field          | GraphQL field      | Meaning                                                                 |
+| ------------------- | ------------------ | ----------------------------------------------------------------------- |
+| `key`               | `id`               | Stable ID stored in `campaign_monsters.source_key` / `custom_monsters.source_key` |
+| `hp`, `armor`       | `hp`, `armor`      | Missing for NPCs (null in GraphQL)                                       |
+| `attack`            | `attack`           | `name`, `damage` (a dice expression), `piercing`, `ignores_armor`, `tags` |
+| `special_qualities` | `specialQualities` | Notable traits                                                           |
+
+`LoadMonsters` (`internal/models/monster.go`) fails on a missing or repeated key or a damage expression that `ValidateDamageExpression` rejects, so a bad edit stops the API from starting.
 
 ## Database Migrations
 

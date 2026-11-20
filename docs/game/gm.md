@@ -37,14 +37,16 @@ A monster's stat block:
 | Field | Meaning |
 | ----- | ------- |
 | HP, armor | Usually small numbers (3–20 HP, 0–4 armor) |
-| Damage | A dice expression (`d8`, `2d6+1`, `b[2d10]` for best-of) |
+| Damage | A dice expression (`d8`, `2d6+1`, `b[2d10]` for best of two, `w[2d8]` for worst of two) |
 | Tags | Organization (**solitary**, **group** of 3–6, **horde**), size, and qualities (stealthy, intelligent, amorphous, ...) |
 | Attack tags | Range and properties (close, reach, messy, piercing X, ...) |
 | Instinct | What it wants; the GM plays it toward this |
 | Moves | Things the GM can do with it when making a move |
 | Special qualities | Notable traits (e.g. "Plant", "Incorporeal") |
 
-The compendium (`monsters/*.yaml`) groups monsters by setting: caverns, depths, experiments, folk, hordes, planes, swamp, undead, woods.
+The compendium (`monsters/*.yaml`) groups monsters by setting: caverns, depths, experiments, folk, hordes, planes, swamp, undead, woods. Each file has a `key` (its file name), and each monster a stable `key` (snake_case of its name, e.g. `cave_rat`). An attack is split into `name`, `damage`, `piercing` (omitted when 0), `ignores_armor` (omitted when false), and `tags`. Twelve entries have no HP, armor, or attack: the folk NPCs (Acolyte, Fool, Hedge Wizard, High Priest, Merchant, Noble, Peasant, Spy, Tinkerer), the Tarrasque, the Concept Elemental, and the Word Demon. The GM gives them HP when adding them to play.
+
+Monsters take damage like characters: the damage minus armor (reduced by piercing, or skipped when the damage ignores armor), never below 0 HP. In the app, monsters in play and their HP are the GM's alone (see [docs/app/domain-model.md](../app/domain-model.md)).
 
 ## Fronts
 

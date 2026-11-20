@@ -14,7 +14,7 @@ browser ──/graphql──▶ dwai-app (Next.js, :3000) ──rewrite / server
 
 ## Data Flow
 
-- **Game content** (classes, moves, items, tags, spells, monsters) is YAML embedded into the API binary and loaded into in-memory maps at startup. It's never stored in the database.
+- **Game content** (classes, moves, items, tags, spells, monsters) is YAML embedded into the API binary and loaded into in-memory maps at startup. It's never stored in the database, with one deliberate exception: a monster added to play stores a snapshot of its stat block, so the GM's game isn't changed by later edits.
 - **Player data** (characters, looks, items, choices) is in Postgres. Rows store only the **keys** of the game content they reference (`character_class_key`, `race_move_key`, item `key`), and resolvers join them with the YAML at query time.
 - **The frontend** queries the API and generates TypeScript types from the running API's schema. It shows what the API computes, and may compute rules as display helpers (for example, applying debilities to the modifiers it shows, in `dwai-app/lib/debilities.ts`), but it generally doesn't enforce them. Like a pen-and-paper sheet, where a player can technically write whatever they want, there's a bit of an honor system, and it keeps mistakes easy to fix.
 
@@ -37,6 +37,8 @@ Most actions are reversible (mark and unmark XP, damage and heal, add and remove
 | Delete a campaign | Deletes its bonds, sessions, and chat | Confirmation |
 | Delete a bond, remove an item | Small | Add it again |
 | Prepare spells | Small | Prepare again |
+| Remove a monster from play | Its HP is lost | Confirmation; add it again |
+| Delete a custom monster | Small; copies in play keep their stat block | Confirmation; write it again |
 
 ## Table Chat
 
@@ -47,7 +49,7 @@ Messages, rolls, and activity lines are rows in `campaign_messages`. An `AFTER I
 - The browser only talks to the app's origin. `next.config.ts` rewrites `/graphql` to the API (`API_URI`, server-only), so the API's `dwai_session` cookie (HttpOnly, SameSite=Lax, `Secure` when `COOKIE_SECURE=true`) is first-party and no CORS is involved.
 - Server components query the API directly and forward the incoming request's cookies (`lib/apollo-client.ts`), so they run as the logged-in user.
 - `dwai-app/proxy.ts` redirects visitors with no session cookie to `/login?next=…`. That's only an optimistic check: pages call `requireUser` (`lib/session.ts`), which asks the API, to catch a cookie it no longer accepts. `next` is checked with `lib/safeNext.ts`, so it can't redirect off the site.
-- The API is the real check. `internal/auth` loads the session for each request; every character, item, and spell resolver requires a user and checks ownership, returning `UNAUTHENTICATED` when logged out and "not found" for another user's character. Game content stays public.
+- The API is the real check. `internal/auth` loads the session for each request; every character, item, and spell resolver requires a user and checks ownership, returning `UNAUTHENTICATED` when logged out and "not found" for another user's character. Game content stays public, except the monster compendium, which needs a logged-in user.
 
 ## Schema Changes Flow API → App
 

@@ -2,7 +2,7 @@
 
 Each milestone is one or more branches merged to `main`. A milestone is done when every "done when" box is checked. Update this file in the same branch as the work.
 
-## Status (2026-11-18)
+## Status (2026-11-20)
 
 - **Done**: Milestone 1 — character creation (class, race, looks, alignment, stats, move creation options, starting gear) with validation in both the API and the form; a read-only character sheet (basic info, moves, equipment, armor/weapons); the legacy prototype schema removed; format/lint/typecheck/test tooling with git hooks.
 - **Done**: Milestone 2 (Test Foundation) — API integration tests against a real Postgres (testcontainers-go) cover character creation and items, and run from `make check`. Unit tests cover the pure rules logic (validation, starting gear, ability modifiers). A Playwright smoke test creates a character through the UI against the real API (`make test-e2e`, run separately because it needs Docker and a browser).
@@ -10,7 +10,8 @@ Each milestone is one or more branches merged to `main`. A milestone is done whe
 - **Done**: Milestone 4 (Accounts & Auth), spec #12 — local accounts (email and password, argon2id), server-side sessions in an HttpOnly cookie, characters owned by a user with the API enforcing ownership, and login/register pages with auth-aware navigation.
 - **Done**: Milestone 5 (Campaigns), spec #14 — campaigns run by a GM, reusable invite links, one character per player, bonds about other party members, the GM's read-only view of every sheet with HP and XP adjustments, and End of Session (group questions, alignment, and bond resolution, each with a logged reason) awarding XP.
 - **Done**: Milestone 6 (Table Chat & Rolls), spec #16 — a live table chat (WebSocket subscriptions with Postgres LISTEN/NOTIFY), whispers and GM-only rolls, move and damage rolls with a full breakdown (rolled by the app or entered from physical dice), named forward/ongoing bonuses, a Mark XP button on a miss, and an activity log of sheet changes. The honor system is now the rule: the API keeps data integrity and logs; players decide.
-- **Next**: Milestone 7 (Monsters).
+- **Done**: Milestone 7 (Monsters), spec #23 — a searchable monster compendium (stable keys, attacks split so they can be rolled), each GM's own bestiary of custom monsters (written from scratch or copied from the compendium), and GM-only monsters in play per campaign with HP tracking, numbered groups, and damage rolls to chat under the monster's name.
+- **Next**: Milestone 8 (Fronts, Dangers & Encounters).
 
 ---
 
@@ -71,16 +72,15 @@ The core loop of play, and the interface the AI agents will use later.
 - [x] Damage rolls posted to chat
 - [x] GM-only messages / whispers
 
-### 7. Monsters ← next
+### 7. Monsters ✓
 
 Before fronts, because encounters are built from monsters.
 
-- [ ] Browse the monster compendium (`data/monsters`)
-- [ ] GM creates custom monsters (the full stat block), optionally copied from a compendium entry
-- [ ] Track monster HP during play
-- [ ] Optional: a read-only MCP server (official Go SDK, `modelcontextprotocol/go-sdk`) over the compendium and characters, usable from Claude Code/Desktop — an early start on Milestone 9
+- [x] Browse the monster compendium (`data/monsters`)
+- [x] GM creates custom monsters (the full stat block), optionally copied from a compendium entry
+- [x] Track monster HP during play
 
-### 8. Fronts, Dangers & Encounters
+### 8. Fronts, Dangers & Encounters ← next
 
 - [ ] Fronts with dangers, impulses, grim portents (checkable), impending dooms, and stakes
 - [ ] Encounters: groups of monsters tied to a danger or location
@@ -107,6 +107,7 @@ Agents run as separate processes (e.g. a Claude Agent SDK harness) that connect 
 ### 9. AI Foundation
 
 - [ ] Claude API client in the API, with the key in env; per-campaign usage/cost logging
+- [ ] A read-only MCP server (official Go SDK, `modelcontextprotocol/go-sdk`) over the compendium and characters, usable from Claude Code/Desktop, as the first slice (moved here from Milestone 7)
 - [ ] A dwai MCP server exposing game actions (read sheet, roll move, post message, look up rules, search the compendium) as tools; agents authenticate as their own user
 - [ ] Skills: procedural guidance as `SKILL.md` files, loaded on demand (natively via the Agent SDK, or a `load_skill` tool on the Messages API)
 - [ ] Context building: rules summary + campaign state + recent chat, with summarization for long campaigns; prompt caching for the static rules block

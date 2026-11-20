@@ -54,7 +54,7 @@ export const useRollDialogs = (
       ) : open?.kind === "damage" ? (
         <DamageDialog
           campaignId={campaignId}
-          character={character}
+          initialExpression={`d${character.characterClass.damageDie}`}
           isOpen
           key={open.serial}
           onClose={close}

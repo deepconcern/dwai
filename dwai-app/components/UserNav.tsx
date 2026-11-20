@@ -6,8 +6,8 @@ import { getUser } from "@/lib/session";
 import { LogoutButton } from "./LogoutButton";
 
 /**
- * The header's links: for a logged-in user, their characters and campaigns,
- * their name, and a log-out button; otherwise log-in and register links.
+ * The header's links: for a logged-in user, their characters, campaigns, and
+ * monsters, * their name, and a log-out button; otherwise log-in and register links.
  */
 export const UserNav: FC = async () => {
   const user = await getUser();
@@ -19,6 +19,9 @@ export const UserNav: FC = async () => {
       </Link>
       <Link className="hover:underline" href="/campaigns">
         Campaigns
+      </Link>
+      <Link className="hover:underline" href="/monsters">
+        Monsters
       </Link>
       <span>{user.displayName}</span>
       <LogoutButton />

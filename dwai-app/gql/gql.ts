@@ -24,6 +24,12 @@ type Documents = {
     "\n  mutation EndSession($id: ID!, $input: EndSessionInput!) {\n    campaigns {\n      endSession(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.EndSessionDocument,
     "\n  query GetCampaign($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        characters {\n          alignmentType\n          bondCount\n          characterClass {\n            name\n          }\n          hitPoints\n          id\n          looks {\n            id\n            value\n          }\n          maxHitPoints\n          name\n          owner {\n            displayName\n          }\n          raceMove {\n            name\n          }\n        }\n        description\n        gm {\n          displayName\n        }\n        id\n        inviteCode\n        isGm\n        myCharacter {\n          id\n          ...CampaignCharacterFragment\n          ...CharacterFragment\n        }\n        name\n        sessions {\n          createdAt\n          id\n          learned {\n            checked\n            reason\n          }\n          looted {\n            checked\n            reason\n          }\n          number\n          overcame {\n            checked\n            reason\n          }\n          reports {\n            alignment {\n              checked\n              reason\n            }\n            bond {\n              checked\n              reason\n            }\n            character {\n              id\n              name\n            }\n            resolvedBondText\n            xpAwarded\n          }\n        }\n      }\n    }\n    moves {\n      basicMoves: byType(type: \"basic\") {\n        ...MoveFragment\n      }\n      specialMoves: byType(type: \"special\") {\n        ...MoveFragment\n      }\n    }\n  }\n": typeof types.GetCampaignDocument,
     "\n  mutation RegenerateInviteCode($id: ID!) {\n    campaigns {\n      regenerateInviteCode(id: $id) {\n        id\n        inviteCode\n      }\n    }\n  }\n": typeof types.RegenerateInviteCodeDocument,
+    "\n  query GetCampaignMonsters($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        id\n        monsters {\n          hp\n          id\n          maxHp\n          name\n          statBlock {\n            ...MonsterFragment\n          }\n        }\n      }\n    }\n    monsters {\n      compendium {\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        hp\n        id\n        name\n        tags\n      }\n    }\n  }\n": typeof types.GetCampaignMonstersDocument,
+    "\n  mutation AddMonsters($id: ID!, $input: AddMonstersInput!) {\n    campaigns {\n      addMonsters(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.AddMonstersDocument,
+    "\n  mutation DamageMonster($input: TakeDamageInput!, $monsterId: ID!) {\n    campaigns {\n      damageMonster(input: $input, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n": typeof types.DamageMonsterDocument,
+    "\n  mutation HealMonster($amount: Int!, $monsterId: ID!) {\n    campaigns {\n      healMonster(amount: $amount, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n": typeof types.HealMonsterDocument,
+    "\n  mutation RenameMonster($monsterId: ID!, $name: String!) {\n    campaigns {\n      renameMonster(monsterId: $monsterId, name: $name) {\n        id\n        name\n      }\n    }\n  }\n": typeof types.RenameMonsterDocument,
+    "\n  mutation RemoveMonster($monsterId: ID!) {\n    campaigns {\n      removeMonster(monsterId: $monsterId)\n    }\n  }\n": typeof types.RemoveMonsterDocument,
     "\n  mutation LeaveCampaign($characterId: ID!) {\n    campaigns {\n      leave(characterId: $characterId) {\n        id\n      }\n    }\n  }\n": typeof types.LeaveCampaignDocument,
     "\n  mutation RemoveCharacter($characterId: ID!, $id: ID!) {\n    campaigns {\n      removeCharacter(characterId: $characterId, id: $id) {\n        id\n      }\n    }\n  }\n": typeof types.RemoveCharacterDocument,
     "\n  query GetMyCampaigns {\n    campaigns {\n      mine {\n        id\n        isGm\n        name\n      }\n    }\n  }\n": typeof types.GetMyCampaignsDocument,
@@ -53,10 +59,18 @@ type Documents = {
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": typeof types.CreateCharacterDocument,
     "\n  mutation JoinCampaign($characterId: ID!, $code: String!) {\n    campaigns {\n      join(characterId: $characterId, code: $code) {\n        id\n      }\n    }\n  }\n": typeof types.JoinCampaignDocument,
     "\n  query GetInvite($code: String!) {\n    campaigns {\n      byInviteCode(code: $code) {\n        gm {\n          displayName\n        }\n        name\n      }\n    }\n    characters {\n      mine {\n        campaign {\n          id\n        }\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetInviteDocument,
+    "\n  query GetMonsters {\n    monsters {\n      compendium {\n        armor\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        armor\n        hp\n        id\n        name\n        tags\n      }\n      settings {\n        key\n        name\n      }\n      tags\n    }\n  }\n": typeof types.GetMonstersDocument,
+    "\n  query GetCompendiumMonster($key: ID!) {\n    monsters {\n      byKey(key: $key) {\n        ...MonsterFragment\n      }\n    }\n  }\n": typeof types.GetCompendiumMonsterDocument,
+    "\n  mutation UpdateCustomMonster($id: ID!, $input: MonsterInput!) {\n    monsters {\n      updateCustom(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.UpdateCustomMonsterDocument,
+    "\n  mutation DeleteCustomMonster($id: ID!) {\n    monsters {\n      deleteCustom(id: $id)\n    }\n  }\n": typeof types.DeleteCustomMonsterDocument,
+    "\n  query GetCustomMonster($id: ID!) {\n    monsters {\n      custom(id: $id) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n": typeof types.GetCustomMonsterDocument,
+    "\n  mutation CreateCustomMonster($input: MonsterInput!) {\n    monsters {\n      createCustom(input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.CreateCustomMonsterDocument,
+    "\n  query GetNewMonster($from: ID!, $copying: Boolean!) {\n    monsters {\n      byKey(key: $from) @include(if: $copying) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n": typeof types.GetNewMonsterDocument,
     "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n": typeof types.GetMyCharactersDocument,
     "\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.LoginDocument,
     "\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.RegisterDocument,
     "\n  mutation PostDamage($id: ID!, $input: DamageRollInput!) {\n    campaigns {\n      postDamage(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.PostDamageDocument,
+    "\n  mutation PostMonsterDamage($input: DamageRollInput!, $monsterId: ID!) {\n    campaigns {\n      postMonsterDamage(input: $input, monsterId: $monsterId) {\n        id\n      }\n    }\n  }\n": typeof types.PostMonsterDamageDocument,
     "\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n": typeof types.LogoutDocument,
     "\n  mutation PostRoll($id: ID!, $input: RollInput!) {\n    campaigns {\n      postRoll(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": typeof types.PostRollDocument,
     "\n  mutation RemoveBonus($bonusId: ID!) {\n    characters {\n      removeBonus(bonusId: $bonusId) {\n        bonuses {\n          ...BonusFragment\n        }\n        id\n      }\n    }\n  }\n": typeof types.RemoveBonusDocument,
@@ -67,6 +81,7 @@ type Documents = {
     "\n  fragment ItemFragment on Item {\n    count\n    description\n    id\n    isWorn\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n    type\n  }\n": typeof types.ItemFragmentFragmentDoc,
     "\n  fragment ItemOptionFragment on ItemOption {\n    count\n    description\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n  }\n": typeof types.ItemOptionFragmentFragmentDoc,
     "\n  fragment MessageFragment on Message {\n    authorIsGm\n    authorName\n    body\n    characterId\n    characterName\n    createdAt\n    gmOnly\n    id\n    kind\n    ooc\n    roll {\n      band\n      dice {\n        dropped\n        sides\n        value\n      }\n      diceTotal\n      label\n      modifiers {\n        label\n        value\n      }\n      move {\n        key\n        name\n        on10\n        on7to9\n        onMiss\n      }\n      source\n      total\n    }\n    viewerIsAuthor\n    whisperTo\n  }\n": typeof types.MessageFragmentFragmentDoc,
+    "\n  fragment MonsterFragment on Monster {\n    armor\n    attack {\n      damage\n      ignoresArmor\n      name\n      piercing\n      tags\n    }\n    description\n    hp\n    id\n    instinct\n    moves\n    name\n    setting {\n      key\n      name\n    }\n    source\n    sourceKey\n    specialQualities\n    tags\n  }\n": typeof types.MonsterFragmentFragmentDoc,
     "\n  fragment MoveFragment on Move {\n    creationOptions {\n      choices {\n        isPicked\n        key\n        label\n      }\n      label\n      pick\n    }\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": typeof types.MoveFragmentFragmentDoc,
     "\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n": typeof types.SpellFragmentFragmentDoc,
     "\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n": typeof types.MeDocument,
@@ -82,6 +97,12 @@ const documents: Documents = {
     "\n  mutation EndSession($id: ID!, $input: EndSessionInput!) {\n    campaigns {\n      endSession(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": types.EndSessionDocument,
     "\n  query GetCampaign($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        characters {\n          alignmentType\n          bondCount\n          characterClass {\n            name\n          }\n          hitPoints\n          id\n          looks {\n            id\n            value\n          }\n          maxHitPoints\n          name\n          owner {\n            displayName\n          }\n          raceMove {\n            name\n          }\n        }\n        description\n        gm {\n          displayName\n        }\n        id\n        inviteCode\n        isGm\n        myCharacter {\n          id\n          ...CampaignCharacterFragment\n          ...CharacterFragment\n        }\n        name\n        sessions {\n          createdAt\n          id\n          learned {\n            checked\n            reason\n          }\n          looted {\n            checked\n            reason\n          }\n          number\n          overcame {\n            checked\n            reason\n          }\n          reports {\n            alignment {\n              checked\n              reason\n            }\n            bond {\n              checked\n              reason\n            }\n            character {\n              id\n              name\n            }\n            resolvedBondText\n            xpAwarded\n          }\n        }\n      }\n    }\n    moves {\n      basicMoves: byType(type: \"basic\") {\n        ...MoveFragment\n      }\n      specialMoves: byType(type: \"special\") {\n        ...MoveFragment\n      }\n    }\n  }\n": types.GetCampaignDocument,
     "\n  mutation RegenerateInviteCode($id: ID!) {\n    campaigns {\n      regenerateInviteCode(id: $id) {\n        id\n        inviteCode\n      }\n    }\n  }\n": types.RegenerateInviteCodeDocument,
+    "\n  query GetCampaignMonsters($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        id\n        monsters {\n          hp\n          id\n          maxHp\n          name\n          statBlock {\n            ...MonsterFragment\n          }\n        }\n      }\n    }\n    monsters {\n      compendium {\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        hp\n        id\n        name\n        tags\n      }\n    }\n  }\n": types.GetCampaignMonstersDocument,
+    "\n  mutation AddMonsters($id: ID!, $input: AddMonstersInput!) {\n    campaigns {\n      addMonsters(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": types.AddMonstersDocument,
+    "\n  mutation DamageMonster($input: TakeDamageInput!, $monsterId: ID!) {\n    campaigns {\n      damageMonster(input: $input, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n": types.DamageMonsterDocument,
+    "\n  mutation HealMonster($amount: Int!, $monsterId: ID!) {\n    campaigns {\n      healMonster(amount: $amount, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n": types.HealMonsterDocument,
+    "\n  mutation RenameMonster($monsterId: ID!, $name: String!) {\n    campaigns {\n      renameMonster(monsterId: $monsterId, name: $name) {\n        id\n        name\n      }\n    }\n  }\n": types.RenameMonsterDocument,
+    "\n  mutation RemoveMonster($monsterId: ID!) {\n    campaigns {\n      removeMonster(monsterId: $monsterId)\n    }\n  }\n": types.RemoveMonsterDocument,
     "\n  mutation LeaveCampaign($characterId: ID!) {\n    campaigns {\n      leave(characterId: $characterId) {\n        id\n      }\n    }\n  }\n": types.LeaveCampaignDocument,
     "\n  mutation RemoveCharacter($characterId: ID!, $id: ID!) {\n    campaigns {\n      removeCharacter(characterId: $characterId, id: $id) {\n        id\n      }\n    }\n  }\n": types.RemoveCharacterDocument,
     "\n  query GetMyCampaigns {\n    campaigns {\n      mine {\n        id\n        isGm\n        name\n      }\n    }\n  }\n": types.GetMyCampaignsDocument,
@@ -111,10 +132,18 @@ const documents: Documents = {
     "\n  mutation CreateCharacter($input: CreateCharacterInput!) {\n    characters {\n      create(input: $input) {\n        id\n        name\n      }\n    }\n  }\n": types.CreateCharacterDocument,
     "\n  mutation JoinCampaign($characterId: ID!, $code: String!) {\n    campaigns {\n      join(characterId: $characterId, code: $code) {\n        id\n      }\n    }\n  }\n": types.JoinCampaignDocument,
     "\n  query GetInvite($code: String!) {\n    campaigns {\n      byInviteCode(code: $code) {\n        gm {\n          displayName\n        }\n        name\n      }\n    }\n    characters {\n      mine {\n        campaign {\n          id\n        }\n        id\n        name\n      }\n    }\n  }\n": types.GetInviteDocument,
+    "\n  query GetMonsters {\n    monsters {\n      compendium {\n        armor\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        armor\n        hp\n        id\n        name\n        tags\n      }\n      settings {\n        key\n        name\n      }\n      tags\n    }\n  }\n": types.GetMonstersDocument,
+    "\n  query GetCompendiumMonster($key: ID!) {\n    monsters {\n      byKey(key: $key) {\n        ...MonsterFragment\n      }\n    }\n  }\n": types.GetCompendiumMonsterDocument,
+    "\n  mutation UpdateCustomMonster($id: ID!, $input: MonsterInput!) {\n    monsters {\n      updateCustom(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": types.UpdateCustomMonsterDocument,
+    "\n  mutation DeleteCustomMonster($id: ID!) {\n    monsters {\n      deleteCustom(id: $id)\n    }\n  }\n": types.DeleteCustomMonsterDocument,
+    "\n  query GetCustomMonster($id: ID!) {\n    monsters {\n      custom(id: $id) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n": types.GetCustomMonsterDocument,
+    "\n  mutation CreateCustomMonster($input: MonsterInput!) {\n    monsters {\n      createCustom(input: $input) {\n        id\n      }\n    }\n  }\n": types.CreateCustomMonsterDocument,
+    "\n  query GetNewMonster($from: ID!, $copying: Boolean!) {\n    monsters {\n      byKey(key: $from) @include(if: $copying) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n": types.GetNewMonsterDocument,
     "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n": types.GetMyCharactersDocument,
     "\n  mutation Login($input: LoginInput!) {\n    auth {\n      login(input: $input) {\n        id\n      }\n    }\n  }\n": types.LoginDocument,
     "\n  mutation Register($input: RegisterInput!) {\n    auth {\n      register(input: $input) {\n        id\n      }\n    }\n  }\n": types.RegisterDocument,
     "\n  mutation PostDamage($id: ID!, $input: DamageRollInput!) {\n    campaigns {\n      postDamage(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": types.PostDamageDocument,
+    "\n  mutation PostMonsterDamage($input: DamageRollInput!, $monsterId: ID!) {\n    campaigns {\n      postMonsterDamage(input: $input, monsterId: $monsterId) {\n        id\n      }\n    }\n  }\n": types.PostMonsterDamageDocument,
     "\n  mutation Logout {\n    auth {\n      logout\n    }\n  }\n": types.LogoutDocument,
     "\n  mutation PostRoll($id: ID!, $input: RollInput!) {\n    campaigns {\n      postRoll(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n": types.PostRollDocument,
     "\n  mutation RemoveBonus($bonusId: ID!) {\n    characters {\n      removeBonus(bonusId: $bonusId) {\n        bonuses {\n          ...BonusFragment\n        }\n        id\n      }\n    }\n  }\n": types.RemoveBonusDocument,
@@ -125,6 +154,7 @@ const documents: Documents = {
     "\n  fragment ItemFragment on Item {\n    count\n    description\n    id\n    isWorn\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n    type\n  }\n": types.ItemFragmentFragmentDoc,
     "\n  fragment ItemOptionFragment on ItemOption {\n    count\n    description\n    key\n    label\n    tags {\n      key\n      name\n      quantity\n    }\n  }\n": types.ItemOptionFragmentFragmentDoc,
     "\n  fragment MessageFragment on Message {\n    authorIsGm\n    authorName\n    body\n    characterId\n    characterName\n    createdAt\n    gmOnly\n    id\n    kind\n    ooc\n    roll {\n      band\n      dice {\n        dropped\n        sides\n        value\n      }\n      diceTotal\n      label\n      modifiers {\n        label\n        value\n      }\n      move {\n        key\n        name\n        on10\n        on7to9\n        onMiss\n      }\n      source\n      total\n    }\n    viewerIsAuthor\n    whisperTo\n  }\n": types.MessageFragmentFragmentDoc,
+    "\n  fragment MonsterFragment on Monster {\n    armor\n    attack {\n      damage\n      ignoresArmor\n      name\n      piercing\n      tags\n    }\n    description\n    hp\n    id\n    instinct\n    moves\n    name\n    setting {\n      key\n      name\n    }\n    source\n    sourceKey\n    specialQualities\n    tags\n  }\n": types.MonsterFragmentFragmentDoc,
     "\n  fragment MoveFragment on Move {\n    creationOptions {\n      choices {\n        isPicked\n        key\n        label\n      }\n      label\n      pick\n    }\n    description\n    key\n    name\n    on10\n    on7to9\n    onMiss\n    options\n    replacesKey\n    requiresKey\n    roll\n    trigger\n    type\n  }\n": types.MoveFragmentFragmentDoc,
     "\n  fragment SpellFragment on Spell {\n    description\n    key\n    level\n    name\n    options\n    tags\n  }\n": types.SpellFragmentFragmentDoc,
     "\n  query Me {\n    me {\n      displayName\n      email\n      id\n    }\n  }\n": types.MeDocument,
@@ -184,6 +214,30 @@ export function graphql(source: "\n  query GetCampaign($id: ID!) {\n    campaign
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation RegenerateInviteCode($id: ID!) {\n    campaigns {\n      regenerateInviteCode(id: $id) {\n        id\n        inviteCode\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation RegenerateInviteCode($id: ID!) {\n    campaigns {\n      regenerateInviteCode(id: $id) {\n        id\n        inviteCode\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetCampaignMonsters($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        id\n        monsters {\n          hp\n          id\n          maxHp\n          name\n          statBlock {\n            ...MonsterFragment\n          }\n        }\n      }\n    }\n    monsters {\n      compendium {\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        hp\n        id\n        name\n        tags\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCampaignMonsters($id: ID!) {\n    campaigns {\n      byId(id: $id) {\n        id\n        monsters {\n          hp\n          id\n          maxHp\n          name\n          statBlock {\n            ...MonsterFragment\n          }\n        }\n      }\n    }\n    monsters {\n      compendium {\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        hp\n        id\n        name\n        tags\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation AddMonsters($id: ID!, $input: AddMonstersInput!) {\n    campaigns {\n      addMonsters(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation AddMonsters($id: ID!, $input: AddMonstersInput!) {\n    campaigns {\n      addMonsters(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DamageMonster($input: TakeDamageInput!, $monsterId: ID!) {\n    campaigns {\n      damageMonster(input: $input, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation DamageMonster($input: TakeDamageInput!, $monsterId: ID!) {\n    campaigns {\n      damageMonster(input: $input, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation HealMonster($amount: Int!, $monsterId: ID!) {\n    campaigns {\n      healMonster(amount: $amount, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation HealMonster($amount: Int!, $monsterId: ID!) {\n    campaigns {\n      healMonster(amount: $amount, monsterId: $monsterId) {\n        hp\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RenameMonster($monsterId: ID!, $name: String!) {\n    campaigns {\n      renameMonster(monsterId: $monsterId, name: $name) {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation RenameMonster($monsterId: ID!, $name: String!) {\n    campaigns {\n      renameMonster(monsterId: $monsterId, name: $name) {\n        id\n        name\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RemoveMonster($monsterId: ID!) {\n    campaigns {\n      removeMonster(monsterId: $monsterId)\n    }\n  }\n"): (typeof documents)["\n  mutation RemoveMonster($monsterId: ID!) {\n    campaigns {\n      removeMonster(monsterId: $monsterId)\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -303,6 +357,34 @@ export function graphql(source: "\n  query GetInvite($code: String!) {\n    camp
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query GetMonsters {\n    monsters {\n      compendium {\n        armor\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        armor\n        hp\n        id\n        name\n        tags\n      }\n      settings {\n        key\n        name\n      }\n      tags\n    }\n  }\n"): (typeof documents)["\n  query GetMonsters {\n    monsters {\n      compendium {\n        armor\n        hp\n        id\n        name\n        setting {\n          key\n          name\n        }\n        tags\n      }\n      mine {\n        armor\n        hp\n        id\n        name\n        tags\n      }\n      settings {\n        key\n        name\n      }\n      tags\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetCompendiumMonster($key: ID!) {\n    monsters {\n      byKey(key: $key) {\n        ...MonsterFragment\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetCompendiumMonster($key: ID!) {\n    monsters {\n      byKey(key: $key) {\n        ...MonsterFragment\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateCustomMonster($id: ID!, $input: MonsterInput!) {\n    monsters {\n      updateCustom(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateCustomMonster($id: ID!, $input: MonsterInput!) {\n    monsters {\n      updateCustom(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteCustomMonster($id: ID!) {\n    monsters {\n      deleteCustom(id: $id)\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteCustomMonster($id: ID!) {\n    monsters {\n      deleteCustom(id: $id)\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetCustomMonster($id: ID!) {\n    monsters {\n      custom(id: $id) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n"): (typeof documents)["\n  query GetCustomMonster($id: ID!) {\n    monsters {\n      custom(id: $id) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateCustomMonster($input: MonsterInput!) {\n    monsters {\n      createCustom(input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCustomMonster($input: MonsterInput!) {\n    monsters {\n      createCustom(input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetNewMonster($from: ID!, $copying: Boolean!) {\n    monsters {\n      byKey(key: $from) @include(if: $copying) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n"): (typeof documents)["\n  query GetNewMonster($from: ID!, $copying: Boolean!) {\n    monsters {\n      byKey(key: $from) @include(if: $copying) {\n        ...MonsterFragment\n      }\n      tags\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMyCharacters {\n    characters {\n      mine {\n        id\n        name\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -316,6 +398,10 @@ export function graphql(source: "\n  mutation Register($input: RegisterInput!) {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation PostDamage($id: ID!, $input: DamageRollInput!) {\n    campaigns {\n      postDamage(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation PostDamage($id: ID!, $input: DamageRollInput!) {\n    campaigns {\n      postDamage(id: $id, input: $input) {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation PostMonsterDamage($input: DamageRollInput!, $monsterId: ID!) {\n    campaigns {\n      postMonsterDamage(input: $input, monsterId: $monsterId) {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation PostMonsterDamage($input: DamageRollInput!, $monsterId: ID!) {\n    campaigns {\n      postMonsterDamage(input: $input, monsterId: $monsterId) {\n        id\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -356,6 +442,10 @@ export function graphql(source: "\n  fragment ItemOptionFragment on ItemOption {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment MessageFragment on Message {\n    authorIsGm\n    authorName\n    body\n    characterId\n    characterName\n    createdAt\n    gmOnly\n    id\n    kind\n    ooc\n    roll {\n      band\n      dice {\n        dropped\n        sides\n        value\n      }\n      diceTotal\n      label\n      modifiers {\n        label\n        value\n      }\n      move {\n        key\n        name\n        on10\n        on7to9\n        onMiss\n      }\n      source\n      total\n    }\n    viewerIsAuthor\n    whisperTo\n  }\n"): (typeof documents)["\n  fragment MessageFragment on Message {\n    authorIsGm\n    authorName\n    body\n    characterId\n    characterName\n    createdAt\n    gmOnly\n    id\n    kind\n    ooc\n    roll {\n      band\n      dice {\n        dropped\n        sides\n        value\n      }\n      diceTotal\n      label\n      modifiers {\n        label\n        value\n      }\n      move {\n        key\n        name\n        on10\n        on7to9\n        onMiss\n      }\n      source\n      total\n    }\n    viewerIsAuthor\n    whisperTo\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment MonsterFragment on Monster {\n    armor\n    attack {\n      damage\n      ignoresArmor\n      name\n      piercing\n      tags\n    }\n    description\n    hp\n    id\n    instinct\n    moves\n    name\n    setting {\n      key\n      name\n    }\n    source\n    sourceKey\n    specialQualities\n    tags\n  }\n"): (typeof documents)["\n  fragment MonsterFragment on Monster {\n    armor\n    attack {\n      damage\n      ignoresArmor\n      name\n      piercing\n      tags\n    }\n    description\n    hp\n    id\n    instinct\n    moves\n    name\n    setting {\n      key\n      name\n    }\n    source\n    sourceKey\n    specialQualities\n    tags\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -58,6 +58,7 @@ type CampaignMonster struct {
 	Name            string
 	SourceKey       pgtype.Text
 	StatBlock       []byte
+	EncounterID     pgtype.UUID
 }
 
 type CampaignSession struct {
@@ -111,6 +112,63 @@ type CustomMonster struct {
 	SourceKey   pgtype.Text
 	StatBlock   []byte
 	UpdatedAt   pgtype.Timestamptz
+}
+
+type Danger struct {
+	CampaignID    pgtype.UUID
+	CreatedAt     pgtype.Timestamptz
+	FrontID       pgtype.UUID
+	ID            pgtype.UUID
+	ImpendingDoom string
+	Impulse       string
+	Name          string
+	Notes         string
+	RevealedAt    pgtype.Timestamptz
+	Type          string
+	UpdatedAt     pgtype.Timestamptz
+}
+
+type Encounter struct {
+	CampaignID pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
+	DangerID   pgtype.UUID
+	ID         pgtype.UUID
+	Location   string
+	Name       string
+	Notes      string
+	UpdatedAt  pgtype.Timestamptz
+}
+
+type EncounterMonster struct {
+	Count           int32
+	CreatedAt       pgtype.Timestamptz
+	CustomMonsterID pgtype.UUID
+	EncounterID     pgtype.UUID
+	ID              pgtype.UUID
+	MaxHp           int32
+	SourceKey       pgtype.Text
+	StatBlock       []byte
+}
+
+type Front struct {
+	CampaignID pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
+	ID         pgtype.UUID
+	Kind       string
+	Name       string
+	Notes      string
+	ResolvedAt pgtype.Timestamptz
+	Stakes     []byte
+	UpdatedAt  pgtype.Timestamptz
+}
+
+type GrimPortent struct {
+	DangerID   pgtype.UUID
+	DoneAt     pgtype.Timestamptz
+	ID         pgtype.UUID
+	Position   int32
+	RevealedAt pgtype.Timestamptz
+	Text       string
 }
 
 type Item struct {

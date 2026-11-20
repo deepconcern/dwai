@@ -213,7 +213,15 @@ models:
     fields:
       characters:
         resolver: true
+      dangersWithoutFront:
+        resolver: true
+      encounters:
+        resolver: true
+      fronts:
+        resolver: true
       gm:
+        resolver: true
+      knownThreats:
         resolver: true
       messages:
         resolver: true
@@ -226,13 +234,27 @@ models:
 
   CampaignMutation:
     fields:
+      addEncounterMonsters:
+        resolver: true
       addMonsters:
         resolver: true
       create:
         resolver: true
+      createDanger:
+        resolver: true
+      createEncounter:
+        resolver: true
+      createFront:
+        resolver: true
       damageMonster:
         resolver: true
       delete:
+        resolver: true
+      deleteDanger:
+        resolver: true
+      deleteEncounter:
+        resolver: true
+      deleteFront:
         resolver: true
       endSession:
         resolver: true
@@ -254,13 +276,32 @@ models:
         resolver: true
       removeCharacter:
         resolver: true
+      removeEncounterMonster:
+        resolver: true
       removeMonster:
         resolver: true
       renameMonster:
         resolver: true
+      runEncounter:
+        resolver: true
+      setDangerRevealed:
+        resolver: true
+      setEncounterMonsterCount:
+        resolver: true
+      setFrontResolved:
+        resolver: true
+      setPortentDone:
+        resolver: true
+      setPortentRevealed:
+        resolver: true
       update:
         resolver: true
-
+      updateDanger:
+        resolver: true
+      updateEncounter:
+        resolver: true
+      updateFront:
+        resolver: true
   CampaignQuery:
     fields:
       byId:

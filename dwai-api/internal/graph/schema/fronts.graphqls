@@ -1,0 +1,230 @@
+# The GM's prep for a campaign: fronts, dangers, grim portents, and
+# encounters. All optional, and GM only, except what the GM reveals.
+
+"Whether a front spans the whole campaign or covers the next few sessions."
+enum FrontKind {
+  ADVENTURE
+  CAMPAIGN
+}
+
+"A front: the GM's prep grouping related dangers, with stakes questions."
+type Front {
+  createdAt: Time!
+  "Its dangers, oldest first."
+  dangers: [Danger!]!
+  id: ID!
+  kind: FrontKind!
+  name: String!
+  notes: String!
+  "Whether the GM marked it resolved."
+  resolved: Boolean!
+  stakes: [Stake!]!
+}
+
+"A stakes question: something the GM wants to find out in play."
+type Stake {
+  "The GM's note once play answers it; empty until then."
+  answer: String!
+  question: String!
+}
+
+"A threat in a front (or in none), with an impulse and grim portents leading to its impending doom."
+type Danger {
+  "The template category of its type, when the type matches a template type."
+  category: DangerCategory
+  createdAt: Time!
+  "Its front; null when it's in none."
+  frontId: ID
+  id: ID!
+  impendingDoom: String!
+  impulse: String!
+  name: String!
+  notes: String!
+  "In order."
+  portents: [GrimPortent!]!
+  "Whether the players can see it in the campaign's known threats."
+  revealed: Boolean!
+  type: String!
+}
+
+"One step of a danger's advance toward its impending doom."
+type GrimPortent {
+  "Whether the GM checked it off as having come to pass."
+  done: Boolean!
+  id: ID!
+  "Whether the players can see it (only when its danger is revealed too)."
+  revealed: Boolean!
+  text: String!
+}
+
+"A danger as the players see it once the GM reveals it."
+type KnownThreat {
+  dangerId: ID!
+  name: String!
+  "The text of its revealed portents, in order."
+  portents: [String!]!
+  type: String!
+}
+
+"A template group of danger types that share moves, e.g. 'Ambitious Organizations'."
+type DangerCategory {
+  key: ID!
+  moves: [String!]!
+  name: String!
+  types: [DangerType!]!
+}
+
+"A template danger type, e.g. 'Cult', with its impulse."
+type DangerType {
+  impulse: String!
+  key: ID!
+  name: String!
+}
+
+"A template kind of impending doom, e.g. 'Tyranny'."
+type ImpendingDoom {
+  description: String!
+  key: ID!
+  name: String!
+}
+
+"The template fronts are built from. The app only suggests from it."
+type DangerTemplate {
+  categories: [DangerCategory!]!
+  impendingDooms: [ImpendingDoom!]!
+}
+
+"A planned group of monsters, linked to a danger or not."
+type Encounter {
+  createdAt: Time!
+  "The danger it's linked to, if any."
+  danger: Danger
+  id: ID!
+  location: String!
+  monsters: [EncounterMonster!]!
+  name: String!
+  notes: String!
+}
+
+"A monster in an encounter: a snapshot of a stat block and how many to put into play."
+type EncounterMonster {
+  count: Int!
+  id: ID!
+  "Each monster's max HP when put into play."
+  maxHp: Int!
+  statBlock: Monster!
+}
+
+"A stakes question, as entered."
+input StakeInput {
+  "Up to 1,000 characters."
+  answer: String! = ""
+  "1 to 200 characters."
+  question: String!
+}
+
+"A front's details, as entered. Only the name is required."
+input FrontInput {
+  kind: FrontKind!
+  "1 to 100 characters."
+  name: String!
+  "Up to 5,000 characters."
+  notes: String! = ""
+  "At most 10."
+  stakes: [StakeInput!]! = []
+}
+
+"A grim portent, as entered: an existing one's ID (keeping whether it's checked and revealed), or no ID for a new one."
+input PortentInput {
+  id: ID
+  "1 to 200 characters."
+  text: String!
+}
+
+"A danger's details, as entered. Only the name is required."
+input DangerInput {
+  "One of the campaign's fronts, or null for none."
+  frontId: ID
+  "Up to 200 characters."
+  impendingDoom: String! = ""
+  "Up to 200 characters."
+  impulse: String! = ""
+  "1 to 100 characters."
+  name: String!
+  "Up to 2,000 characters."
+  notes: String! = ""
+  "The full list in order, at most 20; portents left out are removed."
+  portents: [PortentInput!]! = []
+  "Up to 100 characters."
+  type: String! = ""
+}
+
+"An encounter's details, as entered. Only the name is required."
+input EncounterInput {
+  "One of the campaign's dangers, or null for none."
+  dangerId: ID
+  "Up to 100 characters."
+  location: String! = ""
+  "1 to 100 characters."
+  name: String!
+  "Up to 2,000 characters."
+  notes: String! = ""
+}
+
+extend type Query {
+  "The template fronts are built from."
+  dangerTemplate: DangerTemplate!
+}
+
+extend type Campaign {
+  "Dangers that aren't in a front, oldest first. GM only."
+  dangersWithoutFront: [Danger!]!
+  "Encounters, oldest first. GM only."
+  encounters: [Encounter!]!
+  "Fronts, unresolved first, then oldest first. GM only."
+  fronts: [Front!]!
+  "The dangers the GM has revealed, in the order they were revealed, with their revealed portents. Any member."
+  knownThreats: [KnownThreat!]!
+}
+
+extend type CampaignMonster {
+  "The encounter it was put into play from, if any (and not since deleted)."
+  encounterId: ID
+}
+
+extend type CampaignMutation {
+  "Adds monsters to an encounter (GM only) and returns the encounter."
+  addEncounterMonsters(encounterId: ID!, input: AddMonstersInput!): Encounter!
+  "Adds a danger to the campaign (GM only)."
+  createDanger(id: ID!, input: DangerInput!): Danger!
+  "Adds an encounter to the campaign (GM only)."
+  createEncounter(id: ID!, input: EncounterInput!): Encounter!
+  "Adds a front to the campaign (GM only)."
+  createFront(id: ID!, input: FrontInput!): Front!
+  "Deletes a danger and its portents (GM only). Encounters linked to it stay, unlinked."
+  deleteDanger(dangerId: ID!): Boolean!
+  "Deletes an encounter (GM only). Its monsters already in play stay."
+  deleteEncounter(encounterId: ID!): Boolean!
+  "Deletes a front with its dangers and their portents (GM only)."
+  deleteFront(frontId: ID!): Boolean!
+  "Removes a monster from an encounter (GM only) and returns the encounter."
+  removeEncounterMonster(encounterMonsterId: ID!): Encounter!
+  "Puts every monster of an encounter into play (GM only), numbered like addMonsters, and returns them."
+  runEncounter(encounterId: ID!): [CampaignMonster!]!
+  "Reveals a danger to the players or hides it again (GM only). Revealing posts a line to the chat."
+  setDangerRevealed(dangerId: ID!, revealed: Boolean!): Danger!
+  "Changes how many of an encounter's monster to put into play, 1 to 20 (GM only), and returns the encounter."
+  setEncounterMonsterCount(count: Int!, encounterMonsterId: ID!): Encounter!
+  "Marks a front resolved or not (GM only)."
+  setFrontResolved(frontId: ID!, resolved: Boolean!): Front!
+  "Checks a grim portent off as having come to pass, or unchecks it (GM only). Returns its danger."
+  setPortentDone(done: Boolean!, portentId: ID!): Danger!
+  "Reveals a grim portent of a revealed danger to the players, or hides it again (GM only). Revealing posts a line to the chat. Returns its danger."
+  setPortentRevealed(portentId: ID!, revealed: Boolean!): Danger!
+  "Replaces a danger's details and portents (GM only). Give another frontId to move it."
+  updateDanger(dangerId: ID!, input: DangerInput!): Danger!
+  "Replaces an encounter's details (GM only)."
+  updateEncounter(encounterId: ID!, input: EncounterInput!): Encounter!
+  "Replaces a front's details and stakes (GM only)."
+  updateFront(frontId: ID!, input: FrontInput!): Front!
+}

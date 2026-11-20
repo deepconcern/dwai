@@ -4,6 +4,7 @@ import "fmt"
 
 type GameData struct {
 	CharacterClassMap *CharacterClassMap
+	DangerTemplate    *DangerTemplate
 	ItemTemplateMap   *ItemTemplateMap
 	Monsters          *MonsterCompendium
 	MoveMap           *MoveMap
@@ -15,6 +16,11 @@ func LoadGameData() (*GameData, error) {
 	characterClassMap, err := LoadCharacterClasses()
 	if err != nil {
 		return nil, fmt.Errorf("unable to load character classes: %w", err)
+	}
+
+	dangerTemplate, err := LoadDangerTemplate()
+	if err != nil {
+		return nil, fmt.Errorf("unable to load the danger template: %w", err)
 	}
 
 	itemTemplateMap, err := LoadItemTemplates()
@@ -44,6 +50,7 @@ func LoadGameData() (*GameData, error) {
 
 	return &GameData{
 		CharacterClassMap: characterClassMap,
+		DangerTemplate:    dangerTemplate,
 		ItemTemplateMap:   itemTemplateMap,
 		Monsters:          monsters,
 		MoveMap:           moveMap,

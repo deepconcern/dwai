@@ -18,6 +18,7 @@ type Resolver struct {
 	// Broker delivers new chat messages to subscriptions.
 	Broker           *realtime.Broker
 	CharacterClasses *models.CharacterClassMap
+	DangerTemplate   *models.DangerTemplate
 	DbPool           *pgxpool.Pool
 	ItemTemplates    *models.ItemTemplateMap
 	LookTypes        *models.LookTypeMap

@@ -1,6 +1,6 @@
 -- name: InsertCampaignMonster :one
-INSERT INTO campaign_monsters (campaign_id, custom_monster_id, hp, max_hp, name, source_key, stat_block)
-VALUES ($1, $2, $3, $3, $4, $5, $6)
+INSERT INTO campaign_monsters (campaign_id, custom_monster_id, encounter_id, hp, max_hp, name, source_key, stat_block)
+VALUES ($1, $2, $3, $4, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: SelectCampaignMonster :one

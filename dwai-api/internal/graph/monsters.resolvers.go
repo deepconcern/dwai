@@ -16,7 +16,7 @@ import (
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/deepconcern/dwai/dwai-api/internal/graph/model"
 	"github.com/deepconcern/dwai/dwai-api/internal/models"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // Monsters is the resolver for the monsters field.

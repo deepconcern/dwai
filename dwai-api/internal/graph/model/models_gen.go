@@ -130,6 +130,14 @@ type Campaign struct {
 	Sessions []*CampaignSession `json:"sessions"`
 	// Chat messages the logged-in user may see, newest page first: up to limit (1 to 100) before the given message ID.
 	Messages *MessagePage `json:"messages"`
+	// Dangers that aren't in a front, oldest first. GM only.
+	DangersWithoutFront []*Danger `json:"dangersWithoutFront"`
+	// Encounters, oldest first. GM only.
+	Encounters []*Encounter `json:"encounters"`
+	// Fronts, unresolved first, then oldest first. GM only.
+	Fronts []*Front `json:"fronts"`
+	// The dangers the GM has revealed, in the order they were revealed, with their revealed portents. Any member.
+	KnownThreats []*KnownThreat `json:"knownThreats"`
 	// The monsters in play, oldest first. GM only: anyone else gets an error.
 	Monsters []*CampaignMonster `json:"monsters"`
 }
@@ -159,6 +167,8 @@ type CampaignMonster struct {
 	Name string `json:"name"`
 	// The stat block as it was when the monster was added.
 	StatBlock *Monster `json:"statBlock"`
+	// The encounter it was put into play from, if any (and not since deleted).
+	EncounterID *string `json:"encounterId,omitempty"`
 }
 
 // Namespace for campaign mutations.
@@ -185,6 +195,40 @@ type CampaignMutation struct {
 	PostDamage *Message `json:"postDamage"`
 	// Posts a move roll by the logged-in player's character.
 	PostRoll *Message `json:"postRoll"`
+	// Adds monsters to an encounter (GM only) and returns the encounter.
+	AddEncounterMonsters *Encounter `json:"addEncounterMonsters"`
+	// Adds a danger to the campaign (GM only).
+	CreateDanger *Danger `json:"createDanger"`
+	// Adds an encounter to the campaign (GM only).
+	CreateEncounter *Encounter `json:"createEncounter"`
+	// Adds a front to the campaign (GM only).
+	CreateFront *Front `json:"createFront"`
+	// Deletes a danger and its portents (GM only). Encounters linked to it stay, unlinked.
+	DeleteDanger bool `json:"deleteDanger"`
+	// Deletes an encounter (GM only). Its monsters already in play stay.
+	DeleteEncounter bool `json:"deleteEncounter"`
+	// Deletes a front with its dangers and their portents (GM only).
+	DeleteFront bool `json:"deleteFront"`
+	// Removes a monster from an encounter (GM only) and returns the encounter.
+	RemoveEncounterMonster *Encounter `json:"removeEncounterMonster"`
+	// Puts every monster of an encounter into play (GM only), numbered like addMonsters, and returns them.
+	RunEncounter []*CampaignMonster `json:"runEncounter"`
+	// Reveals a danger to the players or hides it again (GM only). Revealing posts a line to the chat.
+	SetDangerRevealed *Danger `json:"setDangerRevealed"`
+	// Changes how many of an encounter's monster to put into play, 1 to 20 (GM only), and returns the encounter.
+	SetEncounterMonsterCount *Encounter `json:"setEncounterMonsterCount"`
+	// Marks a front resolved or not (GM only).
+	SetFrontResolved *Front `json:"setFrontResolved"`
+	// Checks a grim portent off as having come to pass, or unchecks it (GM only). Returns its danger.
+	SetPortentDone *Danger `json:"setPortentDone"`
+	// Reveals a grim portent of a revealed danger to the players, or hides it again (GM only). Revealing posts a line to the chat. Returns its danger.
+	SetPortentRevealed *Danger `json:"setPortentRevealed"`
+	// Replaces a danger's details and portents (GM only). Give another frontId to move it.
+	UpdateDanger *Danger `json:"updateDanger"`
+	// Replaces an encounter's details (GM only).
+	UpdateEncounter *Encounter `json:"updateEncounter"`
+	// Replaces a front's details and stakes (GM only).
+	UpdateFront *Front `json:"updateFront"`
 	// Adds monsters to play (GM only) and returns them.
 	AddMonsters []*CampaignMonster `json:"addMonsters"`
 	// Deals damage to a monster in play (GM only): it loses the damage minus its armor (reduced by piercing, or ignored), down to 0 HP.
@@ -432,6 +476,64 @@ type DamageRollInput struct {
 	Modifiers []*ModifierInput `json:"modifiers"`
 }
 
+// A threat in a front (or in none), with an impulse and grim portents leading to its impending doom.
+type Danger struct {
+	// The template category of its type, when the type matches a template type.
+	Category  *DangerCategory `json:"category,omitempty"`
+	CreatedAt time.Time       `json:"createdAt"`
+	// Its front; null when it's in none.
+	FrontID       *string `json:"frontId,omitempty"`
+	ID            string  `json:"id"`
+	ImpendingDoom string  `json:"impendingDoom"`
+	Impulse       string  `json:"impulse"`
+	Name          string  `json:"name"`
+	Notes         string  `json:"notes"`
+	// In order.
+	Portents []*GrimPortent `json:"portents"`
+	// Whether the players can see it in the campaign's known threats.
+	Revealed bool   `json:"revealed"`
+	Type     string `json:"type"`
+}
+
+// A template group of danger types that share moves, e.g. 'Ambitious Organizations'.
+type DangerCategory struct {
+	Key   string        `json:"key"`
+	Moves []string      `json:"moves"`
+	Name  string        `json:"name"`
+	Types []*DangerType `json:"types"`
+}
+
+// A danger's details, as entered. Only the name is required.
+type DangerInput struct {
+	// One of the campaign's fronts, or null for none.
+	FrontID *string `json:"frontId,omitempty"`
+	// Up to 200 characters.
+	ImpendingDoom string `json:"impendingDoom"`
+	// Up to 200 characters.
+	Impulse string `json:"impulse"`
+	// 1 to 100 characters.
+	Name string `json:"name"`
+	// Up to 2,000 characters.
+	Notes string `json:"notes"`
+	// The full list in order, at most 20; portents left out are removed.
+	Portents []*PortentInput `json:"portents"`
+	// Up to 100 characters.
+	Type string `json:"type"`
+}
+
+// The template fronts are built from. The app only suggests from it.
+type DangerTemplate struct {
+	Categories     []*DangerCategory `json:"categories"`
+	ImpendingDooms []*ImpendingDoom  `json:"impendingDooms"`
+}
+
+// A template danger type, e.g. 'Cult', with its impulse.
+type DangerType struct {
+	Impulse string `json:"impulse"`
+	Key     string `json:"key"`
+	Name    string `json:"name"`
+}
+
 // One die the app rolled.
 type Die struct {
 	// Shown but not counted, like the lower die of a best-of roll.
@@ -447,11 +549,69 @@ type DieInput struct {
 	Value   int32 `json:"value"`
 }
 
+// A planned group of monsters, linked to a danger or not.
+type Encounter struct {
+	CreatedAt time.Time `json:"createdAt"`
+	// The danger it's linked to, if any.
+	Danger   *Danger             `json:"danger,omitempty"`
+	ID       string              `json:"id"`
+	Location string              `json:"location"`
+	Monsters []*EncounterMonster `json:"monsters"`
+	Name     string              `json:"name"`
+	Notes    string              `json:"notes"`
+}
+
+// An encounter's details, as entered. Only the name is required.
+type EncounterInput struct {
+	// One of the campaign's dangers, or null for none.
+	DangerID *string `json:"dangerId,omitempty"`
+	// Up to 100 characters.
+	Location string `json:"location"`
+	// 1 to 100 characters.
+	Name string `json:"name"`
+	// Up to 2,000 characters.
+	Notes string `json:"notes"`
+}
+
+// A monster in an encounter: a snapshot of a stat block and how many to put into play.
+type EncounterMonster struct {
+	Count int32  `json:"count"`
+	ID    string `json:"id"`
+	// Each monster's max HP when put into play.
+	MaxHp     int32    `json:"maxHp"`
+	StatBlock *Monster `json:"statBlock"`
+}
+
 // The GM's answers to End of Session's three group questions.
 type EndSessionInput struct {
 	Learned  *CheckedInput `json:"learned"`
 	Looted   *CheckedInput `json:"looted"`
 	Overcame *CheckedInput `json:"overcame"`
+}
+
+// A front: the GM's prep grouping related dangers, with stakes questions.
+type Front struct {
+	CreatedAt time.Time `json:"createdAt"`
+	// Its dangers, oldest first.
+	Dangers []*Danger `json:"dangers"`
+	ID      string    `json:"id"`
+	Kind    FrontKind `json:"kind"`
+	Name    string    `json:"name"`
+	Notes   string    `json:"notes"`
+	// Whether the GM marked it resolved.
+	Resolved bool     `json:"resolved"`
+	Stakes   []*Stake `json:"stakes"`
+}
+
+// A front's details, as entered. Only the name is required.
+type FrontInput struct {
+	Kind FrontKind `json:"kind"`
+	// 1 to 100 characters.
+	Name string `json:"name"`
+	// Up to 5,000 characters.
+	Notes string `json:"notes"`
+	// At most 10.
+	Stakes []*StakeInput `json:"stakes"`
 }
 
 // A player's picks from one of a class's starting-gear pick-N option groups.
@@ -468,6 +628,23 @@ type GearOptionGroup struct {
 	Pick int32 `json:"pick"`
 	// The available choices.
 	Choices [][]*ItemOption `json:"choices"`
+}
+
+// One step of a danger's advance toward its impending doom.
+type GrimPortent struct {
+	// Whether the GM checked it off as having come to pass.
+	Done bool   `json:"done"`
+	ID   string `json:"id"`
+	// Whether the players can see it (only when its danger is revealed too).
+	Revealed bool   `json:"revealed"`
+	Text     string `json:"text"`
+}
+
+// A template kind of impending doom, e.g. 'Tyranny'.
+type ImpendingDoom struct {
+	Description string `json:"description"`
+	Key         string `json:"key"`
+	Name        string `json:"name"`
 }
 
 // An item owned by a character. If key is anything other than 'custom', it references an ItemTemplate that label/description/tags may override; for custom items, they're the sole source of truth.
@@ -531,6 +708,15 @@ type ItemTemplate struct {
 type ItemTemplateQuery struct {
 	// Returns every item template, sorted by label.
 	All []*ItemTemplate `json:"all"`
+}
+
+// A danger as the players see it once the GM reveals it.
+type KnownThreat struct {
+	DangerID string `json:"dangerId"`
+	Name     string `json:"name"`
+	// The text of its revealed portents, in order.
+	Portents []string `json:"portents"`
+	Type     string   `json:"type"`
 }
 
 // Input for leveling up.
@@ -826,6 +1012,13 @@ type PartyMember struct {
 	RaceMove *Move `json:"raceMove"`
 }
 
+// A grim portent, as entered: an existing one's ID (keeping whether it's checked and revealed), or no ID for a new one.
+type PortentInput struct {
+	ID *string `json:"id,omitempty"`
+	// 1 to 200 characters.
+	Text string `json:"text"`
+}
+
 // A spell a character has prepared.
 type PreparedSpell struct {
 	// Whether the caster forgot it (a 7–9 casting choice) until they next prepare spells.
@@ -940,6 +1133,21 @@ type SpellMutation struct {
 type SpellQuery struct {
 	// Returns a class's spells, sorted by level and name. Empty for classes that don't cast spells.
 	ByClass []*Spell `json:"byClass"`
+}
+
+// A stakes question: something the GM wants to find out in play.
+type Stake struct {
+	// The GM's note once play answers it; empty until then.
+	Answer   string `json:"answer"`
+	Question string `json:"question"`
+}
+
+// A stakes question, as entered.
+type StakeInput struct {
+	// Up to 1,000 characters.
+	Answer string `json:"answer"`
+	// 1 to 200 characters.
+	Question string `json:"question"`
 }
 
 // The starting gear configuration for a character class.
@@ -1185,6 +1393,62 @@ func (e *Debility) UnmarshalJSON(b []byte) error {
 }
 
 func (e Debility) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Whether a front spans the whole campaign or covers the next few sessions.
+type FrontKind string
+
+const (
+	FrontKindAdventure FrontKind = "ADVENTURE"
+	FrontKindCampaign  FrontKind = "CAMPAIGN"
+)
+
+var AllFrontKind = []FrontKind{
+	FrontKindAdventure,
+	FrontKindCampaign,
+}
+
+func (e FrontKind) IsValid() bool {
+	switch e {
+	case FrontKindAdventure, FrontKindCampaign:
+		return true
+	}
+	return false
+}
+
+func (e FrontKind) String() string {
+	return string(e)
+}
+
+func (e *FrontKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FrontKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FrontKind", str)
+	}
+	return nil
+}
+
+func (e FrontKind) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FrontKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FrontKind) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

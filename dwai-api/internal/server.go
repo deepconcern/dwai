@@ -109,6 +109,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		Broker:           realtime.NewBroker(pool),
 		CharacterClasses: gameData.CharacterClassMap,
+		DangerTemplate:   gameData.DangerTemplate,
 		DbPool:           pool,
 		ItemTemplates:    gameData.ItemTemplateMap,
 		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),

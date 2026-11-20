@@ -6,28 +6,40 @@ This file is the **source of truth for every AI agent** working in this repo: Cl
 
 ## Before You Do Anything: the Workflow
 
-You are a **junior engineer**; Wyatt is the senior engineer. Every feature, enhancement, fix, or roadmap milestone follows this lifecycle (full details in [docs/workflow](docs/workflow/README.md)):
+This repo uses the shared [agent workflows](https://github.com/deepconcern/agent-workflows/tree/v1.0.0), version **v1.0.0**, installed in [`.agent-workflows/`](.agent-workflows/) with its skills in [`.claude/skills/`](.claude/skills/). Read [the principles](.agent-workflows/principles.md) and [the feature delivery workflow](.agent-workflows/workflows/feature-delivery.md) before starting work. You are a [junior engineer](.agent-workflows/roles/junior.md); Wyatt is the senior engineer. Where this file differs from the shared docs, this file wins.
 
-1. **Gather requirements.** Ask Wyatt questions in chat and restate your understanding. Write nothing yet.
-2. **Write a spec** as a GitHub issue (Spec template, label `spec: draft`), recording the answers in its Decisions section.
-3. **Wait for approval.** Only Wyatt approves, by switching the label to `spec: approved` or commenting "approved".
-4. **Implement** with as many agents as the spec needs (sub-issues, separate branches or worktrees).
-5. **Open a PR** that closes the spec issue and is assigned to Wyatt.
-6. **Wyatt merges.** Never merge, approve, or push to `main` yourself.
+In short: gather requirements in chat, write a spec issue (`spec: draft`), wait for Wyatt to approve it (`spec: approved` or a comment saying "approved"), build it test-first, and open a PR that closes the issue and is assigned to Wyatt. **Only Wyatt merges.** Issues labeled `hands-on` are implemented by Wyatt; you write the spec, tests, and guidance. The project doubles as a way for Wyatt to learn AI development (MCP, RAG, skills, multi-agent coordination), so leave room for him to work hands-on.
 
-Issues labeled **`hands-on`** are implemented by Wyatt: you write the spec, tests, and guidance, not the implementation. Wyatt may also commit directly at any time; treat his commits as authoritative.
+Don't edit `.agent-workflows/` or the shared skills by hand. To update, run the installer with a newer tag from the repo root, review the diff, and update the version above in the same branch:
 
-Small, explicit requests from Wyatt ("rename this", "fix that typo") don't need a spec. When unsure whether something is small, ask.
+```sh
+curl -fsSL https://raw.githubusercontent.com/deepconcern/agent-workflows/<tag>/install.sh | sh -s -- <tag>
+```
+
+### Workflow Settings
+
+| Setting | Value |
+| ------- | ----- |
+| Maintainer | Wyatt (GitHub `deepconcern`): approves specs and merges every PR. PRs often open under his account, so assign him rather than requesting his review. |
+| Spec template | [`.github/ISSUE_TEMPLATE/spec.md`](.github/ISSUE_TEMPLATE/spec.md). Fill its **Game Rules** section with links into `docs/game/`; for AI features, name the concept (skill, MCP tool, RAG, eval) in **Design** and why it fits ([docs/app/ai.md](docs/app/ai.md)). |
+| PR template | [`.github/pull_request_template.md`](.github/pull_request_template.md) |
+| Extra labels | `milestone: N`: optional, the `ROADMAP.md` milestone an issue belongs to |
+| Check command | `make check` (see [Commands](#commands)) |
+| Domain docs | [docs/game/](docs/game/README.md) for any game rule, [docs/app/](docs/app/README.md) for architecture and how game concepts map to code |
+| Roadmap | [ROADMAP.md](ROADMAP.md), updated in the same branch when the work checks off an item |
+| Review checklist | [docs/workflow/reviewing.md](docs/workflow/reviewing.md) |
+| Agents | A sub-issue may go to the GitHub Copilot coding agent instead of a local agent. |
 
 ## Skills
 
-Step-by-step procedures, in [`.claude/skills/`](.claude/skills/) (Claude Code and Copilot load them automatically; other agents should read the matching `SKILL.md` when the task fits):
+Step-by-step procedures, in [`.claude/skills/`](.claude/skills/) (Claude Code and Copilot load them automatically; other agents should read the matching `SKILL.md` when the task fits). The first five come from the shared workflows; the last two are DWAI's own.
 
 | Skill | Use when |
 | ----- | -------- |
 | [`gather-requirements`](.claude/skills/gather-requirements/SKILL.md) | Starting any new feature, enhancement, fix, or milestone |
 | [`write-spec`](.claude/skills/write-spec/SKILL.md) | Requirements are agreed and a spec issue is needed |
 | [`implement-spec`](.claude/skills/implement-spec/SKILL.md) | A spec is labeled `spec: approved` (or is `hands-on`) |
+| [`write-tests`](.claude/skills/write-tests/SKILL.md) | Writing or changing any test |
 | [`review-pr`](.claude/skills/review-pr/SKILL.md) | Asked to review a PR, or self-reviewing before requesting review |
 | [`add-graphql-field`](.claude/skills/add-graphql-field/SKILL.md) | Adding or changing a GraphQL type, field, query, or mutation end to end |
 | [`add-db-migration`](.claude/skills/add-db-migration/SKILL.md) | Changing the database schema or adding SQL queries |
@@ -38,7 +50,8 @@ Step-by-step procedures, in [`.claude/skills/`](.claude/skills/) (Claude Code an
 | ---- | ---- |
 | [docs/game/](docs/game/README.md) | **Before touching anything that represents game rules**: API resolvers and validation, the character sheet UI, game data YAML, AI prompts |
 | [docs/app/](docs/app/README.md) | Product vision, architecture, how game concepts map to code, the AI feature plan |
-| [docs/workflow/](docs/workflow/README.md) | The full workflow, labels, hands-on mode, and [how to review a PR](docs/workflow/reviewing.md) |
+| [.agent-workflows/](.agent-workflows/README.md) | The shared workflow, principles, roles, and labels |
+| [docs/workflow/reviewing.md](docs/workflow/reviewing.md) | DWAI's review checklist, on top of the shared `review-pr` skill |
 | [ROADMAP.md](ROADMAP.md) | Milestones, their "done when" criteria, and current status |
 
 ## Repository Layout
@@ -84,20 +97,13 @@ Git hooks (`lefthook.yml`, enabled with `lefthook install`): pre-commit formats,
 
 ### Testing
 
-New behavior ships with tests for it. Pure rules logic gets unit tests; GraphQL behavior gets API integration tests; frontend logic gets `bun test` tests. Never skip, disable, or loosen a test to get a green build. Per-app testing conventions are in each app's `AGENTS.md`.
+New behavior ships with tests for it. Pure rules logic gets unit tests; GraphQL behavior gets API integration tests; frontend logic gets `bun test` tests. Per-app testing conventions are in each app's `AGENTS.md`.
 
-A good test reads like a rule from the spec, and fails when that rule breaks. How to get there:
+Follow the shared [`write-tests`](.claude/skills/write-tests/SKILL.md) skill: tests first from the spec's Given/When/Then criteria, only the cases that matter, through the public interface, no mocks of code we own, one rule per test. Here, that means:
 
-- **Write the tests first, from the spec.** Each Given/When/Then acceptance criterion in the spec issue becomes at least one test, written and failing before the implementation. Tests derived from the code only restate the code, including its mistakes.
-- **Test only the cases that matter:** the happy path, the edge cases the spec or `docs/game/` names (band edges, empty, maximum), and the errors a user can actually hit. Don't add a test because a branch exists, and don't test Go, React, gqlgen, or other library behavior.
-- **Test behavior through the public interface.** Call the exported function or send the GraphQL request, and assert on what a caller sees. Don't assert on internals, call order, or private state.
-- **Don't mock code we own.** Use the real `internal/models` logic and a real database (the integration tests already give each test its own). Fake only what's outside our control, such as the clock or randomness, and only when the test needs it.
-- **One behavior per test, laid out Arrange, Act, Assert.** The test name states the rule (`"subtracts 1 when the ability's debility is active"`), not the method. Keep values literal and local, so a reader can check them against the rulebook without running anything.
-- **No unstated assumptions.** Every expected value must come from the spec, `docs/game/`, or the test's own setup. If you'd have to guess what the right answer is, ask rather than encoding the guess.
+- Expected values come from the spec, `docs/game/`, or the test's own setup, so a reader can check them against the rulebook. The edge cases worth naming are the ones the rules make real (roll band edges, empty, maximum).
+- Use the real `internal/models` logic and a real database (the integration tests give each test its own).
 - **Go: table-driven tests** with `t.Run` when several inputs share one behavior. **App: `describe` per function, `test` per rule.**
-- **Fewer, clearer tests beat coverage.** Delete a test that duplicates another or would still pass with the behavior broken.
-
-Before calling the work done, review each test and ask: *would this fail if the behavior broke?* and *does it assume anything the spec doesn't say?* Fix or delete any test that fails either question.
 
 Models to copy, from [`internal/models/campaign_test.go`](dwai-api/internal/models/campaign_test.go) (each case is a rule from the spec, checked through the exported function):
 
@@ -153,7 +159,7 @@ For GraphQL behavior, follow the integration tests in [`internal/graph/campaigns
 
 ### Code
 
-- The API owns data integrity (a Fighter can't be given spells, a bond's target must be in the same campaign) and logs what players do. Judgment calls belong to the table: the app suggests (a stat, a debility, the bonuses that apply) and the player decides, like a pen-and-paper sheet. A few rules stay strict: the stat array, prepared-spell limits, and End of Session reasons. The frontend may validate for a better UX, but the API checks everything it enforces.
+- **Honor system (DWAI-specific).** Players manage their own characters on the honor system, as with a paper sheet. The API owns data integrity (a Fighter can't be given spells, a bond's target must be in the same campaign) and logs what players do. Judgment calls belong to the table: the app suggests (a stat, a debility, the bonuses that apply) and the player decides, like a pen-and-paper sheet. A few rules stay strict: the stat array, prepared-spell limits, and End of Session reasons. The frontend may validate for a better UX, but the API checks everything it enforces.
 - Make actions reversible (mark XP / unmark XP). An action that can't be undone directly is a one-way action: call it out in the spec, and confirm it in the UI when it loses data. The current list is in [docs/app/architecture.md](docs/app/architecture.md#the-honor-system).
 - Never hand-edit generated code; change the source and regenerate.
 - Alphabetize where order doesn't matter (fields, props, imports, lists), as the existing code does.

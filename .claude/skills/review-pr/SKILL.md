@@ -1,24 +1,26 @@
 ---
 name: review-pr
-description: Use when asked to review a dwai pull request (by Wyatt, or as Copilot/another review agent), or to self-review your own PR before requesting review.
+description: Use when asked to review a pull request (as Copilot, another agent, or a chat assistant), or to self-review your own PR before asking the maintainer for review.
 ---
 
 # Review a Pull Request
 
-Follow the checklist in [docs/workflow/reviewing.md](../../../docs/workflow/reviewing.md). Summary:
+The maintainer merges every PR. A review is **advice to the maintainer**: don't approve or merge, leave comments (or a "Comment" review) and let them decide.
 
-1. Read the linked spec issue (`Closes #N`). Check each requirement and acceptance criterion against the diff, and look for scope creep.
-2. Verify any game rule against `docs/game/` (roll bands, HP = base + CON score, load = base + STR modifier, level up at level + 7, spell preparation limits).
-3. Rules are computed in `dwai-api/internal/models`, not only in the frontend.
-4. Generated code is regenerated (gqlgen, sqlc, `dwai-app/gql/`), not hand-edited.
-5. No merged migration was edited; new ones have a working `.down.sql`.
-6. New behavior has tests: one per acceptance criterion, each would fail if its behavior broke, none assumes what the spec doesn't say. No test was skipped or weakened.
-7. Per-app conventions in each `AGENTS.md` are followed.
-8. Inputs are validated server-side; for AI features, chat is treated as untrusted.
+## What to Check
 
-## Output
+1. **It does what the spec says.** Open the linked issue (`Closes #N`). Every requirement and acceptance criterion is met, nothing out of scope slipped in, and deviations are listed in the PR description.
+2. **The project's own checklist.** If the project's `AGENTS.md` links a review checklist (domain rules, where logic must live, migrations), go through it.
+3. **Rules are enforced where they must be.** Validation that protects data lives on the server, not only in the UI. The UI may validate too, for a better experience.
+4. **Generated code was regenerated, not hand-edited.** A change to a schema or query comes with matching regenerated output.
+5. **Data changes are safe.** A migration already merged was not edited; new schema changes are in a new migration that can be rolled back.
+6. **Tests cover the new behavior** (see [`write-tests`](../write-tests/SKILL.md)). Each acceptance criterion has a test, each test would fail if its behavior broke, none assumes what the spec doesn't say, and no test was skipped, disabled, or loosened.
+7. **Conventions are followed**, as written in the project's `AGENTS.md` files.
+8. **Security.** Inputs are validated server-side, ownership is enforced on the server rather than by hiding UI, no secrets or private details are committed, and user text (including anything sent to a model) is treated as untrusted.
 
-- Comment on specific lines with what's wrong, why, and a fix when it's small.
-- Separate **must fix** from **suggestions**. Skip what linters already enforce.
-- End with a summary: ready for Wyatt to merge, or the must-fix list.
-- Never approve or merge. Your review is advice; Wyatt decides.
+## How to Comment
+
+- Point to a file and line, say what's wrong and why it matters. Suggest a fix when it's small.
+- Separate **must fix** (bugs, rule errors, missing tests, spec gaps) from **suggestions** (style, naming, optional refactors).
+- Don't restate what the code does, and don't comment on what the linters already enforce.
+- End with a short summary: whether you think it's ready for the maintainer to merge, and the must-fix list if not.

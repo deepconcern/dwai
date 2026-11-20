@@ -1,15 +1,22 @@
+# Monster compendium: Cavern Dwellers.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: caverns
 name: Cavern Dwellers
 monsters:
-- name: Ankheg
+- key: ankheg
+  name: Ankheg
   tags:
   - Group
   - Large
   hp: 10
   armor: 3
-  attack: Bite (d8+1 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d8+1
+    tags:
+    - Close
+    - Reach
   description: A hide like plate armor and great crushing mandibles are problematic.
     A stomach full of acid that can burn a hole through a stone wall makes them all
     the worse. They’d be bad enough if they were proper insect-sized, but these things
@@ -23,16 +30,20 @@ monsters:
   - Undermine the ground
   - Burst from the earth
   - Spray forth acid, eating away at metal and flesh
-- name: Cave Rat
+- key: cave_rat
+  name: Cave Rat
   tags:
   - Horde
   - Small
   hp: 7
   armor: 1
-  attack: Gnaw (d6 damage 1 piercing)
-  attack_tags:
-  - Close
-  - Messy
+  attack:
+    name: Gnaw
+    damage: d6
+    piercing: 1
+    tags:
+    - Close
+    - Messy
   description: Who hasn’t seen a rat before? It’s like that, but nasty and big and
     not afraid of you anymore. Maybe this one was a cousin to that one you caught
     in a trap or the one you killed with a knife in that filthy tavern in Darrow.
@@ -41,17 +52,20 @@ monsters:
   moves:
   - Swarm
   - Rip something (or someone) apart
-- name: Choker
+- key: choker
+  name: Choker
   tags:
   - Solitary
   - Stealthy
   - Intelligent
   hp: 15
   armor: 2
-  attack: Choke (d10 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Choke
+    damage: d10
+    tags:
+    - Close
+    - Reach
   description: Some say these things descended from the family of a cruel wizard who
     forced them to live out their lives underground. They say his experiments led
     him to fear the sun and ages passed while he descended into unlife, dragging his
@@ -65,15 +79,19 @@ monsters:
   moves:
   - Hold someone, wringing the breath from them
   - Fling a held creature
-- name: Cloaker
+- key: cloaker
+  name: Cloaker
   tags:
   - Solitary
   - Stealthy
   hp: 12
   armor: 1
-  attack: Constrict (d10 damage ignores armor)
-  attack_tags:
-  - Close
+  attack:
+    name: Constrict
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Close
   description: Don’t put on that cloak, Gareth. Don’t. You don’t know where it’s been.
     I tell you, it’s no good. See! It moved! I’m not mad, Gareth, it moved! Don’t
     do it! No! GARETH!
@@ -82,15 +100,18 @@ monsters:
   - Looks like a cloak
   moves:
   - Engulf the unsuspecting
-- name: Dwarven Warrior
+- key: dwarven_warrior
+  name: Dwarven Warrior
   tags:
   - Horde
   - Organized
   hp: 7
   armor: 2
-  attack: Axe (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Axe
+    damage: d6
+    tags:
+    - Close
   description: 'For ages, men believed all dwarves were male and all were of this
     ilk: stoic and proud warriors. Axe-wielding and plate-wearing. Stout bearded battle-hungry
     dwarves who would push them, time and time again, back up out of their mines and
@@ -102,16 +123,19 @@ monsters:
   moves:
   - Drive them back
   - Call up reinforcements
-- name: Earth Elemental
+- key: earth_elemental
+  name: Earth Elemental
   tags:
   - Solitary
   - Huge
   hp: 27
   armor: 4
-  attack: Smash (d10+5 damage)
-  attack_tags:
-  - Reach
-  - Forceful
+  attack:
+    name: Smash
+    damage: d10+5
+    tags:
+    - Reach
+    - Forceful
   description: Our shaman says that all the things of the world have a spirit. Stones,
     trees, a stream. Now that I’ve seen the earth roil under my feet and fists of
     stone beat my friends half to death I’d like to believe that crazy old man. The
@@ -123,15 +147,19 @@ monsters:
   moves:
   - Turn the ground into a weapon
   - Meld into stone
-- name: Fire Beetle
+- key: fire_beetle
+  name: Fire Beetle
   tags:
   - Horde
   - Small
   hp: 3
   armor: 3
-  attack: Flames (d6 damage ignores armor)
-  attack_tags:
-  - Near
+  attack:
+    name: Flames
+    damage: d6
+    ignores_armor: true
+    tags:
+    - Near
   description: Scarabaeus pyractomena! What a delightful creature—see how its carapace
     glitters in the light of our torches? Not too close now, they’re temperamental,
     you see. The fire in their belly isn’t just metaphorical, no. Watch as I goad
@@ -146,16 +174,19 @@ monsters:
   - Undermine the ground
   - Burst from the earth
   - Spray forth flames
-- name: Gargoyle
+- key: gargoyle
+  name: Gargoyle
   tags:
   - Horde
   - Stealthy
   - Hoarder
   hp: 3
   armor: 2
-  attack: Claw (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Claw
+    damage: d6
+    tags:
+    - Close
   description: It’s a sad thing, really. Guardians bred by magi of the past with no
     more castles to guard. Their ancestors’ sacred task bred into their blood leads
     them to find a place—ruins mostly, but sometimes a cave or hill or mountain cliff—and
@@ -170,7 +201,8 @@ monsters:
   - Attack with the element of surprise
   - Take to the air
   - Blend into stonework
-- name: Gelatinous Cube
+- key: gelatinous_cube
+  name: Gelatinous Cube
   tags:
   - Solitary
   - Large
@@ -178,9 +210,12 @@ monsters:
   - Amorphous
   hp: 20
   armor: 1
-  attack: Engulf (d10+1 damage ignores armor)
-  attack_tags:
-  - Hand
+  attack:
+    name: Engulf
+    damage: d10+1
+    ignores_armor: true
+    tags:
+    - Hand
   description: How many adventurers’ last thoughts were “strange, this tunnel seems
     cleaner than most?” Too many, and all because of this transparent menace. A great
     acidic blob that expands to fill a small chamber or corridor and then slides,
@@ -192,7 +227,8 @@ monsters:
   moves:
   - Fill an apparently empty space
   - Dissolve
-- name: Goblin
+- key: goblin
+  name: Goblin
   tags:
   - Horde
   - Small
@@ -200,10 +236,12 @@ monsters:
   - Organized
   hp: 3
   armor: 1
-  attack: Spear (d6 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Spear
+    damage: d6
+    tags:
+    - Close
+    - Reach
   description: Nobody seems to know where these things came from. Elves say they’re
     the dwarves’ fault—dredged up from a hidden place beneath the earth. Dwarves say
     they’re bad elvish children, taken away at birth and raised in the dark. The truth
@@ -215,7 +253,8 @@ monsters:
   - Charge!
   - Call more goblins
   - Retreat and return with (many) more
-- name: Goblin Orkaster
+- key: goblin_orkaster
+  name: Goblin Orkaster
   tags:
   - Solitary
   - Small
@@ -224,17 +263,21 @@ monsters:
   - Organized
   hp: 12
   armor: 0
-  attack: Acid orb (d10+1 damage ignores armor)
-  attack_tags:
-  - Near
-  - Far
+  attack:
+    name: Acid orb
+    damage: d10+1
+    ignores_armor: true
+    tags:
+    - Near
+    - Far
   description: Oh lord, who taught them magic?
   instinct: To tap power beyond their stature
   moves:
   - Unleash a poorly understood spell
   - Pour forth magical chaos
   - Use other goblins for shields
-- name: Goliath
+- key: goliath
+  name: Goliath
   tags:
   - Group
   - Huge
@@ -242,10 +285,12 @@ monsters:
   - Intelligent
   hp: 14
   armor: 1
-  attack: Mace (d8+7 damage)
-  attack_tags:
-  - Reach
-  - Forceful
+  attack:
+    name: Mace
+    damage: d8+7
+    tags:
+    - Reach
+    - Forceful
   description: They dwell beneath the earth because they do not belong above it any
     longer. An undying race of mighty titans fled the plains and mountains in ages
     past—driven out by men and their heroes. Left to bide their time in the dark,
@@ -255,17 +300,20 @@ monsters:
   moves:
   - Shake the earth
   - Retreat, only to come back stronger
-- name: Otyugh
+- key: otyugh
+  name: Otyugh
   tags:
   - Solitary
   - Large
   hp: 20
   armor: 1
-  attack: Tentacles (d10+3 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Tentacles
+    damage: d10+3
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: The mating call of the otyugh is a horrible, blaring cry that sounds
     like a cross between an elephant dying and an over-eager vulture. The otyugh spends
     much of its time partly submerged in filthy water and prefers eating garbage over
@@ -280,15 +328,18 @@ monsters:
   moves:
   - Infect someone with filth fever
   - Fling someone or something
-- name: Maggot-Squid
+- key: maggot_squid
+  name: Maggot-Squid
   tags:
   - Horde
   - Small
   hp: 3
   armor: 1
-  attack: Chew (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Chew
+    damage: d6
+    tags:
+    - Close
   description: The gods that made this thing were playing some sick joke on the civilized
     folk of the world. The maggot-squid wields a face full of horrible squirming tentacles
     that, if they touch you, feel like being struck by lightning. They’ll paralyze
@@ -299,16 +350,19 @@ monsters:
   - Paralyzing Tentacles
   moves:
   - Paralyze with a touch
-- name: Purple Worm
+- key: purple_worm
+  name: Purple Worm
   tags:
   - Solitary
   - Huge
   hp: 20
   armor: 2
-  attack: Bite (d10+5 damage)
-  attack_tags:
-  - Reach
-  - Forceful
+  attack:
+    name: Bite
+    damage: d10+5
+    tags:
+    - Reach
+    - Forceful
   description: Iä! Iä! The Purple Worm! Blessed is its holy slime! We walk, unworthy,
     in its miles of massive tunnels. We are but shadows under its violet and all-consuming
     glory. Mere acolytes, we who hope someday to return to the great embrace of its
@@ -320,7 +374,8 @@ monsters:
   moves:
   - Swallow whole
   - Tunnel through stone and earth
-- name: Roper
+- key: roper
+  name: Roper
   tags:
   - Solitary
   - Large
@@ -328,10 +383,12 @@ monsters:
   - Intelligent
   hp: 16
   armor: 1
-  attack: Bite (d10+1 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d10+1
+    tags:
+    - Close
+    - Reach
   description: Evolutionary happenstance has created a clever underground predator.
     Disguised as a rocky formation—most often a stalactite or stalagmite—the roper
     waits for its prey to wander by. When it does, whether it’s a rat, a goblin or
@@ -345,15 +402,18 @@ monsters:
   - Ensnare the unsuspecting
   - Disarm a foe
   - Chew on someone
-- name: Rot Grub
+- key: rot_grub
+  name: Rot Grub
   tags:
   - Horde
   - Tiny
   hp: 3
   armor: 0
-  attack: Burrow (d6-2 damage)
-  attack_tags:
-  - Hand
+  attack:
+    name: Burrow
+    damage: d6-2
+    tags:
+    - Hand
   description: They live in your skin. Or your organ meat. Or your eyeballs. They
     grow there and then, in a bloody and horrific display, burrow their way out. Disgusting.
   instinct: To infect
@@ -363,7 +423,8 @@ monsters:
   - Burrow under flesh
   - Lay eggs
   - Burst forth from an infected creature
-- name: Spiderlord
+- key: spiderlord
+  name: Spiderlord
   tags:
   - Solitary
   - Large
@@ -371,10 +432,12 @@ monsters:
   - Intelligent
   hp: 16
   armor: 3
-  attack: Mandibles (d8+4 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Mandibles
+    damage: d8+4
+    tags:
+    - Close
+    - Reach
   description: Even spiders have their gods, whispered to in webs with little praying
     arms.
   instinct: To weave webs (literal and metaphorical)
@@ -383,15 +446,18 @@ monsters:
   moves:
   - Enmesh in webbing
   - Put a plot into motion
-- name: Troglodyte
+- key: troglodyte
+  name: Troglodyte
   tags:
   - Group
   - Organized
   hp: 10
   armor: 1
-  attack: Club (d8 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Club
+    damage: d8
+    tags:
+    - Close
   description: Long-forgotten, our last remaining ancestors dwell in caves in the
     wild parts of the world. Driven away by our cities and villages, our iron swords
     and our fire, these ape-men eat their meat raw with sharp-nailed hands and jagged

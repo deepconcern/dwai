@@ -48,6 +48,18 @@ type CampaignMessage struct {
 	Roll                 []byte
 }
 
+type CampaignMonster struct {
+	CampaignID      pgtype.UUID
+	CreatedAt       pgtype.Timestamptz
+	CustomMonsterID pgtype.UUID
+	Hp              int32
+	ID              pgtype.UUID
+	MaxHp           int32
+	Name            string
+	SourceKey       pgtype.Text
+	StatBlock       []byte
+}
+
 type CampaignSession struct {
 	CampaignID     pgtype.UUID
 	CreatedAt      pgtype.Timestamptz
@@ -90,6 +102,15 @@ type CharacterBonus struct {
 	ID          pgtype.UUID
 	Kind        string
 	Label       string
+}
+
+type CustomMonster struct {
+	CreatedAt   pgtype.Timestamptz
+	ID          pgtype.UUID
+	OwnerUserID pgtype.UUID
+	SourceKey   pgtype.Text
+	StatBlock   []byte
+	UpdatedAt   pgtype.Timestamptz
 }
 
 type Item struct {

@@ -44,6 +44,17 @@ type AddItemInput struct {
 	Type *string `json:"type,omitempty"`
 }
 
+// Monsters to add to play. Give compendiumKey or customMonsterId, not both.
+type AddMonstersInput struct {
+	CompendiumKey *string `json:"compendiumKey,omitempty"`
+	// How many to add, 1 to 20. Several are numbered ('Goblin 1', 'Goblin 2', ...).
+	Count int32 `json:"count"`
+	// One of the GM's custom monsters.
+	CustomMonsterID *string `json:"customMonsterId,omitempty"`
+	// Each monster's max HP, 1 to 999. Defaults to the stat block's HP, and is required when it has none.
+	MaxHp *int32 `json:"maxHp,omitempty"`
+}
+
 // An example of an alignment a player may use
 type AlignmentTemplate struct {
 	// The alignment type
@@ -119,6 +130,8 @@ type Campaign struct {
 	Sessions []*CampaignSession `json:"sessions"`
 	// Chat messages the logged-in user may see, newest page first: up to limit (1 to 100) before the given message ID.
 	Messages *MessagePage `json:"messages"`
+	// The monsters in play, oldest first. GM only: anyone else gets an error.
+	Monsters []*CampaignMonster `json:"monsters"`
 }
 
 // A campaign's editable details.
@@ -133,6 +146,19 @@ type CampaignInput struct {
 type CampaignInvite struct {
 	Gm   *User  `json:"gm"`
 	Name string `json:"name"`
+}
+
+// A monster the GM has in play in a campaign: a snapshot of a stat block, with its own HP.
+type CampaignMonster struct {
+	CreatedAt time.Time `json:"createdAt"`
+	// Current HP, from 0 (defeated) to maxHp.
+	Hp    int32  `json:"hp"`
+	ID    string `json:"id"`
+	MaxHp int32  `json:"maxHp"`
+	// e.g. 'Goblin 3'.
+	Name string `json:"name"`
+	// The stat block as it was when the monster was added.
+	StatBlock *Monster `json:"statBlock"`
 }
 
 // Namespace for campaign mutations.
@@ -159,6 +185,18 @@ type CampaignMutation struct {
 	PostDamage *Message `json:"postDamage"`
 	// Posts a move roll by the logged-in player's character.
 	PostRoll *Message `json:"postRoll"`
+	// Adds monsters to play (GM only) and returns them.
+	AddMonsters []*CampaignMonster `json:"addMonsters"`
+	// Deals damage to a monster in play (GM only): it loses the damage minus its armor (reduced by piercing, or ignored), down to 0 HP.
+	DamageMonster *CampaignMonster `json:"damageMonster"`
+	// Heals a monster in play (GM only), up to its max HP.
+	HealMonster *CampaignMonster `json:"healMonster"`
+	// Posts a monster's damage roll to the chat (GM only), under the monster's name. It doesn't change anyone's HP.
+	PostMonsterDamage *Message `json:"postMonsterDamage"`
+	// Removes a monster from play (GM only). It can't be undone.
+	RemoveMonster bool `json:"removeMonster"`
+	// Renames a monster in play (GM only). 1 to 60 characters.
+	RenameMonster *CampaignMonster `json:"renameMonster"`
 }
 
 // Namespace for campaign queries.
@@ -594,6 +632,109 @@ type ModifierInput struct {
 	Label string `json:"label"`
 	// From -20 to 20.
 	Value int32 `json:"value"`
+}
+
+// A monster's stat block (docs/game/gm.md § Monsters). HP, armor, and attack are null for entries without them, mostly NPCs.
+type Monster struct {
+	Armor  *int32         `json:"armor,omitempty"`
+	Attack *MonsterAttack `json:"attack,omitempty"`
+	// Empty when not set.
+	Description string `json:"description"`
+	Hp          *int32 `json:"hp,omitempty"`
+	// The compendium key, the custom monster's ID, or (for a snapshot in play) the monster in play's ID.
+	ID string `json:"id"`
+	// What the monster wants. Empty when not set.
+	Instinct string `json:"instinct"`
+	// Things the GM can do with it when making a move.
+	Moves []string `json:"moves"`
+	Name  string   `json:"name"`
+	// The compendium setting. Null for custom monsters.
+	Setting *MonsterSetting `json:"setting,omitempty"`
+	Source  MonsterSource   `json:"source"`
+	// The compendium monster a custom monster was copied from, or the compendium key of a compendium monster. Null for a custom monster written from scratch.
+	SourceKey *string `json:"sourceKey,omitempty"`
+	// Notable traits, e.g. 'Burrowing'.
+	SpecialQualities []string `json:"specialQualities"`
+	// Organization, size, and qualities, e.g. 'Horde', 'Small', 'Stealthy'.
+	Tags []string `json:"tags"`
+}
+
+// A monster's attack.
+type MonsterAttack struct {
+	// The damage dice, e.g. 'd8+1', 'b[2d10]' (best of), or 'w[2d8]' (worst of).
+	Damage string `json:"damage"`
+	// Whether the damage ignores armor entirely.
+	IgnoresArmor bool `json:"ignoresArmor"`
+	// The attack's name, e.g. 'Bite'.
+	Name string `json:"name"`
+	// How much armor the damage ignores (the piercing tag). 0 when it has none.
+	Piercing int32 `json:"piercing"`
+	// Range and properties, e.g. 'Close', 'Reach', 'Messy'.
+	Tags []string `json:"tags"`
+}
+
+// A monster's attack, as entered.
+type MonsterAttackInput struct {
+	// A dice expression of d4 to d20, at most 10 dice, e.g. 'd8+1' or 'b[2d10]'.
+	Damage       string `json:"damage"`
+	IgnoresArmor bool   `json:"ignoresArmor"`
+	// 1 to 60 characters.
+	Name string `json:"name"`
+	// 0 to 10.
+	Piercing int32    `json:"piercing"`
+	Tags     []string `json:"tags"`
+}
+
+// A custom monster's stat block, as entered. Only the name is required. Lists hold at most 20 entries of up to 200 characters.
+type MonsterInput struct {
+	// 0 to 10.
+	Armor  *int32              `json:"armor,omitempty"`
+	Attack *MonsterAttackInput `json:"attack,omitempty"`
+	// Up to 2,000 characters.
+	Description string `json:"description"`
+	// 1 to 999.
+	Hp *int32 `json:"hp,omitempty"`
+	// Up to 200 characters.
+	Instinct string   `json:"instinct"`
+	Moves    []string `json:"moves"`
+	// 1 to 60 characters.
+	Name string `json:"name"`
+	// The compendium monster it was copied from, if any.
+	SourceKey        *string  `json:"sourceKey,omitempty"`
+	SpecialQualities []string `json:"specialQualities"`
+	Tags             []string `json:"tags"`
+}
+
+// Namespace for the logged-in user's custom monsters.
+type MonsterMutation struct {
+	// Adds a monster to the logged-in user's bestiary.
+	CreateCustom *Monster `json:"createCustom"`
+	// Deletes one of the logged-in user's custom monsters. Copies already in play keep their stat block.
+	DeleteCustom bool `json:"deleteCustom"`
+	// Replaces one of the logged-in user's custom monsters' stat block.
+	UpdateCustom *Monster `json:"updateCustom"`
+}
+
+// Namespace for monster queries. Each needs a logged-in user.
+type MonsterQuery struct {
+	// A compendium monster, or null if there's no monster with that key.
+	ByKey *Monster `json:"byKey,omitempty"`
+	// Every compendium monster, sorted by setting name, then name.
+	Compendium []*Monster `json:"compendium"`
+	// One of the logged-in user's custom monsters.
+	Custom *Monster `json:"custom"`
+	// The logged-in user's custom monsters, sorted by name.
+	Mine []*Monster `json:"mine"`
+	// The compendium's settings, sorted by name.
+	Settings []*MonsterSetting `json:"settings"`
+	// Every tag the compendium's monsters use, sorted, for filters and suggestions.
+	Tags []string `json:"tags"`
+}
+
+// A group of compendium monsters that share a setting, e.g. 'Cavern Dwellers'.
+type MonsterSetting struct {
+	Key  string `json:"key"`
+	Name string `json:"name"`
 }
 
 // An action or ability a character can perform, as defined by the Dungeon World ruleset.
@@ -1108,6 +1249,64 @@ func (e *MessageKind) UnmarshalJSON(b []byte) error {
 }
 
 func (e MessageKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Where a monster's stat block comes from.
+type MonsterSource string
+
+const (
+	// The SRD compendium.
+	MonsterSourceCompendium MonsterSource = "COMPENDIUM"
+	// A user's own bestiary, or a snapshot of one of its monsters in play.
+	MonsterSourceCustom MonsterSource = "CUSTOM"
+)
+
+var AllMonsterSource = []MonsterSource{
+	MonsterSourceCompendium,
+	MonsterSourceCustom,
+}
+
+func (e MonsterSource) IsValid() bool {
+	switch e {
+	case MonsterSourceCompendium, MonsterSourceCustom:
+		return true
+	}
+	return false
+}
+
+func (e MonsterSource) String() string {
+	return string(e)
+}
+
+func (e *MonsterSource) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MonsterSource(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MonsterSource", str)
+	}
+	return nil
+}
+
+func (e MonsterSource) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *MonsterSource) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e MonsterSource) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

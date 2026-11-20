@@ -21,6 +21,7 @@ type Resolver struct {
 	DbPool           *pgxpool.Pool
 	ItemTemplates    *models.ItemTemplateMap
 	LookTypes        *models.LookTypeMap
+	Monsters         *models.MonsterCompendium
 	PlayerMoves      *models.MoveMap
 	Sessions         *auth.Sessions
 	Spells           *models.SpellMap

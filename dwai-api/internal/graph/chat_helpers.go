@@ -77,6 +77,14 @@ func (r *Resolver) messageObject(ctx context.Context, row *db.CampaignMessage, c
 			return nil, fmt.Errorf("failed to read the roll in message '%s': %w", object.ID, err)
 		}
 		object.Roll = roll
+
+		// A monster's damage roll is posted under the monster's name.
+		var monster struct {
+			MonsterName string `json:"monsterName"`
+		}
+		if err := json.Unmarshal(row.Roll, &monster); err == nil && monster.MonsterName != "" {
+			object.AuthorName = monster.MonsterName
+		}
 	}
 
 	return object, nil
@@ -264,17 +272,23 @@ func signed(n int32) string {
 // maxMessagePage is the most messages one page of chat returns.
 const maxMessagePage = 100
 
-// insertRoll saves a move or damage roll by a player's character.
+// insertRoll saves a move or damage roll by a player's character, or (with
+// no character) a monster's damage roll by the GM.
 func (r *Resolver) insertRoll(ctx context.Context, kind string, roll models.Roll, gmOnly bool, character *db.Character, campaign *db.Campaign, user *db.User) (*model.Message, error) {
 	data, err := json.Marshal(roll)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode a roll: %w", err)
 	}
 
+	var characterID pgtype.UUID
+	if character != nil {
+		characterID = character.ID
+	}
+
 	return r.insertMessage(ctx, db.InsertCampaignMessageParams{
 		AuthorUserID: user.ID,
 		CampaignID:   campaign.ID,
-		CharacterID:  character.ID,
+		CharacterID:  characterID,
 		GmOnly:       gmOnly,
 		Kind:         kind,
 		Roll:         data,

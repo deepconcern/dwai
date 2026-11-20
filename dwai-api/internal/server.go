@@ -112,6 +112,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 		DbPool:           pool,
 		ItemTemplates:    gameData.ItemTemplateMap,
 		LookTypes:        models.NewLookTypeMap(gameData.CharacterClassMap),
+		Monsters:         gameData.Monsters,
 		PlayerMoves:      gameData.MoveMap,
 		Sessions:         sessions,
 		Spells:           gameData.SpellMap,

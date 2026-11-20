@@ -217,6 +217,8 @@ models:
         resolver: true
       messages:
         resolver: true
+      monsters:
+        resolver: true
       myCharacter:
         resolver: true
       sessions:
@@ -224,25 +226,37 @@ models:
 
   CampaignMutation:
     fields:
+      addMonsters:
+        resolver: true
       create:
         resolver: true
-      postDamage:
-        resolver: true
-      postMessage:
-        resolver: true
-      postRoll:
+      damageMonster:
         resolver: true
       delete:
         resolver: true
       endSession:
         resolver: true
+      healMonster:
+        resolver: true
       join:
         resolver: true
       leave:
         resolver: true
+      postDamage:
+        resolver: true
+      postMessage:
+        resolver: true
+      postMonsterDamage:
+        resolver: true
+      postRoll:
+        resolver: true
       regenerateInviteCode:
         resolver: true
       removeCharacter:
+        resolver: true
+      removeMonster:
+        resolver: true
+      renameMonster:
         resolver: true
       update:
         resolver: true
@@ -405,4 +419,26 @@ models:
       byKey:
         resolver: true
       byType:
+        resolver: true
+  MonsterMutation:
+    fields:
+      createCustom:
+        resolver: true
+      deleteCustom:
+        resolver: true
+      updateCustom:
+        resolver: true
+  MonsterQuery:
+    fields:
+      byKey:
+        resolver: true
+      compendium:
+        resolver: true
+      custom:
+        resolver: true
+      mine:
+        resolver: true
+      settings:
+        resolver: true
+      tags:
         resolver: true

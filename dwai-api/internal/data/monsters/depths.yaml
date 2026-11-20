@@ -1,15 +1,22 @@
+# Monster compendium: Lower Depths.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: depths
 name: Lower Depths
 monsters:
-- name: Aboleth
+- key: aboleth
+  name: Aboleth
   tags:
   - Group
   - Huge
   - Intelligent
   hp: 18
   armor: 0
-  attack: Tentacle (d10+3 damage)
-  attack_tags:
-  - Reach
+  attack:
+    name: Tentacle
+    damage: d10+3
+    tags:
+    - Reach
   description: 'Deep below the surface of the world, in freshwater seas untouched
     by the sun, dwell the aboleth. Fish the size of whales, with strange growths of
     gelatinous feelers used to probe the lightless shores. They’re served by slaves:
@@ -25,7 +32,8 @@ monsters:
   - Invade a mind
   - Turn minions on them
   - Put a plan in motion
-- name: Apocalypse Dragon
+- key: apocalypse_dragon
+  name: Apocalypse Dragon
   tags:
   - Solitary
   - Huge
@@ -33,11 +41,14 @@ monsters:
   - Divine
   hp: 26
   armor: 5
-  attack: Bite (b[2d12]+9 damage, 4 piercing)
-  attack_tags:
-  - Reach
-  - Forceful
-  - Messy
+  attack:
+    name: Bite
+    damage: b[2d12]+9
+    piercing: 4
+    tags:
+    - Reach
+    - Forceful
+    - Messy
   description: The end of all things shall be a burning—of tree and earth and of the
     air itself. It shall come upon the plains and mountains not from beyond this world
     but from within it. Birthed from the womb of deepest earth shall come the Dragon
@@ -54,16 +65,19 @@ monsters:
   - Set a disaster in motion
   - Breathe forth the elements
   - Act with perfect foresight
-- name: Chaos Spawn
+- key: chaos_spawn
+  name: Chaos Spawn
   tags:
   - Solitary
   - Amorphous
   hp: 19
   armor: 1
-  attack: Chaotic touch (d10 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Chaotic touch
+    damage: d10
+    tags:
+    - Close
+    - Reach
   description: Driven from the city, a cultist finds sanctuary in towns and villages.
     Discovered there, he flees to the hills and scratches his devotion on the cave
     walls. Found out again, he is chased with knife and torch into the depths, crawling
@@ -76,18 +90,22 @@ monsters:
   moves:
   - Rewrite reality
   - Unleash chaos from containment
-- name: Chuul
+- key: chuul
+  name: Chuul
   tags:
   - Group
   - Large
   - Cautious
   hp: 10
   armor: 4
-  attack: Claws (d8+1 damage, 3 piercing)
-  attack_tags:
-  - Close
-  - Reach
-  - Messy
+  attack:
+    name: Claws
+    damage: d8+1
+    piercing: 3
+    tags:
+    - Close
+    - Reach
+    - Messy
   description: Your worst seafood nightmare come to life. A vicious sort of half-man
     half-crawdad, cursed with primal intelligence and blessed with a pair of razor-sharp
     claws. Strange things lurk in the stinking pools in caverns best forgotten and
@@ -99,16 +117,20 @@ monsters:
   moves:
   - Split something in two with mighty claws
   - Retreat into water
-- name: Deep Elf Assassin
+- key: deep_elf_assassin
+  name: Deep Elf Assassin
   tags:
   - Group
   - Intelligent
   - Organized
   hp: 6
   armor: 1
-  attack: Poisoned blade (d8 damage, 1 piercing)
-  attack_tags:
-  - Close
+  attack:
+    name: Poisoned blade
+    damage: d8
+    piercing: 1
+    tags:
+    - Close
   description: 'It was not so simple a thing as a war over religion or territory.
     No disagreement of queens led to the great sundering of the elves. It was sadness.
     It was the very diminishing of the world by the lesser races. The glory of all
@@ -124,16 +146,20 @@ monsters:
   - Poison them
   - Unleash an ancient spell
   - Call reinforcements
-- name: Deep Elf Swordmaster
+- key: deep_elf_swordmaster
+  name: Deep Elf Swordmaster
   tags:
   - Group
   - Intelligent
   - Organized
   hp: 6
   armor: 2
-  attack: Barbed blade (b[2d8]+2 damage, 1 piercing)
-  attack_tags:
-  - Close
+  attack:
+    name: Barbed blade
+    damage: b[2d8]+2
+    piercing: 1
+    tags:
+    - Close
   description: The deep elves lost the sweetness and gentle peace of their bright
     cousins ages ago, but they did not abandon grace. They move with a swiftness and
     beauty that would bring a tear to any warrior’s eye. In the dark, they’ve practiced.
@@ -145,7 +171,8 @@ monsters:
   moves:
   - Inflict pain beyond measure
   - Use the dark to advantage
-- name: Deep Elf Priest
+- key: deep_elf_priest
+  name: Deep Elf Priest
   tags:
   - Solitary
   - Divine
@@ -153,10 +180,12 @@ monsters:
   - Organized
   hp: 14
   armor: 0
-  attack: Smite (d10+2 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Smite
+    damage: d10+2
+    tags:
+    - Close
+    - Reach
   description: The spirits of the trees and the lady sunlight are far, far from home
     in the depths where the deep elves dwell. New gods were found there, waiting for
     their children to come home. Gods of the spiders, the fungal forests, and things
@@ -171,7 +200,8 @@ monsters:
   - Weave spells of hatred and malice
   - Rally the deep elves
   - Pass on divine knowledge
-- name: Dragon
+- key: dragon
+  name: Dragon
   tags:
   - Solitary
   - Huge
@@ -180,10 +210,13 @@ monsters:
   - Hoarder
   hp: 16
   armor: 5
-  attack: Bite (b[2d12]+5 damage, 4 piercing)
-  attack_tags:
-  - Reach
-  - Messy
+  attack:
+    name: Bite
+    damage: b[2d12]+5
+    piercing: 4
+    tags:
+    - Reach
+    - Messy
   description: They are the greatest and most terrible things this world will ever
     have to offer.
   instinct: To rule
@@ -194,17 +227,21 @@ monsters:
   - Bend an element to its will
   - Demand tribute
   - Act with disdain
-- name: Gray Render
+- key: gray_render
+  name: Gray Render
   tags:
   - Solitary
   - Large
   hp: 16
   armor: 1
-  attack: Rending claws (d10+3 damage, 3 piercing)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Rending claws
+    damage: d10+3
+    piercing: 3
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: On its own, the render is a force of utter destruction. Huge and leathery,
     with a maw of unbreakable teeth and claws to match, the render seems to enjoy
     little more than tearing things apart. Stone, flesh, or steel, it matters little.
@@ -216,7 +253,8 @@ monsters:
   instinct: To serve
   moves:
   - Tear something apart
-- name: Magmin
+- key: magmin
+  name: Magmin
   tags:
   - Horde
   - Intelligent
@@ -224,10 +262,12 @@ monsters:
   - Hoarder
   hp: 7
   armor: 4
-  attack: Flaming hammer (d6+2 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Flaming hammer
+    damage: d6+2
+    tags:
+    - Close
+    - Reach
   description: Dwarf-shaped and industrious, the magmin are among the deepest-dwellers
     of Dungeon World. Found in cities of brass and obsidian built nearest the molten
     core of the planet, the magmin live a life devoted to craft—especially that of
@@ -244,16 +284,19 @@ monsters:
   - Offer a trade or deal
   - Strike with fire or magic
   - Provide just the right item, at a price
-- name: Minotaur
+- key: minotaur
+  name: Minotaur
   tags:
   - Solitary
   - Large
   hp: 16
   armor: 1
-  attack: Axe (d10+1 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Axe
+    damage: d10+1
+    tags:
+    - Close
+    - Reach
   description: “Head of a man, body of a bull. No, wait, I’ve got that backwards.
     It’s the bull’s head and the man’s body. Hooves sometimes? Is that right? I remember
     the old king said something about a maze? Blast! You know I can’t think under
@@ -264,7 +307,8 @@ monsters:
   moves:
   - Confuse them
   - Make them lost
-- name: Naga
+- key: naga
+  name: Naga
   tags:
   - Solitary
   - Intelligent
@@ -273,10 +317,12 @@ monsters:
   - Magical
   hp: 12
   armor: 2
-  attack: Bite (d10 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d10
+    tags:
+    - Close
+    - Reach
   description: 'Ambitious and territorial above nearly all else, the naga are very
     rarely found without a well-formed and insidious cult of followers. You’ll see
     it in many mountain towns—a snake sigil scrawled on a tavern wall or a local church
@@ -291,7 +337,8 @@ monsters:
   - Send a follower to their death
   - Use old magic
   - Offer a deal or bargain
-- name: Salamander
+- key: salamander
+  name: Salamander
   tags:
   - Horde
   - Large
@@ -300,11 +347,13 @@ monsters:
   - Planar
   hp: 7
   armor: 3
-  attack: Flaming spear (b[2d6]+3 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Near
+  attack:
+    name: Flaming spear
+    damage: b[2d6]+3
+    tags:
+    - Close
+    - Reach
+    - Near
   description: “The excavation uncovered what the reports called a basalt gate. Black
     stone carved with molten runes. When they dug it up, the magi declared it inert
     but further evidence indicates that was an incorrect claim. The entire team went

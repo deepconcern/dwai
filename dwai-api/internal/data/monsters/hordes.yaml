@@ -1,15 +1,22 @@
+# Monster compendium: Ravenous Hordes.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: hordes
 name: Ravenous Hordes
 monsters:
-- name: Formian Drone
+- key: formian_drone
+  name: Formian Drone
   tags:
   - Horde
   - Organized
   - Cautious
   hp: 7
   armor: 4
-  attack: Bite (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Bite
+    damage: d6
+    tags:
+    - Close
   description: With good cause, they say that these creatures (like all insects, really)
     are claimed by the powers of Law. They are order made flesh—a perfectly stratified
     society in which every larva, hatchling and adult knows its place in the great
@@ -27,17 +34,20 @@ monsters:
   - Raise the alarm
   - Create value for the hive
   - Assimilate
-- name: Formian Taskmaster
+- key: formian_taskmaster
+  name: Formian Taskmaster
   tags:
   - Group
   - Organized
   - Intelligent
   hp: 6
   armor: 3
-  attack: Spiked whip (d8 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Spiked whip
+    damage: d8
+    tags:
+    - Close
+    - Reach
   description: 'It takes two hands to rule an empire: one to wield the scepter and
     one to crack the whip. These ant-folk are that whip. Lucky for them, with two
     extra arms, that’s a lot of whip to crack. They oversee the vast swarms of worker
@@ -54,17 +64,20 @@ monsters:
   moves:
   - Order drones into battle
   - Set great numbers in motion
-- name: Formian Centurion
+- key: formian_centurion
+  name: Formian Centurion
   tags:
   - Horde
   - Intelligent
   - Organized
   hp: 7
   armor: 3
-  attack: Barbed spear (b[2d6]+2 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Barbed spear
+    damage: b[2d6]+2
+    tags:
+    - Close
+    - Reach
   description: Whether in the form of a legionnaire, part of the formian standing
     army, or as a praetorian guard to the queen, every formian hive contains a great
     number of these most dangerous insectoids. Darker in carapace, often scarred with
@@ -85,7 +98,8 @@ monsters:
   - Advance as one
   - Summon reinforcements
   - Give a life for the hive
-- name: Formian Queen
+- key: formian_queen
+  name: Formian Queen
   tags:
   - Solitary
   - Huge
@@ -94,10 +108,12 @@ monsters:
   - Hoarder
   hp: 24
   armor: 3
-  attack: Crushing mandibles (d10+5 damage)
-  attack_tags:
-  - Reach
-  - Forceful
+  attack:
+    name: Crushing mandibles
+    damage: d10+5
+    tags:
+    - Reach
+    - Forceful
   description: 'At the heart of every hive, no matter its size or kind, lives a queen.
     As large as any giant, she sits protected by her guard, served by every drone
     and taskmaster with her own, singular purpose: to spread her kind and grow the
@@ -114,17 +130,20 @@ monsters:
   - Call every formian it spawned
   - Release a half-formed larval mutation
   - Organize and issue orders
-- name: Gnoll Tracker
+- key: gnoll_tracker
+  name: Gnoll Tracker
   tags:
   - Group
   - Organized
   - Intelligent
   hp: 6
   armor: 1
-  attack: Bow (d8 damage)
-  attack_tags:
-  - Near
-  - Far
+  attack:
+    name: Bow
+    damage: d8
+    tags:
+    - Near
+    - Far
   description: Once they scent your blood, you can’t escape. Not without intervention
     from the gods, or the duke’s rangers at least. The desert scrub is a dangerous
     place to go exploring on your own and if you fall and break your leg or eat the
@@ -139,7 +158,8 @@ monsters:
   moves:
   - Doggedly track prey
   - Strike at a moment of weakness
-- name: Gnoll Emissary
+- key: gnoll_emissary
+  name: Gnoll Emissary
   tags:
   - Solitary
   - Divine
@@ -147,10 +167,12 @@ monsters:
   - Organized
   hp: 18
   armor: 1
-  attack: Ceremonial dagger (d10+2 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Ceremonial dagger
+    damage: d10+2
+    tags:
+    - Close
+    - Reach
   description: Oh, an emissary! How nice. I suspect you didn’t know the gnolls had
     ambassadors, did you? Yes, even these mangy hyenas have to make nice sometimes.
     No, no, not with us. Nor the dwarves, neither. No, the emissary is the one, among
@@ -163,16 +185,20 @@ monsters:
   moves:
   - Pass on demonic influence
   - Drive the pack into a fervor
-- name: Gnoll Alpha
+- key: gnoll_alpha
+  name: Gnoll Alpha
   tags:
   - Solitary
   - Intelligent
   - Organized
   hp: 12
   armor: 2
-  attack: Sword (b[2d10] damage, 1 piercing)
-  attack_tags:
-  - Close
+  attack:
+    name: Sword
+    damage: b[2d10]
+    piercing: 1
+    tags:
+    - Close
   description: Every pack has its top dog. Bigger, maybe—that’d be the simplest way.
     Often, though, with these lank and filthy mutts, it’s not about size or sharp
     teeth but about cruelty. About a willingness to kill your brothers and eat them
@@ -185,17 +211,21 @@ monsters:
   moves:
   - Demand obedience
   - Send the pack to hunt
-- name: Orc Bloodwarrior
+- key: orc_bloodwarrior
+  name: Orc Bloodwarrior
   tags:
   - Horde
   - Intelligent
   - Organized
   hp: 3
   armor: 0
-  attack: Jagged blade (d6+2 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Messy
+  attack:
+    name: Jagged blade
+    damage: d6+2
+    piercing: 1
+    tags:
+    - Close
+    - Messy
   description: The orcish horde is a savage, bloodthirsty, and hateful collection
     of tribes. There are myths and stories that tell of the origin of their rage—a
     demon curse, a homeland destroyed, elven magic gone wrong—but the truth has been
@@ -206,7 +236,8 @@ monsters:
   moves:
   - Fight with abandon
   - Revel in destruction
-- name: Orc Berserker
+- key: orc_berserker
+  name: Orc Berserker
   tags:
   - Solitary
   - Large
@@ -215,10 +246,12 @@ monsters:
   - Organized
   hp: 20
   armor: 0
-  attack: Cleaver (d10+5 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Cleaver
+    damage: d10+5
+    tags:
+    - Close
+    - Reach
   description: Stained in the unholy ritual of Anointing By The Night’s Blood, some
     warriors of the horde rise to a kind of twisted knighthood. They trade their sanity
     for this honor, stepping halfway into a world of swirling madness. This makes
@@ -232,17 +265,21 @@ monsters:
   moves:
   - Fly into a frenzy
   - Unleash chaos
-- name: Orc Breaker
+- key: orc_breaker
+  name: Orc Breaker
   tags:
   - Solitary
   - Large
   hp: 16
   armor: 0
-  attack: Hammer (d10+3 damage ignores armor)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Hammer
+    damage: d10+3
+    ignores_armor: true
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: “Before you set out across the hordeland, brave sir, hark a moment
     to the tale of Sir Regnus. Regnus was like you, sir—a paladin of the Order, all
     a-shine in his plated armor and with a shield as tall as a man. Proud he was of
@@ -260,7 +297,8 @@ monsters:
   moves:
   - Destroy armor or protection
   - Lay low the mighty
-- name: Orc One-Eye
+- key: orc_one_eye
+  name: Orc One-Eye
   tags:
   - Group
   - Divine
@@ -269,12 +307,15 @@ monsters:
   - Organized
   hp: 6
   armor: 0
-  attack: Inflict Wounds (d8+2 damage ignores armor)
-  attack_tags:
-  - Close
-  - Reach
-  - Near
-  - Far
+  attack:
+    name: Inflict Wounds
+    damage: d8+2
+    ignores_armor: true
+    tags:
+    - Close
+    - Reach
+    - Near
+    - Far
   description: In the name of He of Riven Sight and by the First Sacrifice of Elf-Flesh
     do we invoke the Old Powers. By the Second Sacrifice, I make my claim to what
     is mine—the dark magic of Night. In His image, I walk the path to Gor-sha-thak,
@@ -287,19 +328,23 @@ monsters:
   - Rend flesh with divine magic
   - Take an eye
   - Make a sacrifice and grow in power
-- name: Orc Shaman
+- key: orc_shaman
+  name: Orc Shaman
   tags:
   - Solitary
   - Intelligent
   - Organized
   hp: 12
   armor: 0
-  attack: Elemental blast (d10 damage ignores armor)
-  attack_tags:
-  - Close
-  - Reach
-  - Near
-  - Far
+  attack:
+    name: Elemental blast
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Close
+    - Reach
+    - Near
+    - Far
   description: The orcs are as old a race as any. They cast bones in the dirt and
     called to the gods in the trees and stone as the elves built their first cities.
     They have waged wars, conquered kingdoms, and fallen into corruption in the aeons
@@ -315,7 +360,8 @@ monsters:
   - Give power of fire
   - Give swiftness of water
   - Give clarity of air
-- name: Orc Slaver
+- key: orc_slaver
+  name: Orc Slaver
   tags:
   - Horde
   - Stealthy
@@ -323,10 +369,12 @@ monsters:
   - Organized
   hp: 3
   armor: 0
-  attack: Whip (d6 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Whip
+    damage: d6
+    tags:
+    - Close
+    - Reach
   description: Red sails fly in the southern sea. Red sails and ships of bone, old
     wood and iron. The warfleet of the horde. Orcs down that way have taken to the
     sea, harassing island towns and stealing away with fishermen and their kin. It’s
@@ -339,7 +387,8 @@ monsters:
   - Take a captive
   - Pin someone under a net
   - Drug them
-- name: Orc Shadowhunter
+- key: orc_shadowhunter
+  name: Orc Shadowhunter
   tags:
   - Solitary
   - Stealthy
@@ -347,10 +396,13 @@ monsters:
   - Intelligent
   hp: 10
   armor: 0
-  attack: Poisoned dagger (d10 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Poisoned dagger
+    damage: d10
+    piercing: 1
+    tags:
+    - Close
+    - Reach
   description: Not every attack by orcs is torches and screaming and enslavement.
     Among those who follow He of Riven Sight, poison and murder-in-the-dark are considered
     sacred arts. Enter the shadowhunter. Orcs cloaked in Night’s magic who slip into
@@ -363,17 +415,20 @@ monsters:
   - Poison them
   - Melt into the shadows
   - Cloak them in darkness
-- name: Orc Warchief
+- key: orc_warchief
+  name: Orc Warchief
   tags:
   - Solitary
   - Intelligent
   - Organized
   hp: 16
   armor: 0
-  attack: Iron Sword of Ages (b[2d10]+2 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Iron Sword of Ages
+    damage: b[2d10]+2
+    tags:
+    - Close
+    - Reach
   description: There are chiefs and there are leaders of the tribes among the orcs.
     There are those who rise to seize power and fall under the machinations of their
     foes. There is but one Warchief. One orc in all the horde who stands above the
@@ -391,7 +446,8 @@ monsters:
   - Start a war
   - Make a show of power
   - Enrage the tribes
-- name: Triton Spy
+- key: triton_spy
+  name: Triton Spy
   tags:
   - Solitary
   - Stealthy
@@ -399,10 +455,12 @@ monsters:
   - Organized
   hp: 12
   armor: 2
-  attack: Trident (w[2d10] damage)
-  attack_tags:
-  - Close
-  - Near
+  attack:
+    name: Trident
+    damage: w[2d10]
+    tags:
+    - Close
+    - Near
   description: A fishing village caught one in their net, some time ago. Part a man
     and part some scaly sea creature, it spoke in a broken, spy-learned form of the
     common tongue before it suffocated in the open air. It told the fishermen of a
@@ -417,7 +475,8 @@ monsters:
   moves:
   - Reveal their secrets
   - Strike at weakness
-- name: Triton Tidecaller
+- key: triton_tidecaller
+  name: Triton Tidecaller
   tags:
   - Group
   - Divine
@@ -425,10 +484,13 @@ monsters:
   - Intelligent
   hp: 6
   armor: 2
-  attack: Waves (d8+2 damage, ignores armor)
-  attack_tags:
-  - Near
-  - Far
+  attack:
+    name: Waves
+    damage: d8+2
+    ignores_armor: true
+    tags:
+    - Near
+    - Far
   description: Part priest, part outcast among their kind, the tidecaller speaks with
     the voice of the deeps. They can be known by their mutations—transparent skin,
     perhaps, or rows of teeth like a shark. Glowing eyes or fingertips, angler-lights
@@ -446,18 +508,21 @@ monsters:
   - Cast a spell of water and destruction
   - Command beasts of the sea
   - Reveal divine proclamation
-- name: Triton Sub-Mariner
+- key: triton_sub_mariner
+  name: Triton Sub-Mariner
   tags:
   - Group
   - Organized
   - Intelligent
   hp: 6
   armor: 3
-  attack: Harpoon (b[2d8] damage)
-  attack_tags:
-  - Close
-  - Near
-  - Far
+  attack:
+    name: Harpoon
+    damage: b[2d8]
+    tags:
+    - Close
+    - Near
+    - Far
   description: The triton are not a militant race by nature. They shy away from battle
     except when the sahuagin attack, and then they only defend themselves and retreat
     into the depths where their foes can’t follow. This trend begins to change. As
@@ -473,18 +538,21 @@ monsters:
   moves:
   - Lead tritons to battle
   - Pull them beneath the waves
-- name: Triton Noble
+- key: triton_noble
+  name: Triton Noble
   tags:
   - Group
   - Organized
   - Intelligent
   hp: 6
   armor: 2
-  attack: Trident (d8 damage)
-  attack_tags:
-  - Close
-  - Near
-  - Far
+  attack:
+    name: Trident
+    damage: d8
+    tags:
+    - Close
+    - Near
+    - Far
   description: 'The triton ruling houses were chosen, they say, at the dawn of time.
     Granted lordship over all the races of the sea by some now-forgotten god. These
     bloodlines continue, passing rulership from father to daughter and mother to son

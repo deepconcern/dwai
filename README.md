@@ -10,7 +10,8 @@ A "D&D Beyond" for [Dungeon World](https://www.dungeon-world.com/): character sh
 ## Where to Start
 
 - [`ROADMAP.md`](ROADMAP.md): milestones and current status
-- [`docs/`](docs/README.md): game rules, app architecture and domain, and the development workflow
+- [`docs/`](docs/README.md): game rules, app architecture and domain, and the PR review checklist
+- [`.agent-workflows/`](.agent-workflows/README.md): the development workflow for AI agents, installed from a pinned version of [agent-workflows](https://github.com/deepconcern/agent-workflows)
 - [`AGENTS.md`](AGENTS.md): the guide for AI agents (Claude Code, Copilot, and others), which also covers local setup and commands
 
 ## Run with Docker

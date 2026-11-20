@@ -1,28 +1,29 @@
 ---
 name: write-spec
-description: Use after requirements are agreed with Wyatt in chat, to write the spec for a dwai feature as a GitHub issue labeled "spec: draft".
+description: Use after requirements are agreed with the maintainer in chat, to write the spec as a GitHub issue labeled "spec: draft" for the maintainer to approve.
 ---
 
 # Write a Spec
 
-Step 2 of the [workflow](../../../docs/workflow/README.md). The output is a GitHub issue in `deepconcern/dwai`.
+Step 2 of the feature delivery workflow. The output is an issue in the project's repository, using the spec template that the project's `AGENTS.md` names (usually `.github/ISSUE_TEMPLATE/spec.md`).
 
 ## Steps
 
-1. **Open an issue using the Spec template** (`.github/ISSUE_TEMPLATE/spec.md`), titled `Spec: <goal in a few words>`, with the label `spec: draft`. Add `hands-on` if Wyatt said he'll implement it, and `milestone: N` if it belongs to a roadmap milestone.
+1. **Open an issue from the Spec template**, titled `Spec: <goal in a few words>`, labeled `spec: draft`. Add `hands-on` if the maintainer said they'll implement it, and any project labels `AGENTS.md` asks for (such as a milestone).
 2. **Fill every section.** In particular:
-   - **Requirements**: numbered, testable statements.
-   - **Decisions**: every question from the requirements conversation and Wyatt's answer. This is the permanent record, so write it so it makes sense without the chat.
-   - **Game Rules**: the rules involved, with links into `docs/game/`. If you found a gap or error in `docs/game/`, include fixing it in the task breakdown.
-   - **Design**: concrete schema, migration, `internal/models`, and frontend changes. For AI features, name the concept (skill, MCP tool, RAG, eval) and why it fits (see `docs/app/ai.md`).
-   - **Task Breakdown**: how the work splits. If it needs more than one agent, plan one sub-issue per independent slice that doesn't edit the same files as another (for example API schema and resolvers; frontend; tests and fixtures).
-   - **Acceptance Criteria**: one Given/When/Then scenario per behavior that matters (happy path, named edge cases, user-facing errors), concrete enough that each becomes a test. See [Testing](../../../AGENTS.md#testing).
-3. **Create sub-issues** only if the breakdown needs more than one agent. Link them to the parent spec issue; the parent stays the spec of record.
-4. **Tell Wyatt in chat** that the spec is ready, with the link, and that you're waiting for his approval.
+   - **Requirements**: numbered, testable statements of what must be true when this is done.
+   - **Out of Scope**: what this deliberately doesn't do.
+   - **Decisions**: every question from the requirements conversation and the maintainer's answer. This is the permanent record, so write it to make sense without the chat.
+   - **Design**: concrete changes (schema, data, modules, UI). Name new concepts and why they fit.
+   - **Task Breakdown**: how the work splits. If it needs more than one agent, plan one sub-issue per independent slice that doesn't edit the same files as another.
+   - **Acceptance Criteria**: one Given/When/Then scenario per behavior that matters (the happy path, the edge cases the domain makes real, the errors a user can hit), concrete enough that each becomes a test. Leave out cases nobody needs.
+   - Any project sections in the template (such as domain rules), with links to the project's docs. If you found a gap or error in those docs, add fixing it to the breakdown.
+3. **Create sub-issues** only if the breakdown needs more than one agent. Link them to the parent, which stays the spec of record.
+4. **Tell the maintainer** the spec is ready, with the link, and that you're waiting for approval.
 
 ## While Waiting
 
-- If Wyatt requests changes, edit the issue body and summarize what changed in a comment.
-- Don't start implementing. Approval is the `spec: approved` label or Wyatt commenting "approved", and only Wyatt can give it.
+- If the maintainer asks for changes, edit the issue body (the spec is a living document until approved) and summarize what changed in a comment.
+- Don't start implementing. Approval is the `spec: approved` label or the maintainer commenting "approved", and only the maintainer can give it.
 
 Next: [`implement-spec`](../implement-spec/SKILL.md).

@@ -52,7 +52,7 @@ YAML files in `internal/data/` are loaded at startup; they are not stored in the
 | `internal/data/spells/cleric_spells.yaml` | Cleric spell list                  | `Spell`                        |
 | `internal/data/monsters/*.yaml`           | Monster compendium                 | `Monster`, `MonsterSetting`    |
 | `internal/data/gm_moves.yaml`             | GM principles and move list        | _(reference only)_             |
-| `internal/data/fronts.yaml`               | Campaign front structure           | _(reference only)_             |
+| `internal/data/fronts.yaml`               | Danger template for fronts         | `DangerTemplate`, `DangerCategory`, `DangerType`, `ImpendingDoom` |
 | `internal/data/hirelings.yaml`            | Hireling rules and types           | _(reference only)_             |
 
 The `key` field on all entities uses `snake_case` derived from the name (e.g., `hack_and_slash`, `fighter`).

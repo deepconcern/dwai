@@ -39,6 +39,7 @@ Most actions are reversible (mark and unmark XP, damage and heal, add and remove
 | Prepare spells | Small | Prepare again |
 | Remove a monster from play | Its HP is lost | Confirmation; add it again |
 | Delete a custom monster | Small; copies in play keep their stat block | Confirmation; write it again |
+| Delete a front, danger, or encounter | Deletes its dangers and grim portents (a front) or its plan; encounters and monsters in play stay | Confirmation; write it again |
 
 ## Table Chat
 

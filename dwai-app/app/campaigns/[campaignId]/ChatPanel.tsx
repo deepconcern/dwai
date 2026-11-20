@@ -75,6 +75,8 @@ const mergeMessages = (
 
 export type ChatPanelProps = {
   campaign: CampaignData;
+  /** Called with the body of each activity line that arrives live. */
+  onActivity?: (body: string) => void;
 };
 
 /**
@@ -83,7 +85,7 @@ export type ChatPanelProps = {
  * can whisper to the GM; the GM can whisper to one player. Older messages
  * load on request.
  */
-export const ChatPanel: FC<ChatPanelProps> = ({ campaign }) => {
+export const ChatPanel: FC<ChatPanelProps> = ({ campaign, onActivity }) => {
   const [body, setBody] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [ooc, setOoc] = useState(false);
@@ -113,6 +115,11 @@ export const ChatPanel: FC<ChatPanelProps> = ({ campaign }) => {
     },
     onData: ({ data: { data: received } }) => {
       if (!received) return;
+      const message = unmaskFragment(
+        MessageFragment,
+        received.campaignMessages,
+      );
+      if (message.kind === "ACTIVITY") onActivity?.(message.body);
       client.cache.updateQuery(
         { query: GET_CAMPAIGN_MESSAGES_QUERY, variables },
         (previous) =>

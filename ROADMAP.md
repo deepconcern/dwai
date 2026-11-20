@@ -11,7 +11,8 @@ Each milestone is one or more branches merged to `main`. A milestone is done whe
 - **Done**: Milestone 5 (Campaigns), spec #14 — campaigns run by a GM, reusable invite links, one character per player, bonds about other party members, the GM's read-only view of every sheet with HP and XP adjustments, and End of Session (group questions, alignment, and bond resolution, each with a logged reason) awarding XP.
 - **Done**: Milestone 6 (Table Chat & Rolls), spec #16 — a live table chat (WebSocket subscriptions with Postgres LISTEN/NOTIFY), whispers and GM-only rolls, move and damage rolls with a full breakdown (rolled by the app or entered from physical dice), named forward/ongoing bonuses, a Mark XP button on a miss, and an activity log of sheet changes. The honor system is now the rule: the API keeps data integrity and logs; players decide.
 - **Done**: Milestone 7 (Monsters), spec #23 — a searchable monster compendium (stable keys, attacks split so they can be rolled), each GM's own bestiary of custom monsters (written from scratch or copied from the compendium), and GM-only monsters in play per campaign with HP tracking, numbered groups, and damage rolls to chat under the monster's name.
-- **Next**: Milestone 8 (Fronts, Dangers & Encounters).
+- **Done**: Milestone 8 (Fronts, Dangers & Encounters), spec #25 — optional GM prep on a campaign's Prep page: campaign and adventure fronts with stakes questions (and answer notes), dangers (in a front or none) with free-text types, impulses, and impending dooms suggested from a small template, checkable grim portents, and encounters of monsters (linked to a danger or not) that the GM runs into play in one click. The GM can reveal a danger and its grim portents; players see them under Known threats, and each reveal posts to the chat.
+- **Next**: Milestone 9 (AI Foundation).
 
 ---
 
@@ -80,11 +81,11 @@ Before fronts, because encounters are built from monsters.
 - [x] GM creates custom monsters (the full stat block), optionally copied from a compendium entry
 - [x] Track monster HP during play
 
-### 8. Fronts, Dangers & Encounters ← next
+### 8. Fronts, Dangers & Encounters ✓
 
-- [ ] Fronts with dangers, impulses, grim portents (checkable), impending dooms, and stakes
-- [ ] Encounters: groups of monsters tied to a danger or location
-- [ ] GM-only visibility; reveal to players when appropriate
+- [x] Fronts with dangers, impulses, grim portents (checkable), impending dooms, and stakes
+- [x] Encounters: groups of monsters tied to a danger or location
+- [x] GM-only visibility; reveal to players when appropriate
 
 ---
 
@@ -104,7 +105,7 @@ RAG is not for the static compendium (small enough to put in a cached prompt or 
 
 Agents run as separate processes (e.g. a Claude Agent SDK harness) that connect to the dwai MCP server and authenticate as their own user, so the API's ownership checks apply to them like any other client.
 
-### 9. AI Foundation
+### 9. AI Foundation ← next
 
 - [ ] Claude API client in the API, with the key in env; per-campaign usage/cost logging
 - [ ] A read-only MCP server (official Go SDK, `modelcontextprotocol/go-sdk`) over the compendium and characters, usable from Claude Code/Desktop, as the first slice (moved here from Milestone 7)

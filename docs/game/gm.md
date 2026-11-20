@@ -1,6 +1,6 @@
 # The GM Side
 
-The GM data is in `dwai-api/internal/data/` (`gm_moves.yaml`, `fronts.yaml`, `hirelings.yaml`, `monsters/*.yaml`). Today it's reference-only. Milestones 7, 8, 12, and 13 build features on it, and it's the core of the future AI GM's skills.
+The GM data is in `dwai-api/internal/data/` (`gm_moves.yaml`, `fronts.yaml`, `hirelings.yaml`, `monsters/*.yaml`). The monster compendium (Milestone 7) and the danger template in `fronts.yaml` (Milestone 8) are used by the app; the GM moves and hirelings are reference only for now. Milestones 12 and 13 build more on it, and it's the core of the future AI GM's skills.
 
 ## How to GM
 
@@ -56,6 +56,20 @@ The GM's campaign prep. Fronts are built between sessions, not during play.
 - Each front groups 1–3 **dangers**. A danger has a type (e.g. ambitious organization, planar force, cursed place), an **impulse** (what drives it), and **grim portents**: a short ordered list of events that happen if nobody intervenes, ending in the **impending doom**.
 - Each front has **stakes questions**: things the GM wants to find out in play ("Will the baron survive?"). They're answered by play, not by the GM.
 - The GM checks off grim portents as the fiction advances them.
+
+The template in `fronts.yaml` lists the SRD's five danger categories, each with its moves and its types (and each type's impulse), plus six kinds of impending doom:
+
+| Category | Types (impulse) |
+| -------- | --------------- |
+| Ambitious Organizations | Misguided Good (to do what is "right" no matter the cost), Thieves Guild (to take by subterfuge), Cult (to infest from within), Religious Organization (to establish and follow doctrine), Corrupt Government (to maintain the status quo), Cabal (to absorb those in power, to grow) |
+| Planar Forces | God (to gather worshippers), Demon Prince (to open the gates of Hell), Elemental Lord (to tear down creation to its component parts), Force of Chaos (to destroy all semblance of order), Choir of Angels (to pass judgement), Construct of Law (to eliminate perceived disorder) |
+| Arcane Enemies | Lord of the Undead (to seek true immortality), Power-mad Wizard (to seek magical power), Sentient Artifact (to find a worthy wielder), Ancient Curse (to ensnare), Chosen One (to fulfill or resent their destiny), Dragon (to hoard gold and jewels, to protect the clutch) |
+| Hordes | Wandering Barbarians (to grow strong, to drive their enemies before them), Humanoid Vermin (to breed, to multiply and consume), Underground Dwellers (to defend the complex from outsiders), Plague of the Undead (to spread) |
+| Cursed Places | Abandoned Tower (to draw in the weak-willed), Unholy Ground (to spawn evil), Elemental Vortex (to grow, to tear apart reality), Dark Portal (to disgorge demons), Shadowland (to corrupt or consume the living), Place of Power (to be controlled or tamed) |
+
+Impending dooms: Tyranny, Pestilence, Destruction, Usurpation, Impoverishment, Rampant Chaos.
+
+In the app, fronts are an optional organizer for the GM: the template only suggests, and the GM writes their own types, impulses, and dooms. The rules' limits (1 to 3 dangers per front, a few portents per danger) are hints, not enforced. Fronts, dangers, and encounters are the GM's alone; the GM can reveal a danger and its portents to the players (see [docs/app/domain-model.md](../app/domain-model.md)).
 
 ## Hirelings
 

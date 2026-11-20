@@ -3,10 +3,13 @@
 package graph_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/99designs/gqlgen/client"
+	"github.com/deepconcern/dwai/dwai-api/internal/testutil"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -970,5 +973,119 @@ func TestDeleteDangerUnlinksItsEncounters(t *testing.T) {
 	got := campaignEncounters(t, tb.gm, tb.campaign.ID)
 	if len(got) != 1 || got[0].Name != "Raid" || got[0].Danger != nil {
 		t.Errorf("encounters = %+v, want Raid with no danger", got)
+	}
+}
+
+const knownThreatsChangedSubscription = `
+subscription ($campaignId: ID!) { knownThreatsChanged(campaignId: $campaignId) }`
+
+// threatWatcher is a player subscribed to a campaign's known-threat
+// changes over WebSocket.
+type threatWatcher struct {
+	signals chan struct{}
+	errs    chan error
+}
+
+// watchThreats subscribes a new player (who joins the campaign with a
+// fighter) to its known-threat changes.
+func watchThreats(t *testing.T, tb *table, email string) *threatWatcher {
+	t.Helper()
+
+	browser := testutil.NewBrowser(tb.h)
+	browser.Register(t, email)
+	join(t, browser.Client, *tb.campaign.InviteCode, createNamedFighter(t, browser.Client, "Cy").ID)
+
+	ws := client.New(tb.h, client.Path("/graphql"))
+	sub := ws.Websocket(knownThreatsChangedSubscription, client.AddCookie(browser.SessionCookie()), client.Var("campaignId", tb.campaign.ID))
+	t.Cleanup(func() { _ = sub.Close() })
+
+	w := &threatWatcher{signals: make(chan struct{}, 10), errs: make(chan error, 1)}
+	go func() {
+		for {
+			var resp struct{ KnownThreatsChanged bool }
+			if err := sub.Next(&resp); err != nil {
+				w.errs <- err
+				return
+			}
+			w.signals <- struct{}{}
+		}
+	}()
+
+	return w
+}
+
+// waitUntilSubscribed edits a throwaway danger until w hears about it,
+// since the subscription starts asynchronously, then drains the extras.
+func (w *threatWatcher) waitUntilSubscribed(t *testing.T, tb *table) {
+	t.Helper()
+
+	danger := createDanger(t, tb.gm, tb.campaign.ID, map[string]any{"name": "ping"})
+	deadline := time.After(10 * time.Second)
+	for i := 0; ; i++ {
+		updateDanger(t, tb.gm, danger.ID, map[string]any{"name": fmt.Sprintf("ping %d", i)})
+		select {
+		case <-w.signals:
+			time.Sleep(200 * time.Millisecond)
+			for len(w.signals) > 0 {
+				<-w.signals
+			}
+			return
+		case err := <-w.errs:
+			t.Fatalf("subscription: %v", err)
+		case <-time.After(100 * time.Millisecond):
+		case <-deadline:
+			t.Fatal("subscription never started")
+		}
+	}
+}
+
+// next waits for w's next signal.
+func (w *threatWatcher) next(t *testing.T, what string) {
+	t.Helper()
+
+	select {
+	case <-w.signals:
+	case err := <-w.errs:
+		t.Fatalf("subscription: %v", err)
+	case <-time.After(10 * time.Second):
+		t.Fatalf("no signal within 10s after %s", what)
+	}
+}
+
+func TestKnownThreatsChangedFiresOnRevealAndHide(t *testing.T) {
+	t.Parallel()
+
+	tb := newTable(t)
+	danger := createDanger(t, tb.gm, tb.campaign.ID, map[string]any{"name": "The Orcs", "portents": portentInputs("Smoke")})
+	watcher := watchThreats(t, tb, "cy@example.com")
+	watcher.waitUntilSubscribed(t, tb)
+
+	setDangerRevealed(t, tb.gm, danger.ID, true)
+	watcher.next(t, "revealing a danger")
+
+	setPortent(t, tb.gm, setPortentRevealedMutation, "revealed", danger.Portents[0].ID, true)
+	watcher.next(t, "revealing a portent")
+
+	setPortent(t, tb.gm, setPortentRevealedMutation, "revealed", danger.Portents[0].ID, false)
+	watcher.next(t, "hiding a portent")
+
+	setDangerRevealed(t, tb.gm, danger.ID, false)
+	watcher.next(t, "hiding a danger")
+}
+
+func TestStrangersCantWatchKnownThreats(t *testing.T) {
+	t.Parallel()
+
+	tb := newTable(t)
+	browser := testutil.NewBrowser(tb.h)
+	browser.Register(t, "stranger@example.com")
+
+	ws := client.New(tb.h, client.Path("/graphql"))
+	sub := ws.Websocket(knownThreatsChangedSubscription, client.AddCookie(browser.SessionCookie()), client.Var("campaignId", tb.campaign.ID))
+	defer func() { _ = sub.Close() }()
+
+	var resp map[string]any
+	if err := sub.Next(&resp); err == nil || !strings.Contains(err.Error(), "not found") {
+		t.Fatalf("subscription error = %v, want not found", err)
 	}
 }

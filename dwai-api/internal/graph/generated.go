@@ -615,7 +615,8 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		CampaignMessages func(childComplexity int, campaignID string) int
+		CampaignMessages    func(childComplexity int, campaignID string) int
+		KnownThreatsChanged func(childComplexity int, campaignID string) int
 	}
 
 	Tag struct {
@@ -821,6 +822,7 @@ type SpellQueryResolver interface {
 }
 type SubscriptionResolver interface {
 	CampaignMessages(ctx context.Context, campaignID string) (<-chan *model.Message, error)
+	KnownThreatsChanged(ctx context.Context, campaignID string) (<-chan bool, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -3469,6 +3471,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Subscription.CampaignMessages(childComplexity, args["campaignId"].(string)), true
+	case "Subscription.knownThreatsChanged":
+		if e.ComplexityRoot.Subscription.KnownThreatsChanged == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_knownThreatsChanged_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Subscription.KnownThreatsChanged(childComplexity, args["campaignId"].(string)), true
 
 	case "Tag.key":
 		if e.ComplexityRoot.Tag.Key == nil {
@@ -6211,6 +6224,20 @@ func (ec *executionContext) field_SpellQuery_byClass_args(ctx context.Context, r
 }
 
 func (ec *executionContext) field_Subscription_campaignMessages_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "campaignId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["campaignId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_knownThreatsChanged_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "campaignId",
@@ -17224,6 +17251,50 @@ func (ec *executionContext) fieldContext_Subscription_campaignMessages(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Subscription_knownThreatsChanged(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	return graphql.ResolveFieldStream(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Subscription_knownThreatsChanged(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Subscription().KnownThreatsChanged(ctx, fc.Args["campaignId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Subscription_knownThreatsChanged(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_knownThreatsChanged_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -27680,6 +27751,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	switch fields[0].Name {
 	case "campaignMessages":
 		return ec._Subscription_campaignMessages(ctx, fields[0])
+	case "knownThreatsChanged":
+		return ec._Subscription_knownThreatsChanged(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}

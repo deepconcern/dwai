@@ -613,3 +613,35 @@ func (r *queryResolver) DangerTemplate(ctx context.Context) (*model.DangerTempla
 
 	return template, nil
 }
+
+// KnownThreatsChanged is the resolver for the knownThreatsChanged field.
+func (r *subscriptionResolver) KnownThreatsChanged(ctx context.Context, campaignID string) (<-chan bool, error) {
+	uuid, err := parseUUID("campaign", campaignID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, _, err := r.loadCampaign(ctx, uuid, false); err != nil {
+		return nil, err
+	}
+
+	signals, err := r.ThreatSignals.Subscribe(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to subscribe to campaign with ID '%s': %w", campaignID, err)
+	}
+
+	out := make(chan bool, 1)
+	go func() {
+		defer close(out)
+
+		for range signals {
+			select {
+			case out <- true:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return out, nil
+}

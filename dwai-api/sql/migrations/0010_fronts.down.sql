@@ -4,3 +4,4 @@ DROP TABLE IF EXISTS encounters;
 DROP TABLE IF EXISTS grim_portents;
 DROP TABLE IF EXISTS dangers;
 DROP TABLE IF EXISTS fronts;
+DROP FUNCTION IF EXISTS notify_campaign_threats;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useApolloClient, useSuspenseQuery } from "@apollo/client/react";
+import { useSuspenseQuery } from "@apollo/client/react";
 import { notFound } from "next/navigation";
 import { FC, useState } from "react";
 
@@ -19,10 +19,7 @@ import { EndOfSessionDialog } from "./EndOfSessionDialog";
 import { FrontsPanel } from "./FrontsPanel";
 import { GET_CAMPAIGN_QUERY } from "./GET_CAMPAIGN_QUERY";
 import { InviteLink } from "./InviteLink";
-import {
-  GET_KNOWN_THREATS_QUERY,
-  KnownThreatsPanel,
-} from "./KnownThreatsPanel";
+import { KnownThreatsPanel } from "./KnownThreatsPanel";
 import { MonstersPanel } from "./MonstersPanel";
 import { PartyList } from "./PartyList";
 import { SessionLog } from "./SessionLog";
@@ -41,7 +38,6 @@ export type CampaignPageClientProps = {
 export const CampaignPageClient: FC<CampaignPageClientProps> = ({
   campaignId,
 }) => {
-  const client = useApolloClient();
   const [isEndOpen, setEndOpen] = useState(false);
   const [isReportOpen, setReportOpen] = useState(false);
   const { data, refetch } = useSuspenseQuery(GET_CAMPAIGN_QUERY, {
@@ -56,11 +52,6 @@ export const CampaignPageClient: FC<CampaignPageClientProps> = ({
     ? unmaskFragment(CampaignCharacterFragment, myCharacter).pendingSession
     : null;
   const handleChanged = () => void refetch();
-  const handleActivity = (body: string) => {
-    if (body.startsWith("The GM revealed")) {
-      void client.refetchQueries({ include: [GET_KNOWN_THREATS_QUERY] });
-    }
-  };
 
   return (
     <div className="gap-4 grid lg:grid-cols-2">
@@ -133,7 +124,7 @@ export const CampaignPageClient: FC<CampaignPageClientProps> = ({
         <SessionLog sessions={campaign.sessions} />
       </div>
       <div className="lg:sticky lg:top-4 self-start">
-        <ChatPanel campaign={campaign} onActivity={handleActivity} />
+        <ChatPanel campaign={campaign} />
       </div>
     </div>
   );

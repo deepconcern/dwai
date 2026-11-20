@@ -1,10 +1,11 @@
 "use client";
 
-import { useQuery } from "@apollo/client/react";
-import { FC } from "react";
+import { useQuery, useSubscription } from "@apollo/client/react";
+import { FC, useEffect } from "react";
 
 import { Section } from "@/components/Section";
 import { graphql } from "@/gql";
+import { onReconnected } from "@/lib/reconnect";
 
 export const GET_KNOWN_THREATS_QUERY = graphql(`
   query GetKnownThreats($id: ID!) {
@@ -22,21 +23,34 @@ export const GET_KNOWN_THREATS_QUERY = graphql(`
   }
 `);
 
+const KNOWN_THREATS_CHANGED_SUBSCRIPTION = graphql(`
+  subscription KnownThreatsChanged($campaignId: ID!) {
+    knownThreatsChanged(campaignId: $campaignId)
+  }
+`);
+
 export type KnownThreatsPanelProps = {
   campaignId: string;
 };
 
 /**
  * The dangers the GM has revealed, with their revealed grim portents. It's
- * hidden until something is revealed. The campaign page refetches it when
- * a reveal arrives in the chat.
+ * hidden until something is revealed, and reloads live whenever the GM
+ * reveals or hides something.
  */
 export const KnownThreatsPanel: FC<KnownThreatsPanelProps> = ({
   campaignId,
 }) => {
-  const { data } = useQuery(GET_KNOWN_THREATS_QUERY, {
+  const { data, refetch } = useQuery(GET_KNOWN_THREATS_QUERY, {
     variables: { id: campaignId },
   });
+  useSubscription(KNOWN_THREATS_CHANGED_SUBSCRIPTION, {
+    onData: () => void refetch(),
+    variables: { campaignId },
+  });
+
+  // Reload what changed while the connection was down.
+  useEffect(() => onReconnected(() => void refetch()), [refetch]);
 
   const threats = data?.campaigns.byId.knownThreats ?? [];
   if (threats.length === 0) return null;

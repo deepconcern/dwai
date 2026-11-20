@@ -118,6 +118,7 @@ func New(pool *pgxpool.Pool, gameData *models.GameData, options Options) http.Ha
 		Sessions:         sessions,
 		Spells:           gameData.SpellMap,
 		TagDefinitions:   gameData.TagDefinitionMap,
+		ThreatSignals:    realtime.NewSignals(pool, realtime.ThreatsChannel),
 	}}))
 
 	// Resolver errors are sent to the client without being logged, so log

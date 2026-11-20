@@ -27,4 +27,6 @@ type Resolver struct {
 	Sessions         *auth.Sessions
 	Spells           *models.SpellMap
 	TagDefinitions   *models.TagDefinitionMap
+	// ThreatSignals announces changes to campaigns' known threats.
+	ThreatSignals *realtime.Signals
 }

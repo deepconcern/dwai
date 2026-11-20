@@ -187,6 +187,11 @@ extend type Campaign {
   knownThreats: [KnownThreat!]!
 }
 
+extend type Subscription {
+  "Fires whenever the campaign's known threats may have changed (a reveal, a hide, or an edit), so the client reloads them. Any member."
+  knownThreatsChanged(campaignId: ID!): Boolean!
+}
+
 extend type CampaignMonster {
   "The encounter it was put into play from, if any (and not since deleted)."
   encounterId: ID

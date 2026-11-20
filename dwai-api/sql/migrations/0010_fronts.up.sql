@@ -84,3 +84,32 @@ CREATE INDEX encounter_monsters_encounter_id_idx ON encounter_monsters (encounte
 -- The encounter a monster in play was put into play from, if any.
 ALTER TABLE campaign_monsters
 ADD COLUMN encounter_id UUID REFERENCES encounters (id) ON DELETE SET NULL;
+
+-- Announces that a campaign's known threats may have changed, on the
+-- campaign_threats channel with the campaign's ID, so players' Known threats
+-- panels reload (see internal/realtime.Signals). It fires on every change to
+-- a danger or portent, hidden ones included; the payload says nothing about
+-- them, and Postgres sends one notification per campaign per transaction.
+CREATE FUNCTION notify_campaign_threats () RETURNS trigger AS $$
+DECLARE
+    campaign UUID;
+BEGIN
+    IF TG_TABLE_NAME = 'dangers' THEN
+        campaign := coalesce(NEW.campaign_id, OLD.campaign_id);
+    ELSE
+        SELECT campaign_id INTO campaign FROM dangers WHERE id = coalesce(NEW.danger_id, OLD.danger_id);
+    END IF;
+    IF campaign IS NOT NULL THEN
+        PERFORM pg_notify('campaign_threats', campaign::text);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER dangers_notify_threats
+AFTER INSERT OR UPDATE OR DELETE ON dangers FOR EACH ROW
+EXECUTE FUNCTION notify_campaign_threats ();
+
+CREATE TRIGGER grim_portents_notify_threats
+AFTER INSERT OR UPDATE OR DELETE ON grim_portents FOR EACH ROW
+EXECUTE FUNCTION notify_campaign_threats ();

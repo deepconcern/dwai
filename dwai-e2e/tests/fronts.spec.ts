@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { createFighter, joinWith, newUser } from "./helpers";
 
-test("a GM builds a front, reveals a grim portent, and runs an encounter", async ({
+test("a GM builds a front, reveals and hides a threat, and runs an encounter", async ({
   browser,
 }) => {
   // Given a GM and a player at a campaign's table,
@@ -82,6 +82,12 @@ test("a GM builds a front, reveals a grim portent, and runs an encounter", async
   await expect(ana.getByRole("list", { name: "Messages" })).toContainText(
     "The GM revealed a grim portent of The College of Arcanists: The College sends an expedition",
   );
+
+  // When the GM hides the danger again, it leaves the player's Known
+  // threats without a reload.
+  await revealDanger.click();
+  await expect(revealDanger).not.toBeChecked();
+  await expect(ana.getByRole("list", { name: "Known threats" })).toHaveCount(0);
 
   // When the GM prepares an encounter of two goblins, linked to nothing,
   await gm.getByRole("link", { name: "Prep: Fronts & Encounters" }).click();

@@ -1,17 +1,25 @@
+# Monster compendium: Dark Woods.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: woods
 name: Dark Woods
 monsters:
-- name: Assassin Vine
+- key: assassin_vine
+  name: Assassin Vine
   tags:
   - Solitary
   - Stealthy
   - Amorphous
   hp: 15
   armor: 1
-  attack: Thorns (d10 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Reach
-  - Messy
+  attack:
+    name: Thorns
+    damage: d10
+    piercing: 1
+    tags:
+    - Close
+    - Reach
+    - Messy
   description: Among the animals there exists a clear division ‘tween hunter and hunted.
     All it takes is a glance to know—by fangs and glowing eyes or claws or venomous
     sting—which of the creatures of this world are meant to kill and which stand to
@@ -27,7 +35,8 @@ monsters:
   moves:
   - Shoot forth new growth
   - Attack the unwary
-- name: Blink Dog
+- key: blink_dog
+  name: Blink Dog
   tags:
   - Group
   - Small
@@ -35,9 +44,11 @@ monsters:
   - Organized
   hp: 6
   armor: 4
-  attack: Bite (d8 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Bite
+    damage: d8
+    tags:
+    - Close
   description: Now you see it, now you don’t. Hounds once owned by a sorcerer lord
     and imbued with a kind of illusory cloak, they escaped into the woods around his
     lair and began to breed with wolves and wild dogs of the forest. You can spot
@@ -54,7 +65,8 @@ monsters:
   - Give the appearance of being somewhere they’re not
   - Summon the pack
   - Move with amazing speed
-- name: Centaur
+- key: centaur
+  name: Centaur
   tags:
   - Horde
   - Large
@@ -62,11 +74,14 @@ monsters:
   - Intelligent
   hp: 11
   armor: 1
-  attack: Bow (d6+2 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Reach
-  - Near
+  attack:
+    name: Bow
+    damage: d6+2
+    piercing: 1
+    tags:
+    - Close
+    - Reach
+    - Near
   description: “It will be a gathering of clans unseen in this age. Call Stormhoof
     and Brightspear. Summon Whitemane and Ironflanks. Sound the horn and we shall
     begin our meeting—we shall speak the words and bind our people together. Too long
@@ -82,7 +97,8 @@ monsters:
   - Overrun them
   - Fire a perfect bullseye
   - Move with unrelenting speed
-- name: Chaos Ooze
+- key: chaos_ooze
+  name: Chaos Ooze
   tags:
   - Solitary
   - Planar
@@ -90,9 +106,12 @@ monsters:
   - Amorphous
   hp: 23
   armor: 1
-  attack: Warping touch (d10 damage ignores armor)
-  attack_tags:
-  - Close
+  attack:
+    name: Warping touch
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Close
   description: The barrier between Dungeon World and the elemental planes is not,
     as you might hope, a wall of stone. It’s much more porous. Places where the civil
     races do not often tread can sometimes, how to put this, spring a leak. Like a
@@ -108,16 +127,19 @@ monsters:
   moves:
   - Cause a change in appearance or substance
   - Briefly bridge the planes
-- name: Cockatrice
+- key: cockatrice
+  name: Cockatrice
   tags:
   - Group
   - Small
   - Hoarder
   hp: 6
   armor: 1
-  attack: Beak (d8 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Beak
+    damage: d8
+    tags:
+    - Close
   description: “I ain’t ever seen such a thing, sir. Rodrick thought it a chicken,
     maybe. Poor Rodrick. I figured it to be a lizard of a sort, though he was right—it
     had a beak and gray feathers like a chicken. Right, well, see, we found it in
@@ -133,7 +155,8 @@ monsters:
   - Stone touch
   moves:
   - Start a slow transformation to stone
-- name: Dryad
+- key: dryad
+  name: Dryad
   tags:
   - Solitary
   - Magical
@@ -141,9 +164,11 @@ monsters:
   - Devious
   hp: 12
   armor: 2
-  attack: Crushing vines (w[2d8]damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Crushing vines
+    damage: w[2d8]
+    tags:
+    - Close
   description: More beautiful by far than any man or woman born in the civil realms.
     To gaze upon one is to fall in love. Deep and punishing, too. Thing is, they don’t
     love—not the fleshy folk who often find them, anyway. Their love is a primal thing,
@@ -161,7 +186,8 @@ monsters:
   - Entice a mortal
   - Merge into a tree
   - Turn nature against them
-- name: Eagle Lord
+- key: eagle_lord
+  name: Eagle Lord
   tags:
   - Group
   - Large
@@ -169,10 +195,13 @@ monsters:
   - Intelligent
   hp: 10
   armor: 1
-  attack: Talons (b[2d8]+1 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Talons
+    damage: b[2d8]+1
+    piercing: 1
+    tags:
+    - Close
+    - Reach
   description: Some the size of horses. Bigger, even—the kings and queens of the eagles.
     Their cry pierces the mountain sky and woe to those who fall under the shadow
     of their mighty wings. The ancient wizards forged a pact with them in the primordial
@@ -189,16 +218,19 @@ monsters:
   - Attack from the sky
   - Pull someone into the air
   - Call on ancient oaths
-- name: Elvish Warrior
+- key: elvish_warrior
+  name: Elvish Warrior
   tags:
   - Horde
   - Intelligent
   - Organized
   hp: 3
   armor: 2
-  attack: Sword (b[2d6] damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Sword
+    damage: b[2d6]
+    tags:
+    - Close
   description: ”As with all things they undertake, the elves approach war as an art.
     I saw them fight, once. The Battle of Astrid’s Veil. Yes, I am that old, boy,
     now hush. A warrior-maiden, she was clad in plate that shone like the winter sky.
@@ -216,7 +248,8 @@ monsters:
   - Strike at a weak point
   - Set ancient plans in motion
   - Use the woods to advantage
-- name: Elvish High Arcanist
+- key: elvish_high_arcanist
+  name: Elvish High Arcanist
   tags:
   - Solitary
   - Magical
@@ -224,10 +257,13 @@ monsters:
   - Organized
   hp: 12
   armor: 0
-  attack: Arcane fire (d10 damage ignores armor)
-  attack_tags:
-  - Near
-  - Far
+  attack:
+    name: Arcane fire
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Near
+    - Far
   description: True elvish magic isn’t like the spells of men. Mannish wizardry is
     all rotes and formulas. They cheat to find the arcane secrets that resound all
     around them. They are deaf to the arcane symphony that sings in the woods. Elvish
@@ -242,18 +278,21 @@ monsters:
   moves:
   - Work the magic that nature demands
   - Cast forth the elements
-- name: Griffin
+- key: griffin
+  name: Griffin
   tags:
   - Group
   - Large
   - Organized
   hp: 10
   armor: 1
-  attack: Talons (d8+3 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Talons
+    damage: d8+3
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: On first glance, one might mistake the griffin for another magical
     mistake like the manticore or the chimera. It looks the part, doesn’t it? These
     creatures have the regal haughtiness of a lion and the arrogant bearing of an
@@ -269,7 +308,8 @@ monsters:
   - Judge someone’s worthiness
   - Carry an ally aloft
   - Strike from above
-- name: Hill Giant
+- key: hill_giant
+  name: Hill Giant
   tags:
   - Group
   - Huge
@@ -277,12 +317,14 @@ monsters:
   - Organized
   hp: 10
   armor: 1
-  attack: Thrown rocks (d8+3 damage)
-  attack_tags:
-  - Reach
-  - Near
-  - Far
-  - Forceful
+  attack:
+    name: Thrown rocks
+    damage: d8+3
+    tags:
+    - Reach
+    - Near
+    - Far
+    - Forceful
   description: Ever seen an ogre before? Bigger than that. Dumber and meaner, too.
     Hope you like having cows thrown at you.
   instinct: Ruin everything.
@@ -290,18 +332,21 @@ monsters:
   - Throw something
   - Do something stupid
   - Shake the earth
-- name: Ogre
+- key: ogre
+  name: Ogre
   tags:
   - Group
   - Large
   - Intelligent
   hp: 10
   armor: 1
-  attack: Club (d8+5 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Club
+    damage: d8+5
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: 'A tale, then. Somewhere in the not-so-long history of the mannish
     race there was a divide. In days when men were merely dwellers-in-the-mud with
     no magic to call their own, they split in two: one camp left their caves and the
@@ -316,15 +361,19 @@ monsters:
   - Destroy something
   - Fly into a rage
   - Take something by force
-- name: Razor Boar
+- key: razor_boar
+  name: Razor Boar
   tags:
   - Solitary
   hp: 16
   armor: 1
-  attack: Tusks (d10 damage, 3 piercing)
-  attack_tags:
-  - Close
-  - Messy
+  attack:
+    name: Tusks
+    damage: d10
+    piercing: 3
+    tags:
+    - Close
+    - Messy
   description: The tusks of the razor boar shred metal plate like so much tissue.
     Voracious, savage and unstoppable, they tower over their mundane kin. To kill
     one? A greater trophy of bravery and skill is hard to name, though I hear a razor
@@ -334,7 +383,8 @@ monsters:
   moves:
   - Rip them apart
   - Rend armor and weapons
-- name: Satyr
+- key: satyr
+  name: Satyr
   tags:
   - Group
   - Devious
@@ -342,9 +392,11 @@ monsters:
   - Hoarder
   hp: 10
   armor: 1
-  attack: Charge (w[2d8] damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Charge
+    damage: w[2d8]
+    tags:
+    - Close
   description: One of only a very few creatures to be found in the old woods that
     don’t outright want to maim, kill, or eat us. They dwell in glades pierced by
     the sun, and dance on their funny goat-legs to enchanting music played on pipes
@@ -359,7 +411,8 @@ monsters:
   - Pull others into revelry through magic
   - Force gifts upon them
   - Play jokes with illusions and tricks
-- name: Sprite
+- key: sprite
+  name: Sprite
   tags:
   - Horde
   - Tiny
@@ -369,9 +422,11 @@ monsters:
   - Intelligent
   hp: 3
   armor: 0
-  attack: Dagger (w[2d4] damage)
-  attack_tags:
-  - Hand
+  attack:
+    name: Dagger
+    damage: w[2d4]
+    tags:
+    - Hand
   description: I’d classify them elementals, except that “being annoying” isn’t an
     element.
   instinct: To play tricks
@@ -382,7 +437,8 @@ monsters:
   - Play a trick to expose someone’s true nature
   - Confuse their senses
   - Craft an illusion
-- name: Treant
+- key: treant
+  name: Treant
   tags:
   - Group
   - Huge
@@ -390,10 +446,12 @@ monsters:
   - Amorphous
   hp: 21
   armor: 4
-  attack: Walloping branches (d10+5 damage)
-  attack_tags:
-  - Reach
-  - Forceful
+  attack:
+    name: Walloping branches
+    damage: d10+5
+    tags:
+    - Reach
+    - Forceful
   description: Old and tall and thick of bark
   special_qualities:
   - Wooden
@@ -401,16 +459,20 @@ monsters:
   - Move with implacable strength
   - Set down roots
   - Spread old magic
-- name: Werewolf
+- key: werewolf
+  name: Werewolf
   tags:
   - Solitary
   - Intelligent
   hp: 12
   armor: 1
-  attack: Bite (d10+2 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Messy
+  attack:
+    name: Bite
+    damage: d10+2
+    piercing: 1
+    tags:
+    - Close
+    - Messy
   description: “Beautiful, isn’t it? The moon, I mean. She’s watching us, you know?
     Her pretty silver eyes watch us while we sleep. Mad, too—like all the most beautiful
     ones. If she were a woman, I’d bend my knee and make her my wife on the spot.
@@ -427,15 +489,18 @@ monsters:
   - Transform to pass unnoticed as beast or man
   - Strike from within
   - Hunt like man and beast
-- name: Worg
+- key: worg
+  name: Worg
   tags:
   - Horde
   - Organized
   hp: 3
   armor: 1
-  attack: Bite (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Bite
+    damage: d6
+    tags:
+    - Close
   description: As horses are to the civil races, so go the worg to the goblins. Mounts,
     fierce in battle, ridden by only the bravest and most dangerous, are found and
     bred in the forest primeval to serve the goblins in their wars on men. The only

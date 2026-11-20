@@ -1,6 +1,11 @@
+# Monster compendium: Swamp Denizens.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: swamp
 name: Swamp Denizens
 monsters:
-- name: Bakunawa
+- key: bakunawa
+  name: Bakunawa
   tags:
   - Solitary
   - Large
@@ -9,10 +14,13 @@ monsters:
   - Forceful
   hp: 16
   armor: 2
-  attack: Bite (d10+3 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d10+3
+    piercing: 1
+    tags:
+    - Close
+    - Reach
   description: Dragon-Turtle’s sister is a mighty serpent queen. Ten yards of scales
     and muscle, they say she wakes with a hunger when the sun disappears from the
     sky. She is attracted by bright light in the darkness and like any snake, the
@@ -28,15 +36,18 @@ monsters:
   - Lure prey with lies and illusions
   - Lash out at light
   - Devour
-- name: Basilisk
+- key: basilisk
+  name: Basilisk
   tags:
   - Solitary
   - Hoarder
   hp: 12
   armor: 2
-  attack: Bite (d10 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Bite
+    damage: d10
+    tags:
+    - Close
   description: “Few have seen a basilisk and lived to tell the tale. Get it? Seen
     a basilisk? Little bit of basilisk humor there. Sorry, I know you’re looking for
     something helpful, sirs. Serious stuff, I understand. The basilisk, even without
@@ -48,15 +59,19 @@ monsters:
   moves:
   - Turn flesh to stone with a gaze
   - Retreat into a maze of stone
-- name: Black Pudding
+- key: black_pudding
+  name: Black Pudding
   tags:
   - Solitary
   - Amorphous
   hp: 15
   armor: 1
-  attack: Corrosive touch (d10 damage, ignores armor)
-  attack_tags:
-  - Close
+  attack:
+    name: Corrosive touch
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Close
   description: How do you kill a pile of goo? A great, squishy pile of goo that also
     happens to want to dissolve you and slurp you up? That is a good question to which
     I have no answer. Do let us know when you find out.
@@ -66,16 +81,20 @@ monsters:
   moves:
   - Eat away metal, flesh, or wood
   - 'Ooze into a troubling place: food, armor, stomach'
-- name: Coutal
+- key: coutal
+  name: Coutal
   tags:
   - Solitary
   - Intelligent
   - Devious
   hp: 12
   armor: 2
-  attack: Light ray (d8 damage, ignores armor)
-  attack_tags:
-  - Close
+  attack:
+    name: Light ray
+    damage: d8
+    ignores_armor: true
+    tags:
+    - Close
   description: As if in direct defiance of the decay and filth of the world, the gods
     granted us the coutal. As if to say, “there is beauty, even in this grim place.”
     A serpent in flight on jeweled wings, these beautiful creatures glow with a soft
@@ -91,16 +110,19 @@ monsters:
   - Pass judgment on a person or place
   - Summon divine forces to cleanse
   - Offer information in exchange for service
-- name: Crocodilian
+- key: crocodilian
+  name: Crocodilian
   tags:
   - Group
   - Large
   hp: 10
   armor: 2
-  attack: Bite (d8+3 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d8+3
+    tags:
+    - Close
+    - Reach
   description: It’s a really, really big crocodile. Seriously. So big.
   instinct: To eat
   special_qualities:
@@ -110,16 +132,19 @@ monsters:
   - Attack an unsuspecting victim
   - Escape into the water
   - Hold something tight in its jaws
-- name: Doppelgänger
+- key: doppelg_nger
+  name: Doppelgänger
   tags:
   - Solitary
   - Devious
   - Intelligent
   hp: 12
   armor: 0
-  attack: Dagger (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Dagger
+    damage: d6
+    tags:
+    - Close
   description: Their natural form, if you ever see it, is hideous. Like a creature
     who stopped growing part-way, before it decided it was elf or man or dwarf. Then
     again, maybe that’s how you get to be the way a doppelgänger is—without form,
@@ -135,16 +160,19 @@ monsters:
   - Assume the shape of a person whose flesh it’s tasted
   - Use another’s identity to advantage
   - Leave someone’s reputation shattered
-- name: Dragon Turtle
+- key: dragon_turtle
+  name: Dragon Turtle
   tags:
   - Solitary
   - Huge
   - Cautious
   hp: 20
   armor: 4
-  attack: Bite (d10+3 damage)
-  attack_tags:
-  - Reach
+  attack:
+    name: Bite
+    damage: d10+3
+    tags:
+    - Reach
   description: Bakunawa has a brother. Where she is quick to anger and hungry for
     gold, he is slow and sturdy. She is a knife and he is a shield. A great turtle
     that lies in the muck and mire for ages as they pass, mud piled upon his back—sometimes
@@ -159,7 +187,8 @@ monsters:
   - Move forward implacably
   - Bring its full bulk to bear
   - Destroy structures and buildings
-- name: Dragon Whelp
+- key: dragon_whelp
+  name: Dragon Whelp
   tags:
   - Solitary
   - Small
@@ -168,10 +197,12 @@ monsters:
   - Hoarder
   hp: 16
   armor: 3
-  attack: Elemental breath (d10+2 damage)
-  attack_tags:
-  - Close
-  - Near
+  attack:
+    name: Elemental breath
+    damage: d10+2
+    tags:
+    - Close
+    - Near
   description: What? Did you think they were all a mile long? Did you think they didn’t
     come smaller than that? Sure, they may be no bigger than a dog and no smarter
     than an ape, but a dragon whelp can still belch up a hellish ball of fire that’ll
@@ -186,14 +217,17 @@ monsters:
   - Start a lair, form a base of power
   - Call on family ties
   - Demand oaths of servitude
-- name: Ekek
+- key: ekek
+  name: Ekek
   tags:
   - Horde
   hp: 3
   armor: 1
-  attack: Talons (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Talons
+    damage: d6
+    tags:
+    - Close
   description: Ugly, wrinkled bird-folk, these. Once, maybe, in some ancient past,
     they were a race of angelic men from on high, but now they eat rats that they
     fish from the murk with talon-feet and devour with needle-teeth. They understand
@@ -206,15 +240,19 @@ monsters:
   moves:
   - Attack from the air
   - Carry out the bidding of a more powerful creature
-- name: Fire Eels
+- key: fire_eels
+  name: Fire Eels
   tags:
   - Horde
   - Tiny
   hp: 3
   armor: 0
-  attack: Burning touch (d6-2 damage, ignores armor)
-  attack_tags:
-  - Hand
+  attack:
+    name: Burning touch
+    damage: d6-2
+    ignores_armor: true
+    tags:
+    - Hand
   description: These strange creatures are no bigger or smarter than their mundane
     kin. They have the same vicious nature. Over their relations they have one advantage—an
     oily secretion that oozes from their skin. It makes them hard to catch. On top
@@ -229,16 +267,19 @@ monsters:
   moves:
   - Catch someone or something on fire (even underwater)
   - Consume burning prey
-- name: Frogman
+- key: frogman
+  name: Frogman
   tags:
   - Horde
   - Small
   - Intelligent
   hp: 7
   armor: 1
-  attack: Spear (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Spear
+    damage: d6
+    tags:
+    - Close
   description: Croak croak croak. Little warty munchkins. Some wizard or godling’s
     idea of a bad joke, these creatures are. They stand as men, dress in scavenged
     cloth and hold court in their froggy villages. They speak a rumbling pidgin form
@@ -252,16 +293,19 @@ monsters:
   moves:
   - Launch an amphibious assault
   - Heal at a prodigious rate
-- name: Hydra
+- key: hydra
+  name: Hydra
   tags:
   - Solitary
   - Large
   hp: 16
   armor: 2
-  attack: Bite (d10+3 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Bite
+    damage: d10+3
+    tags:
+    - Close
+    - Reach
   description: A bit like a dragon, wingless though it may be. Heads, nine in number
     at birth, spring from a muscled trunk and weave a sinuous pattern in the air.
     A hydra is to be feared—a scaled terror of the marsh. The older ones, though,
@@ -275,7 +319,8 @@ monsters:
   moves:
   - Attack many enemies at once
   - Regenerate a body part (especially a head)
-- name: Kobold
+- key: kobold
+  name: Kobold
   tags:
   - Horde
   - Small
@@ -284,10 +329,12 @@ monsters:
   - Organized
   hp: 3
   armor: 1
-  attack: Spear (d6 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Spear
+    damage: d6
+    tags:
+    - Close
+    - Reach
   description: Some are wont to lump these little, rat-like dragon-men in with goblins
     and orcs, bugbears and hobgoblins. They are smarter and wiser than their kin,
     however. The kobolds are beholden slaves to dragons and were, in ancient times,
@@ -302,7 +349,8 @@ monsters:
   - Lay a trap
   - Call on dragons or draconic allies
   - Retreat and regroup
-- name: Lizardman
+- key: lizardman
+  name: Lizardman
   tags:
   - Group
   - Stealthy
@@ -310,10 +358,12 @@ monsters:
   - Organized
   hp: 6
   armor: 2
-  attack: Spear (d8 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Spear
+    damage: d8
+    tags:
+    - Close
+    - Reach
   description: A traveling sorcerer once told me that lizardmen came before we did.
     That before elves and dwarves and men built even the first of their wattle huts,
     a race of proud lizard kings strode the land. That they lived in palaces of crystal
@@ -327,7 +377,8 @@ monsters:
   moves:
   - Ambush the unsuspecting
   - Launch an amphibious assault
-- name: Medusa
+- key: medusa
+  name: Medusa
   tags:
   - Solitary
   - Devious
@@ -335,9 +386,11 @@ monsters:
   - Hoarder
   hp: 12
   armor: 0
-  attack: Claws (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Claws
+    damage: d6
+    tags:
+    - Close
   description: The medusa are children of a serpent-haired mother, birthing them in
     ancient times to bear her name across the ages. They dwell near places of civilization—luring
     folks to their caves with promises of beauty or riches untold. Fine appreciators
@@ -352,17 +405,21 @@ monsters:
   - Turn a body part to stone with a look
   - Draw someone’s gaze
   - Show hidden terrible beauty
-- name: Sahuagin
+- key: sahuagin
+  name: Sahuagin
   tags:
   - Horde
   - Intelligent
   hp: 3
   armor: 2
-  attack: Endless teeth (d6+4 damage, 1 piercing)
-  attack_tags:
-  - Close
-  - Forceful
-  - Messy
+  attack:
+    name: Endless teeth
+    damage: d6+4
+    piercing: 1
+    tags:
+    - Close
+    - Forceful
+    - Messy
   description: The shape and craft of men wedded to the hunger and the endless teeth
     of a shark. Voracious and filled only with hate, these creatures will not stop
     until all life has been consumed. They cannot be reasoned with, they cannot be
@@ -375,16 +432,19 @@ monsters:
   - Bite off a limb
   - Hurl a poisoned spear
   - Frenzy at the sight of blood
-- name: Sauropod
+- key: sauropod
+  name: Sauropod
   tags:
   - Group
   - Huge
   - Cautious
   hp: 18
   armor: 4
-  attack: Trample (d10+5 damage)
-  attack_tags:
-  - Reach
+  attack:
+    name: Trample
+    damage: d10+5
+    tags:
+    - Reach
   description: Great lumbering beasts, they live in places long since forgotten by
     the thinking races of the world. Gentle if unprovoked, but mighty if their ire
     is raised, they trample smaller creatures with the care we might give to crushing
@@ -397,18 +457,21 @@ monsters:
   - Stampede
   - Knock something down
   - Unleash a deafening bellow
-- name: Swamp Shambler
+- key: swamp_shambler
+  name: Swamp Shambler
   tags:
   - Solitary
   - Large
   - Magical
   hp: 23
   armor: 1
-  attack: Lash (d10+1 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Lash
+    damage: d10+1
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: Some elementals are conjured up in sacred circles etched in chalk.
     Most, in fact. There’s a sort of science to it. Others, though, aren’t so orderly—they
     don’t fall under the carefully controlled assignments of fire, air, water, or
@@ -422,17 +485,20 @@ monsters:
   - Call on the swamp itself for aid
   - Meld into the swamp
   - Reassemble into a new form
-- name: Troll
+- key: troll
+  name: Troll
   tags:
   - Solitary
   - Large
   hp: 20
   armor: 1
-  attack: Club (d10+3 damage)
-  attack_tags:
-  - Close
-  - Reach
-  - Forceful
+  attack:
+    name: Club
+    damage: d10+3
+    tags:
+    - Close
+    - Reach
+    - Forceful
   description: Tall. Real tall. Eight or nine feet when they’re young or weak. Covered
     all over in warty, tough skin, too. Big teeth, stringy hair like swamp moss and
     long, dirty nails. Some are green, some gray, some black. They’re clannish and
@@ -446,16 +512,19 @@ monsters:
   moves:
   - Undo the effects of an attack (unless caused by a weakness, your call)
   - Hurl something or someone
-- name: Will-o-wisp
+- key: will_o_wisp
+  name: Will-o-wisp
   tags:
   - Solitary
   - Tiny
   - Magical
   hp: 12
   armor: 0
-  attack: Ray (w[2d8-2] damage)
-  attack_tags:
-  - Near
+  attack:
+    name: Ray
+    damage: w[2d8]-2
+    tags:
+    - Near
   description: Spot a lantern floating in the darkness, lost traveler in the swamp.
     Hope—a beacon of shimmering light. You call out to it, but there’s no answer.
     It begins to fade and so you follow, sloshing through the muck, tiring at the

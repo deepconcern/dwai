@@ -98,8 +98,11 @@ type Roll struct {
 	DiceTotal int32      `json:"diceTotal"`
 	Label     string     `json:"label"`
 	Modifiers []Modifier `json:"modifiers"`
-	MoveKey   string     `json:"moveKey,omitempty"`
-	Source    RollSource `json:"source"`
+	// MonsterName is set for a monster's damage roll, which the GM posts
+	// under the monster's name.
+	MonsterName string     `json:"monsterName,omitempty"`
+	MoveKey     string     `json:"moveKey,omitempty"`
+	Source      RollSource `json:"source"`
 	// Total is DiceTotal plus every modifier.
 	Total int32 `json:"total"`
 }

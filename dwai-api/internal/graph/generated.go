@@ -45,6 +45,8 @@ type ResolverRoot interface {
 	ItemTemplateQuery() ItemTemplateQueryResolver
 	Look() LookResolver
 	LookTypeQuery() LookTypeQueryResolver
+	MonsterMutation() MonsterMutationResolver
+	MonsterQuery() MonsterQueryResolver
 	MoveQuery() MoveQueryResolver
 	Mutation() MutationResolver
 	PartyMember() PartyMemberResolver
@@ -97,6 +99,7 @@ type ComplexityRoot struct {
 		InviteCode  func(childComplexity int) int
 		IsGm        func(childComplexity int) int
 		Messages    func(childComplexity int, before *string, limit int32) int
+		Monsters    func(childComplexity int) int
 		MyCharacter func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Sessions    func(childComplexity int) int
@@ -107,17 +110,32 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	CampaignMonster struct {
+		CreatedAt func(childComplexity int) int
+		Hp        func(childComplexity int) int
+		ID        func(childComplexity int) int
+		MaxHp     func(childComplexity int) int
+		Name      func(childComplexity int) int
+		StatBlock func(childComplexity int) int
+	}
+
 	CampaignMutation struct {
+		AddMonsters          func(childComplexity int, id string, input model.AddMonstersInput) int
 		Create               func(childComplexity int, input model.CampaignInput) int
+		DamageMonster        func(childComplexity int, input model.TakeDamageInput, monsterID string) int
 		Delete               func(childComplexity int, id string) int
 		EndSession           func(childComplexity int, id string, input model.EndSessionInput) int
+		HealMonster          func(childComplexity int, amount int32, monsterID string) int
 		Join                 func(childComplexity int, characterID string, code string) int
 		Leave                func(childComplexity int, characterID string) int
 		PostDamage           func(childComplexity int, id string, input model.DamageRollInput) int
 		PostMessage          func(childComplexity int, id string, input model.MessageInput) int
+		PostMonsterDamage    func(childComplexity int, input model.DamageRollInput, monsterID string) int
 		PostRoll             func(childComplexity int, id string, input model.RollInput) int
 		RegenerateInviteCode func(childComplexity int, id string) int
 		RemoveCharacter      func(childComplexity int, characterID string, id string) int
+		RemoveMonster        func(childComplexity int, monsterID string) int
+		RenameMonster        func(childComplexity int, monsterID string, name string) int
 		Update               func(childComplexity int, id string, input model.CampaignInput) int
 	}
 
@@ -329,6 +347,50 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
+	Monster struct {
+		Armor            func(childComplexity int) int
+		Attack           func(childComplexity int) int
+		Description      func(childComplexity int) int
+		Hp               func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Instinct         func(childComplexity int) int
+		Moves            func(childComplexity int) int
+		Name             func(childComplexity int) int
+		Setting          func(childComplexity int) int
+		Source           func(childComplexity int) int
+		SourceKey        func(childComplexity int) int
+		SpecialQualities func(childComplexity int) int
+		Tags             func(childComplexity int) int
+	}
+
+	MonsterAttack struct {
+		Damage       func(childComplexity int) int
+		IgnoresArmor func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Piercing     func(childComplexity int) int
+		Tags         func(childComplexity int) int
+	}
+
+	MonsterMutation struct {
+		CreateCustom func(childComplexity int, input model.MonsterInput) int
+		DeleteCustom func(childComplexity int, id string) int
+		UpdateCustom func(childComplexity int, id string, input model.MonsterInput) int
+	}
+
+	MonsterQuery struct {
+		ByKey      func(childComplexity int, key string) int
+		Compendium func(childComplexity int) int
+		Custom     func(childComplexity int, id string) int
+		Mine       func(childComplexity int) int
+		Settings   func(childComplexity int) int
+		Tags       func(childComplexity int) int
+	}
+
+	MonsterSetting struct {
+		Key  func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
 	Move struct {
 		CreationOptions func(childComplexity int) int
 		Description     func(childComplexity int) int
@@ -363,6 +425,7 @@ type ComplexityRoot struct {
 		Campaigns  func(childComplexity int) int
 		Characters func(childComplexity int) int
 		Items      func(childComplexity int) int
+		Monsters   func(childComplexity int) int
 		Spells     func(childComplexity int) int
 	}
 
@@ -392,6 +455,7 @@ type ComplexityRoot struct {
 		ItemTemplates    func(childComplexity int) int
 		LookTypes        func(childComplexity int) int
 		Me               func(childComplexity int) int
+		Monsters         func(childComplexity int) int
 		Moves            func(childComplexity int) int
 		Spells           func(childComplexity int) int
 	}
@@ -476,6 +540,7 @@ type CampaignResolver interface {
 
 	Sessions(ctx context.Context, obj *model.Campaign) ([]*model.CampaignSession, error)
 	Messages(ctx context.Context, obj *model.Campaign, before *string, limit int32) (*model.MessagePage, error)
+	Monsters(ctx context.Context, obj *model.Campaign) ([]*model.CampaignMonster, error)
 }
 type CampaignMutationResolver interface {
 	Create(ctx context.Context, obj *model.CampaignMutation, input model.CampaignInput) (*model.Campaign, error)
@@ -489,6 +554,12 @@ type CampaignMutationResolver interface {
 	PostMessage(ctx context.Context, obj *model.CampaignMutation, id string, input model.MessageInput) (*model.Message, error)
 	PostDamage(ctx context.Context, obj *model.CampaignMutation, id string, input model.DamageRollInput) (*model.Message, error)
 	PostRoll(ctx context.Context, obj *model.CampaignMutation, id string, input model.RollInput) (*model.Message, error)
+	AddMonsters(ctx context.Context, obj *model.CampaignMutation, id string, input model.AddMonstersInput) ([]*model.CampaignMonster, error)
+	DamageMonster(ctx context.Context, obj *model.CampaignMutation, input model.TakeDamageInput, monsterID string) (*model.CampaignMonster, error)
+	HealMonster(ctx context.Context, obj *model.CampaignMutation, amount int32, monsterID string) (*model.CampaignMonster, error)
+	PostMonsterDamage(ctx context.Context, obj *model.CampaignMutation, input model.DamageRollInput, monsterID string) (*model.Message, error)
+	RemoveMonster(ctx context.Context, obj *model.CampaignMutation, monsterID string) (bool, error)
+	RenameMonster(ctx context.Context, obj *model.CampaignMutation, monsterID string, name string) (*model.CampaignMonster, error)
 }
 type CampaignQueryResolver interface {
 	ByID(ctx context.Context, obj *model.CampaignQuery, id string) (*model.Campaign, error)
@@ -568,6 +639,19 @@ type LookResolver interface {
 type LookTypeQueryResolver interface {
 	All(ctx context.Context, obj *model.LookTypeQuery) ([]*model.LookType, error)
 }
+type MonsterMutationResolver interface {
+	CreateCustom(ctx context.Context, obj *model.MonsterMutation, input model.MonsterInput) (*model.Monster, error)
+	DeleteCustom(ctx context.Context, obj *model.MonsterMutation, id string) (bool, error)
+	UpdateCustom(ctx context.Context, obj *model.MonsterMutation, id string, input model.MonsterInput) (*model.Monster, error)
+}
+type MonsterQueryResolver interface {
+	ByKey(ctx context.Context, obj *model.MonsterQuery, key string) (*model.Monster, error)
+	Compendium(ctx context.Context, obj *model.MonsterQuery) ([]*model.Monster, error)
+	Custom(ctx context.Context, obj *model.MonsterQuery, id string) (*model.Monster, error)
+	Mine(ctx context.Context, obj *model.MonsterQuery) ([]*model.Monster, error)
+	Settings(ctx context.Context, obj *model.MonsterQuery) ([]*model.MonsterSetting, error)
+	Tags(ctx context.Context, obj *model.MonsterQuery) ([]string, error)
+}
 type MoveQueryResolver interface {
 	All(ctx context.Context, obj *model.MoveQuery) ([]*model.Move, error)
 	ByKey(ctx context.Context, obj *model.MoveQuery, key string) (*model.Move, error)
@@ -579,6 +663,7 @@ type MutationResolver interface {
 	Characters(ctx context.Context) (*model.CharacterMutation, error)
 	Items(ctx context.Context) (*model.ItemMutation, error)
 	Spells(ctx context.Context) (*model.SpellMutation, error)
+	Monsters(ctx context.Context) (*model.MonsterMutation, error)
 }
 type PartyMemberResolver interface {
 	BondCount(ctx context.Context, obj *model.PartyMember) (int32, error)
@@ -593,6 +678,7 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
 	Moves(ctx context.Context) (*model.MoveQuery, error)
 	Spells(ctx context.Context) (*model.SpellQuery, error)
+	Monsters(ctx context.Context) (*model.MonsterQuery, error)
 }
 type SpellMutationResolver interface {
 	AddToSpellbook(ctx context.Context, obj *model.SpellMutation, characterID string, spellKey string) (*model.Character, error)
@@ -779,6 +865,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Campaign.Messages(childComplexity, args["before"].(*string), args["limit"].(int32)), true
+	case "Campaign.monsters":
+		if e.ComplexityRoot.Campaign.Monsters == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Campaign.Monsters(childComplexity), true
 	case "Campaign.myCharacter":
 		if e.ComplexityRoot.Campaign.MyCharacter == nil {
 			break
@@ -811,6 +903,54 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CampaignInvite.Name(childComplexity), true
 
+	case "CampaignMonster.createdAt":
+		if e.ComplexityRoot.CampaignMonster.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.CreatedAt(childComplexity), true
+	case "CampaignMonster.hp":
+		if e.ComplexityRoot.CampaignMonster.Hp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.Hp(childComplexity), true
+	case "CampaignMonster.id":
+		if e.ComplexityRoot.CampaignMonster.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.ID(childComplexity), true
+	case "CampaignMonster.maxHp":
+		if e.ComplexityRoot.CampaignMonster.MaxHp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.MaxHp(childComplexity), true
+	case "CampaignMonster.name":
+		if e.ComplexityRoot.CampaignMonster.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.Name(childComplexity), true
+	case "CampaignMonster.statBlock":
+		if e.ComplexityRoot.CampaignMonster.StatBlock == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CampaignMonster.StatBlock(childComplexity), true
+
+	case "CampaignMutation.addMonsters":
+		if e.ComplexityRoot.CampaignMutation.AddMonsters == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_addMonsters_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.AddMonsters(childComplexity, args["id"].(string), args["input"].(model.AddMonstersInput)), true
 	case "CampaignMutation.create":
 		if e.ComplexityRoot.CampaignMutation.Create == nil {
 			break
@@ -822,6 +962,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CampaignMutation.Create(childComplexity, args["input"].(model.CampaignInput)), true
+	case "CampaignMutation.damageMonster":
+		if e.ComplexityRoot.CampaignMutation.DamageMonster == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_damageMonster_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.DamageMonster(childComplexity, args["input"].(model.TakeDamageInput), args["monsterId"].(string)), true
 	case "CampaignMutation.delete":
 		if e.ComplexityRoot.CampaignMutation.Delete == nil {
 			break
@@ -844,6 +995,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CampaignMutation.EndSession(childComplexity, args["id"].(string), args["input"].(model.EndSessionInput)), true
+	case "CampaignMutation.healMonster":
+		if e.ComplexityRoot.CampaignMutation.HealMonster == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_healMonster_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.HealMonster(childComplexity, args["amount"].(int32), args["monsterId"].(string)), true
 	case "CampaignMutation.join":
 		if e.ComplexityRoot.CampaignMutation.Join == nil {
 			break
@@ -888,6 +1050,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CampaignMutation.PostMessage(childComplexity, args["id"].(string), args["input"].(model.MessageInput)), true
+	case "CampaignMutation.postMonsterDamage":
+		if e.ComplexityRoot.CampaignMutation.PostMonsterDamage == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_postMonsterDamage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.PostMonsterDamage(childComplexity, args["input"].(model.DamageRollInput), args["monsterId"].(string)), true
 	case "CampaignMutation.postRoll":
 		if e.ComplexityRoot.CampaignMutation.PostRoll == nil {
 			break
@@ -921,6 +1094,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CampaignMutation.RemoveCharacter(childComplexity, args["characterId"].(string), args["id"].(string)), true
+	case "CampaignMutation.removeMonster":
+		if e.ComplexityRoot.CampaignMutation.RemoveMonster == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_removeMonster_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.RemoveMonster(childComplexity, args["monsterId"].(string)), true
+	case "CampaignMutation.renameMonster":
+		if e.ComplexityRoot.CampaignMutation.RenameMonster == nil {
+			break
+		}
+
+		args, err := ec.field_CampaignMutation_renameMonster_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.CampaignMutation.RenameMonster(childComplexity, args["monsterId"].(string), args["name"].(string)), true
 	case "CampaignMutation.update":
 		if e.ComplexityRoot.CampaignMutation.Update == nil {
 			break
@@ -1878,6 +2073,210 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Modifier.Value(childComplexity), true
 
+	case "Monster.armor":
+		if e.ComplexityRoot.Monster.Armor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Armor(childComplexity), true
+	case "Monster.attack":
+		if e.ComplexityRoot.Monster.Attack == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Attack(childComplexity), true
+	case "Monster.description":
+		if e.ComplexityRoot.Monster.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Description(childComplexity), true
+	case "Monster.hp":
+		if e.ComplexityRoot.Monster.Hp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Hp(childComplexity), true
+	case "Monster.id":
+		if e.ComplexityRoot.Monster.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.ID(childComplexity), true
+	case "Monster.instinct":
+		if e.ComplexityRoot.Monster.Instinct == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Instinct(childComplexity), true
+	case "Monster.moves":
+		if e.ComplexityRoot.Monster.Moves == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Moves(childComplexity), true
+	case "Monster.name":
+		if e.ComplexityRoot.Monster.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Name(childComplexity), true
+	case "Monster.setting":
+		if e.ComplexityRoot.Monster.Setting == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Setting(childComplexity), true
+	case "Monster.source":
+		if e.ComplexityRoot.Monster.Source == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Source(childComplexity), true
+	case "Monster.sourceKey":
+		if e.ComplexityRoot.Monster.SourceKey == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.SourceKey(childComplexity), true
+	case "Monster.specialQualities":
+		if e.ComplexityRoot.Monster.SpecialQualities == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.SpecialQualities(childComplexity), true
+	case "Monster.tags":
+		if e.ComplexityRoot.Monster.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Monster.Tags(childComplexity), true
+
+	case "MonsterAttack.damage":
+		if e.ComplexityRoot.MonsterAttack.Damage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterAttack.Damage(childComplexity), true
+	case "MonsterAttack.ignoresArmor":
+		if e.ComplexityRoot.MonsterAttack.IgnoresArmor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterAttack.IgnoresArmor(childComplexity), true
+	case "MonsterAttack.name":
+		if e.ComplexityRoot.MonsterAttack.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterAttack.Name(childComplexity), true
+	case "MonsterAttack.piercing":
+		if e.ComplexityRoot.MonsterAttack.Piercing == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterAttack.Piercing(childComplexity), true
+	case "MonsterAttack.tags":
+		if e.ComplexityRoot.MonsterAttack.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterAttack.Tags(childComplexity), true
+
+	case "MonsterMutation.createCustom":
+		if e.ComplexityRoot.MonsterMutation.CreateCustom == nil {
+			break
+		}
+
+		args, err := ec.field_MonsterMutation_createCustom_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.MonsterMutation.CreateCustom(childComplexity, args["input"].(model.MonsterInput)), true
+	case "MonsterMutation.deleteCustom":
+		if e.ComplexityRoot.MonsterMutation.DeleteCustom == nil {
+			break
+		}
+
+		args, err := ec.field_MonsterMutation_deleteCustom_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.MonsterMutation.DeleteCustom(childComplexity, args["id"].(string)), true
+	case "MonsterMutation.updateCustom":
+		if e.ComplexityRoot.MonsterMutation.UpdateCustom == nil {
+			break
+		}
+
+		args, err := ec.field_MonsterMutation_updateCustom_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.MonsterMutation.UpdateCustom(childComplexity, args["id"].(string), args["input"].(model.MonsterInput)), true
+
+	case "MonsterQuery.byKey":
+		if e.ComplexityRoot.MonsterQuery.ByKey == nil {
+			break
+		}
+
+		args, err := ec.field_MonsterQuery_byKey_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.MonsterQuery.ByKey(childComplexity, args["key"].(string)), true
+	case "MonsterQuery.compendium":
+		if e.ComplexityRoot.MonsterQuery.Compendium == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterQuery.Compendium(childComplexity), true
+	case "MonsterQuery.custom":
+		if e.ComplexityRoot.MonsterQuery.Custom == nil {
+			break
+		}
+
+		args, err := ec.field_MonsterQuery_custom_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.MonsterQuery.Custom(childComplexity, args["id"].(string)), true
+	case "MonsterQuery.mine":
+		if e.ComplexityRoot.MonsterQuery.Mine == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterQuery.Mine(childComplexity), true
+	case "MonsterQuery.settings":
+		if e.ComplexityRoot.MonsterQuery.Settings == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterQuery.Settings(childComplexity), true
+	case "MonsterQuery.tags":
+		if e.ComplexityRoot.MonsterQuery.Tags == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterQuery.Tags(childComplexity), true
+
+	case "MonsterSetting.key":
+		if e.ComplexityRoot.MonsterSetting.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterSetting.Key(childComplexity), true
+	case "MonsterSetting.name":
+		if e.ComplexityRoot.MonsterSetting.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MonsterSetting.Name(childComplexity), true
+
 	case "Move.creationOptions":
 		if e.ComplexityRoot.Move.CreationOptions == nil {
 			break
@@ -2035,6 +2434,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.Items(childComplexity), true
+	case "Mutation.monsters":
+		if e.ComplexityRoot.Mutation.Monsters == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Mutation.Monsters(childComplexity), true
 	case "Mutation.spells":
 		if e.ComplexityRoot.Mutation.Spells == nil {
 			break
@@ -2159,6 +2564,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Me(childComplexity), true
+	case "Query.monsters":
+		if e.ComplexityRoot.Query.Monsters == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.Monsters(childComplexity), true
 	case "Query.moves":
 		if e.ComplexityRoot.Query.Moves == nil {
 			break
@@ -2431,6 +2842,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAbilityScoreInput,
 		ec.unmarshalInputAddItemInput,
+		ec.unmarshalInputAddMonstersInput,
 		ec.unmarshalInputBondInput,
 		ec.unmarshalInputBonusInput,
 		ec.unmarshalInputCampaignInput,
@@ -2444,6 +2856,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputMessageInput,
 		ec.unmarshalInputModifierInput,
+		ec.unmarshalInputMonsterAttackInput,
+		ec.unmarshalInputMonsterInput,
 		ec.unmarshalInputMoveCreationOptionChoiceInput,
 		ec.unmarshalInputNewLookInput,
 		ec.unmarshalInputRegisterInput,
@@ -2542,7 +2956,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/campaigns.graphqls" "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/chat.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/moves.graphqls" "schema/schema.graphqls" "schema/spells.graphqls" "schema/users.graphqls"
+//go:embed "schema/campaigns.graphqls" "schema/character_classes.graphqls" "schema/characters.graphqls" "schema/chat.graphqls" "schema/item.graphqls" "schema/look_types.graphqls" "schema/monsters.graphqls" "schema/moves.graphqls" "schema/schema.graphqls" "schema/spells.graphqls" "schema/users.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -2560,6 +2974,7 @@ var sources = []*ast.Source{
 	{Name: "schema/chat.graphqls", Input: sourceData("schema/chat.graphqls"), BuiltIn: false},
 	{Name: "schema/item.graphqls", Input: sourceData("schema/item.graphqls"), BuiltIn: false},
 	{Name: "schema/look_types.graphqls", Input: sourceData("schema/look_types.graphqls"), BuiltIn: false},
+	{Name: "schema/monsters.graphqls", Input: sourceData("schema/monsters.graphqls"), BuiltIn: false},
 	{Name: "schema/moves.graphqls", Input: sourceData("schema/moves.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
 	{Name: "schema/spells.graphqls", Input: sourceData("schema/spells.graphqls"), BuiltIn: false},
@@ -2655,6 +3070,8 @@ func (ec *executionContext) childFields_Campaign(ctx context.Context, field grap
 		return ec.fieldContext_Campaign_sessions(ctx, field)
 	case "messages":
 		return ec.fieldContext_Campaign_messages(ctx, field)
+	case "monsters":
+		return ec.fieldContext_Campaign_monsters(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
 }
@@ -2667,6 +3084,24 @@ func (ec *executionContext) childFields_CampaignInvite(ctx context.Context, fiel
 		return ec.fieldContext_CampaignInvite_name(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CampaignInvite", field.Name)
+}
+
+func (ec *executionContext) childFields_CampaignMonster(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "createdAt":
+		return ec.fieldContext_CampaignMonster_createdAt(ctx, field)
+	case "hp":
+		return ec.fieldContext_CampaignMonster_hp(ctx, field)
+	case "id":
+		return ec.fieldContext_CampaignMonster_id(ctx, field)
+	case "maxHp":
+		return ec.fieldContext_CampaignMonster_maxHp(ctx, field)
+	case "name":
+		return ec.fieldContext_CampaignMonster_name(ctx, field)
+	case "statBlock":
+		return ec.fieldContext_CampaignMonster_statBlock(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CampaignMonster", field.Name)
 }
 
 func (ec *executionContext) childFields_CampaignMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -2693,6 +3128,18 @@ func (ec *executionContext) childFields_CampaignMutation(ctx context.Context, fi
 		return ec.fieldContext_CampaignMutation_postDamage(ctx, field)
 	case "postRoll":
 		return ec.fieldContext_CampaignMutation_postRoll(ctx, field)
+	case "addMonsters":
+		return ec.fieldContext_CampaignMutation_addMonsters(ctx, field)
+	case "damageMonster":
+		return ec.fieldContext_CampaignMutation_damageMonster(ctx, field)
+	case "healMonster":
+		return ec.fieldContext_CampaignMutation_healMonster(ctx, field)
+	case "postMonsterDamage":
+		return ec.fieldContext_CampaignMutation_postMonsterDamage(ctx, field)
+	case "removeMonster":
+		return ec.fieldContext_CampaignMutation_removeMonster(ctx, field)
+	case "renameMonster":
+		return ec.fieldContext_CampaignMutation_renameMonster(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CampaignMutation", field.Name)
 }
@@ -3113,6 +3560,94 @@ func (ec *executionContext) childFields_Modifier(ctx context.Context, field grap
 	return nil, fmt.Errorf("no field named %q was found under type Modifier", field.Name)
 }
 
+func (ec *executionContext) childFields_Monster(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "armor":
+		return ec.fieldContext_Monster_armor(ctx, field)
+	case "attack":
+		return ec.fieldContext_Monster_attack(ctx, field)
+	case "description":
+		return ec.fieldContext_Monster_description(ctx, field)
+	case "hp":
+		return ec.fieldContext_Monster_hp(ctx, field)
+	case "id":
+		return ec.fieldContext_Monster_id(ctx, field)
+	case "instinct":
+		return ec.fieldContext_Monster_instinct(ctx, field)
+	case "moves":
+		return ec.fieldContext_Monster_moves(ctx, field)
+	case "name":
+		return ec.fieldContext_Monster_name(ctx, field)
+	case "setting":
+		return ec.fieldContext_Monster_setting(ctx, field)
+	case "source":
+		return ec.fieldContext_Monster_source(ctx, field)
+	case "sourceKey":
+		return ec.fieldContext_Monster_sourceKey(ctx, field)
+	case "specialQualities":
+		return ec.fieldContext_Monster_specialQualities(ctx, field)
+	case "tags":
+		return ec.fieldContext_Monster_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Monster", field.Name)
+}
+
+func (ec *executionContext) childFields_MonsterAttack(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "damage":
+		return ec.fieldContext_MonsterAttack_damage(ctx, field)
+	case "ignoresArmor":
+		return ec.fieldContext_MonsterAttack_ignoresArmor(ctx, field)
+	case "name":
+		return ec.fieldContext_MonsterAttack_name(ctx, field)
+	case "piercing":
+		return ec.fieldContext_MonsterAttack_piercing(ctx, field)
+	case "tags":
+		return ec.fieldContext_MonsterAttack_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MonsterAttack", field.Name)
+}
+
+func (ec *executionContext) childFields_MonsterMutation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "createCustom":
+		return ec.fieldContext_MonsterMutation_createCustom(ctx, field)
+	case "deleteCustom":
+		return ec.fieldContext_MonsterMutation_deleteCustom(ctx, field)
+	case "updateCustom":
+		return ec.fieldContext_MonsterMutation_updateCustom(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MonsterMutation", field.Name)
+}
+
+func (ec *executionContext) childFields_MonsterQuery(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "byKey":
+		return ec.fieldContext_MonsterQuery_byKey(ctx, field)
+	case "compendium":
+		return ec.fieldContext_MonsterQuery_compendium(ctx, field)
+	case "custom":
+		return ec.fieldContext_MonsterQuery_custom(ctx, field)
+	case "mine":
+		return ec.fieldContext_MonsterQuery_mine(ctx, field)
+	case "settings":
+		return ec.fieldContext_MonsterQuery_settings(ctx, field)
+	case "tags":
+		return ec.fieldContext_MonsterQuery_tags(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MonsterQuery", field.Name)
+}
+
+func (ec *executionContext) childFields_MonsterSetting(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "key":
+		return ec.fieldContext_MonsterSetting_key(ctx, field)
+	case "name":
+		return ec.fieldContext_MonsterSetting_name(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MonsterSetting", field.Name)
+}
+
 func (ec *executionContext) childFields_Move(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "creationOptions":
@@ -3453,6 +3988,28 @@ func (ec *executionContext) field_AuthMutation_register_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_CampaignMutation_addMonsters_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.AddMonstersInput, error) {
+			return ec.unmarshalNAddMonstersInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAddMonstersInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_CampaignMutation_create_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3464,6 +4021,28 @@ func (ec *executionContext) field_CampaignMutation_create_args(ctx context.Conte
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_CampaignMutation_damageMonster_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.TakeDamageInput, error) {
+			return ec.unmarshalNTakeDamageInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐTakeDamageInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "monsterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["monsterId"] = arg1
 	return args, nil
 }
 
@@ -3500,6 +4079,28 @@ func (ec *executionContext) field_CampaignMutation_endSession_args(ctx context.C
 		return nil, err
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_CampaignMutation_healMonster_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "amount",
+		func(ctx context.Context, v any) (int32, error) {
+			return ec.unmarshalNInt2int32(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["amount"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "monsterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["monsterId"] = arg1
 	return args, nil
 }
 
@@ -3583,6 +4184,28 @@ func (ec *executionContext) field_CampaignMutation_postMessage_args(ctx context.
 	return args, nil
 }
 
+func (ec *executionContext) field_CampaignMutation_postMonsterDamage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.DamageRollInput, error) {
+			return ec.unmarshalNDamageRollInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐDamageRollInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "monsterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["monsterId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_CampaignMutation_postRoll_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3638,6 +4261,42 @@ func (ec *executionContext) field_CampaignMutation_removeCharacter_args(ctx cont
 		return nil, err
 	}
 	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_CampaignMutation_removeMonster_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "monsterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["monsterId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_CampaignMutation_renameMonster_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "monsterId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["monsterId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "name",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -4088,6 +4747,84 @@ func (ec *executionContext) field_ItemMutation_setWorn_args(ctx context.Context,
 		return nil, err
 	}
 	args["worn"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_MonsterMutation_createCustom_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.MonsterInput, error) {
+			return ec.unmarshalNMonsterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_MonsterMutation_deleteCustom_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_MonsterMutation_updateCustom_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.MonsterInput, error) {
+			return ec.unmarshalNMonsterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_MonsterQuery_byKey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "key",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["key"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_MonsterQuery_custom_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -5027,6 +5764,38 @@ func (ec *executionContext) fieldContext_Campaign_messages(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Campaign_monsters(ctx context.Context, field graphql.CollectedField, obj *model.Campaign) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Campaign_monsters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Campaign().Monsters(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.CampaignMonster) graphql.Marshaler {
+			return ec.marshalNCampaignMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonsterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Campaign_monsters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Campaign",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CampaignMonster(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CampaignInvite_gm(ctx context.Context, field graphql.CollectedField, obj *model.CampaignInvite) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5080,6 +5849,153 @@ func (ec *executionContext) _CampaignInvite_name(ctx context.Context, field grap
 }
 func (ec *executionContext) fieldContext_CampaignInvite_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("CampaignInvite", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CampaignMonster", field, false, false, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_hp(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_hp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hp, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_hp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CampaignMonster", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_id(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CampaignMonster", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_maxHp(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_maxHp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MaxHp, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_maxHp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CampaignMonster", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_name(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CampaignMonster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _CampaignMonster_statBlock(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMonster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMonster_statBlock(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.StatBlock, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMonster_statBlock(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMonster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _CampaignMutation_create(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
@@ -5560,6 +6476,270 @@ func (ec *executionContext) fieldContext_CampaignMutation_postRoll(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_CampaignMutation_postRoll_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_addMonsters(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_addMonsters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().AddMonsters(ctx, obj, fc.Args["id"].(string), fc.Args["input"].(model.AddMonstersInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.CampaignMonster) graphql.Marshaler {
+			return ec.marshalNCampaignMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonsterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_addMonsters(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CampaignMonster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_addMonsters_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_damageMonster(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_damageMonster(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().DamageMonster(ctx, obj, fc.Args["input"].(model.TakeDamageInput), fc.Args["monsterId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.CampaignMonster) graphql.Marshaler {
+			return ec.marshalNCampaignMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_damageMonster(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CampaignMonster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_damageMonster_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_healMonster(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_healMonster(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().HealMonster(ctx, obj, fc.Args["amount"].(int32), fc.Args["monsterId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.CampaignMonster) graphql.Marshaler {
+			return ec.marshalNCampaignMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_healMonster(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CampaignMonster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_healMonster_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_postMonsterDamage(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_postMonsterDamage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().PostMonsterDamage(ctx, obj, fc.Args["input"].(model.DamageRollInput), fc.Args["monsterId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Message) graphql.Marshaler {
+			return ec.marshalNMessage2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_postMonsterDamage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Message(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_postMonsterDamage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_removeMonster(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_removeMonster(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().RemoveMonster(ctx, obj, fc.Args["monsterId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_removeMonster(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_removeMonster_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignMutation_renameMonster(ctx context.Context, field graphql.CollectedField, obj *model.CampaignMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CampaignMutation_renameMonster(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.CampaignMutation().RenameMonster(ctx, obj, fc.Args["monsterId"].(string), fc.Args["name"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.CampaignMonster) graphql.Marshaler {
+			return ec.marshalNCampaignMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CampaignMutation_renameMonster(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CampaignMonster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CampaignMutation_renameMonster_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -9486,6 +10666,823 @@ func (ec *executionContext) fieldContext_Modifier_value(_ context.Context, field
 	return graphql.NewScalarFieldContext("Modifier", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _Monster_armor(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_armor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Armor, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_armor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_attack(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_attack(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Attack, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.MonsterAttack) graphql.Marshaler {
+			return ec.marshalOMonsterAttack2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterAttack(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_attack(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Monster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MonsterAttack(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Monster_description(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_hp(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_hp(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hp, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_hp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_id(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_instinct(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_instinct(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Instinct, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_instinct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_moves(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_moves(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Moves, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_moves(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_name(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_setting(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_setting(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Setting, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.MonsterSetting) graphql.Marshaler {
+			return ec.marshalOMonsterSetting2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSetting(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_setting(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Monster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MonsterSetting(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Monster_source(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_source(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Source, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.MonsterSource) graphql.Marshaler {
+			return ec.marshalNMonsterSource2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSource(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_source(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type MonsterSource does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_sourceKey(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_sourceKey(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SourceKey, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOID2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_sourceKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_specialQualities(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_specialQualities(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SpecialQualities, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_specialQualities(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Monster_tags(ctx context.Context, field graphql.CollectedField, obj *model.Monster) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Monster_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Monster_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Monster", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterAttack_damage(ctx context.Context, field graphql.CollectedField, obj *model.MonsterAttack) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterAttack_damage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Damage, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterAttack_damage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterAttack", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterAttack_ignoresArmor(ctx context.Context, field graphql.CollectedField, obj *model.MonsterAttack) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterAttack_ignoresArmor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IgnoresArmor, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterAttack_ignoresArmor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterAttack", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterAttack_name(ctx context.Context, field graphql.CollectedField, obj *model.MonsterAttack) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterAttack_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterAttack_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterAttack", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterAttack_piercing(ctx context.Context, field graphql.CollectedField, obj *model.MonsterAttack) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterAttack_piercing(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Piercing, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterAttack_piercing(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterAttack", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterAttack_tags(ctx context.Context, field graphql.CollectedField, obj *model.MonsterAttack) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterAttack_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tags, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterAttack_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterAttack", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterMutation_createCustom(ctx context.Context, field graphql.CollectedField, obj *model.MonsterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterMutation_createCustom(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.MonsterMutation().CreateCustom(ctx, obj, fc.Args["input"].(model.MonsterInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterMutation_createCustom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_MonsterMutation_createCustom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterMutation_deleteCustom(ctx context.Context, field graphql.CollectedField, obj *model.MonsterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterMutation_deleteCustom(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.MonsterMutation().DeleteCustom(ctx, obj, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterMutation_deleteCustom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_MonsterMutation_deleteCustom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterMutation_updateCustom(ctx context.Context, field graphql.CollectedField, obj *model.MonsterMutation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterMutation_updateCustom(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.MonsterMutation().UpdateCustom(ctx, obj, fc.Args["id"].(string), fc.Args["input"].(model.MonsterInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterMutation_updateCustom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_MonsterMutation_updateCustom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_byKey(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_byKey(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.MonsterQuery().ByKey(ctx, obj, fc.Args["key"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+			return ec.marshalOMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_byKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_MonsterQuery_byKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_compendium(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_compendium(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.MonsterQuery().Compendium(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_compendium(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_custom(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_custom(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.MonsterQuery().Custom(ctx, obj, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_custom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_MonsterQuery_custom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_mine(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_mine(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.MonsterQuery().Mine(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Monster) graphql.Marshaler {
+			return ec.marshalNMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_mine(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Monster(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_settings(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_settings(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.MonsterQuery().Settings(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.MonsterSetting) graphql.Marshaler {
+			return ec.marshalNMonsterSetting2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSettingᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_settings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonsterQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MonsterSetting(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonsterQuery_tags(ctx context.Context, field graphql.CollectedField, obj *model.MonsterQuery) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterQuery_tags(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.MonsterQuery().Tags(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterQuery_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterQuery", field, true, true, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterSetting_key(ctx context.Context, field graphql.CollectedField, obj *model.MonsterSetting) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterSetting_key(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterSetting_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterSetting", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _MonsterSetting_name(ctx context.Context, field graphql.CollectedField, obj *model.MonsterSetting) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_MonsterSetting_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_MonsterSetting_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("MonsterSetting", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _Move_creationOptions(ctx context.Context, field graphql.CollectedField, obj *model.Move) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -10175,6 +12172,38 @@ func (ec *executionContext) fieldContext_Mutation_spells(_ context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_monsters(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_monsters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Mutation().Monsters(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.MonsterMutation) graphql.Marshaler {
+			return ec.marshalNMonsterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterMutation(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_monsters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MonsterMutation(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartyMember_alignmentType(ctx context.Context, field graphql.CollectedField, obj *model.PartyMember) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -10770,6 +12799,38 @@ func (ec *executionContext) fieldContext_Query_spells(_ context.Context, field g
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_SpellQuery(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_monsters(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_monsters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().Monsters(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.MonsterQuery) graphql.Marshaler {
+			return ec.marshalNMonsterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterQuery(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_monsters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MonsterQuery(ctx, field)
 		},
 	}
 	return fc, nil
@@ -13025,6 +15086,61 @@ func (ec *executionContext) unmarshalInputAddItemInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputAddMonstersInput(ctx context.Context, obj any) (model.AddMonstersInput, error) {
+	var it model.AddMonstersInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["count"]; !present {
+		asMap["count"] = 1
+	}
+
+	fieldsInOrder := [...]string{"compendiumKey", "count", "customMonsterId", "maxHp"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "compendiumKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("compendiumKey"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CompendiumKey = data
+		case "count":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("count"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Count = data
+		case "customMonsterId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customMonsterId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomMonsterID = data
+		case "maxHp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxHp"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxHp = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputBondInput(ctx context.Context, obj any) (model.BondInput, error) {
 	var it model.BondInput
 	if obj == nil {
@@ -13628,6 +15744,183 @@ func (ec *executionContext) unmarshalInputModifierInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Value = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMonsterAttackInput(ctx context.Context, obj any) (model.MonsterAttackInput, error) {
+	var it model.MonsterAttackInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["ignoresArmor"]; !present {
+		asMap["ignoresArmor"] = false
+	}
+	if _, present := asMap["piercing"]; !present {
+		asMap["piercing"] = 0
+	}
+	if _, present := asMap["tags"]; !present {
+		asMap["tags"] = []any{}
+	}
+
+	fieldsInOrder := [...]string{"damage", "ignoresArmor", "name", "piercing", "tags"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "damage":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("damage"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Damage = data
+		case "ignoresArmor":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ignoresArmor"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IgnoresArmor = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "piercing":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercing"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Piercing = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMonsterInput(ctx context.Context, obj any) (model.MonsterInput, error) {
+	var it model.MonsterInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["description"]; !present {
+		asMap["description"] = ""
+	}
+	if _, present := asMap["instinct"]; !present {
+		asMap["instinct"] = ""
+	}
+	if _, present := asMap["moves"]; !present {
+		asMap["moves"] = []any{}
+	}
+	if _, present := asMap["specialQualities"]; !present {
+		asMap["specialQualities"] = []any{}
+	}
+	if _, present := asMap["tags"]; !present {
+		asMap["tags"] = []any{}
+	}
+
+	fieldsInOrder := [...]string{"armor", "attack", "description", "hp", "instinct", "moves", "name", "sourceKey", "specialQualities", "tags"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "armor":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("armor"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Armor = data
+		case "attack":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attack"))
+			data, err := ec.unmarshalOMonsterAttackInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterAttackInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Attack = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "hp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hp"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hp = data
+		case "instinct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instinct"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Instinct = data
+		case "moves":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moves"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Moves = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "sourceKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceKey"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceKey = data
+		case "specialQualities":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("specialQualities"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SpecialQualities = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
 		}
 	}
 	return it, nil
@@ -14565,6 +16858,42 @@ func (ec *executionContext) _Campaign(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "monsters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Campaign_monsters(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14606,6 +16935,70 @@ func (ec *executionContext) _CampaignInvite(ctx context.Context, sel ast.Selecti
 			}
 		case "name":
 			out.Values[i] = ec._CampaignInvite_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var campaignMonsterImplementors = []string{"CampaignMonster"}
+
+func (ec *executionContext) _CampaignMonster(ctx context.Context, sel ast.SelectionSet, obj *model.CampaignMonster) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, campaignMonsterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CampaignMonster")
+		case "createdAt":
+			out.Values[i] = ec._CampaignMonster_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "hp":
+			out.Values[i] = ec._CampaignMonster_hp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "id":
+			out.Values[i] = ec._CampaignMonster_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "maxHp":
+			out.Values[i] = ec._CampaignMonster_maxHp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._CampaignMonster_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "statBlock":
+			out.Values[i] = ec._CampaignMonster_statBlock(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15013,6 +17406,222 @@ func (ec *executionContext) _CampaignMutation(ctx context.Context, sel ast.Selec
 					}
 				}()
 				res = ec._CampaignMutation_postRoll(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "addMonsters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_addMonsters(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "damageMonster":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_damageMonster(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "healMonster":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_healMonster(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "postMonsterDamage":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_postMonsterDamage(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "removeMonster":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_removeMonster(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "renameMonster":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignMutation_renameMonster(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -18078,6 +20687,582 @@ func (ec *executionContext) _Modifier(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var monsterImplementors = []string{"Monster"}
+
+func (ec *executionContext) _Monster(ctx context.Context, sel ast.SelectionSet, obj *model.Monster) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monsterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Monster")
+		case "armor":
+			out.Values[i] = ec._Monster_armor(ctx, field, obj)
+		case "attack":
+			out.Values[i] = ec._Monster_attack(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._Monster_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "hp":
+			out.Values[i] = ec._Monster_hp(ctx, field, obj)
+		case "id":
+			out.Values[i] = ec._Monster_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "instinct":
+			out.Values[i] = ec._Monster_instinct(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "moves":
+			out.Values[i] = ec._Monster_moves(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Monster_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "setting":
+			out.Values[i] = ec._Monster_setting(ctx, field, obj)
+		case "source":
+			out.Values[i] = ec._Monster_source(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sourceKey":
+			out.Values[i] = ec._Monster_sourceKey(ctx, field, obj)
+		case "specialQualities":
+			out.Values[i] = ec._Monster_specialQualities(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._Monster_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var monsterAttackImplementors = []string{"MonsterAttack"}
+
+func (ec *executionContext) _MonsterAttack(ctx context.Context, sel ast.SelectionSet, obj *model.MonsterAttack) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monsterAttackImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonsterAttack")
+		case "damage":
+			out.Values[i] = ec._MonsterAttack_damage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "ignoresArmor":
+			out.Values[i] = ec._MonsterAttack_ignoresArmor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._MonsterAttack_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "piercing":
+			out.Values[i] = ec._MonsterAttack_piercing(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._MonsterAttack_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var monsterMutationImplementors = []string{"MonsterMutation"}
+
+func (ec *executionContext) _MonsterMutation(ctx context.Context, sel ast.SelectionSet, obj *model.MonsterMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monsterMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonsterMutation")
+		case "createCustom":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterMutation_createCustom(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "deleteCustom":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterMutation_deleteCustom(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updateCustom":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterMutation_updateCustom(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var monsterQueryImplementors = []string{"MonsterQuery"}
+
+func (ec *executionContext) _MonsterQuery(ctx context.Context, sel ast.SelectionSet, obj *model.MonsterQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monsterQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonsterQuery")
+		case "byKey":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_byKey(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "compendium":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_compendium(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "custom":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_custom(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "mine":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_mine(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "settings":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_settings(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonsterQuery_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var monsterSettingImplementors = []string{"MonsterSetting"}
+
+func (ec *executionContext) _MonsterSetting(ctx context.Context, sel ast.SelectionSet, obj *model.MonsterSetting) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monsterSettingImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonsterSetting")
+		case "key":
+			out.Values[i] = ec._MonsterSetting_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._MonsterSetting_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var moveImplementors = []string{"Move"}
 
 func (ec *executionContext) _Move(ctx context.Context, sel ast.SelectionSet, obj *model.Move) graphql.Marshaler {
@@ -18399,6 +21584,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "spells":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_spells(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "monsters":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_monsters(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -18787,6 +21979,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_spells(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "monsters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_monsters(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -19828,6 +23042,11 @@ func (ec *executionContext) unmarshalNAddItemInput2githubᚗcomᚋdeepconcernᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNAddMonstersInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAddMonstersInput(ctx context.Context, v any) (model.AddMonstersInput, error) {
+	res, err := ec.unmarshalInputAddMonstersInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAlignmentTemplate2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐAlignmentTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlignmentTemplate) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -20003,6 +23222,36 @@ func (ec *executionContext) marshalNCampaignInvite2ᚖgithubᚗcomᚋdeepconcern
 		return graphql.Null
 	}
 	return ec._CampaignInvite(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCampaignMonster2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx context.Context, sel ast.SelectionSet, v model.CampaignMonster) graphql.Marshaler {
+	return ec._CampaignMonster(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCampaignMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonsterᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CampaignMonster) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCampaignMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCampaignMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMonster(ctx context.Context, sel ast.SelectionSet, v *model.CampaignMonster) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CampaignMonster(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNCampaignMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐCampaignMutation(ctx context.Context, sel ast.SelectionSet, v model.CampaignMutation) graphql.Marshaler {
@@ -20778,6 +24027,105 @@ func (ec *executionContext) unmarshalNModifierInput2ᚖgithubᚗcomᚋdeepconcer
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNMonster2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx context.Context, sel ast.SelectionSet, v model.Monster) graphql.Marshaler {
+	return ec._Monster(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonster2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Monster) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx context.Context, sel ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Monster(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMonsterInput2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterInput(ctx context.Context, v any) (model.MonsterInput, error) {
+	res, err := ec.unmarshalInputMonsterInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMonsterMutation2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterMutation(ctx context.Context, sel ast.SelectionSet, v model.MonsterMutation) graphql.Marshaler {
+	return ec._MonsterMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonsterMutation2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterMutation(ctx context.Context, sel ast.SelectionSet, v *model.MonsterMutation) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MonsterMutation(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMonsterQuery2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterQuery(ctx context.Context, sel ast.SelectionSet, v model.MonsterQuery) graphql.Marshaler {
+	return ec._MonsterQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonsterQuery2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterQuery(ctx context.Context, sel ast.SelectionSet, v *model.MonsterQuery) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MonsterQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMonsterSetting2ᚕᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSettingᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.MonsterSetting) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNMonsterSetting2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSetting(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNMonsterSetting2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSetting(ctx context.Context, sel ast.SelectionSet, v *model.MonsterSetting) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MonsterSetting(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMonsterSource2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSource(ctx context.Context, v any) (model.MonsterSource, error) {
+	var res model.MonsterSource
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMonsterSource2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSource(ctx context.Context, sel ast.SelectionSet, v model.MonsterSource) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNMove2githubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v model.Move) graphql.Marshaler {
 	return ec._Move(ctx, sel, &v)
 }
@@ -21438,6 +24786,35 @@ func (ec *executionContext) marshalOItemTemplate2ᚖgithubᚗcomᚋdeepconcern�
 		return graphql.Null
 	}
 	return ec._ItemTemplate(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMonster2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonster(ctx context.Context, sel ast.SelectionSet, v *model.Monster) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Monster(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMonsterAttack2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterAttack(ctx context.Context, sel ast.SelectionSet, v *model.MonsterAttack) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MonsterAttack(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMonsterAttackInput2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterAttackInput(ctx context.Context, v any) (*model.MonsterAttackInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMonsterAttackInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMonsterSetting2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMonsterSetting(ctx context.Context, sel ast.SelectionSet, v *model.MonsterSetting) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MonsterSetting(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOMove2ᚖgithubᚗcomᚋdeepconcernᚋdwaiᚋdwaiᚑapiᚋinternalᚋgraphᚋmodelᚐMove(ctx context.Context, sel ast.SelectionSet, v *model.Move) graphql.Marshaler {

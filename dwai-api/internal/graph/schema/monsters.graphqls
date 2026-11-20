@@ -1,0 +1,164 @@
+"Where a monster's stat block comes from."
+enum MonsterSource {
+  "The SRD compendium."
+  COMPENDIUM
+  "A user's own bestiary, or a snapshot of one of its monsters in play."
+  CUSTOM
+}
+
+"A monster's attack."
+type MonsterAttack {
+  "The damage dice, e.g. 'd8+1', 'b[2d10]' (best of), or 'w[2d8]' (worst of)."
+  damage: String!
+  "Whether the damage ignores armor entirely."
+  ignoresArmor: Boolean!
+  "The attack's name, e.g. 'Bite'."
+  name: String!
+  "How much armor the damage ignores (the piercing tag). 0 when it has none."
+  piercing: Int!
+  "Range and properties, e.g. 'Close', 'Reach', 'Messy'."
+  tags: [String!]!
+}
+
+"A monster's stat block (docs/game/gm.md § Monsters). HP, armor, and attack are null for entries without them, mostly NPCs."
+type Monster {
+  armor: Int
+  attack: MonsterAttack
+  "Empty when not set."
+  description: String!
+  hp: Int
+  "The compendium key, the custom monster's ID, or (for a snapshot in play) the monster in play's ID."
+  id: ID!
+  "What the monster wants. Empty when not set."
+  instinct: String!
+  "Things the GM can do with it when making a move."
+  moves: [String!]!
+  name: String!
+  "The compendium setting. Null for custom monsters."
+  setting: MonsterSetting
+  source: MonsterSource!
+  "The compendium monster a custom monster was copied from, or the compendium key of a compendium monster. Null for a custom monster written from scratch."
+  sourceKey: ID
+  "Notable traits, e.g. 'Burrowing'."
+  specialQualities: [String!]!
+  "Organization, size, and qualities, e.g. 'Horde', 'Small', 'Stealthy'."
+  tags: [String!]!
+}
+
+"A group of compendium monsters that share a setting, e.g. 'Cavern Dwellers'."
+type MonsterSetting {
+  key: ID!
+  name: String!
+}
+
+"Namespace for monster queries. Each needs a logged-in user."
+type MonsterQuery {
+  "A compendium monster, or null if there's no monster with that key."
+  byKey(key: ID!): Monster
+  "Every compendium monster, sorted by setting name, then name."
+  compendium: [Monster!]!
+  "One of the logged-in user's custom monsters."
+  custom(id: ID!): Monster!
+  "The logged-in user's custom monsters, sorted by name."
+  mine: [Monster!]!
+  "The compendium's settings, sorted by name."
+  settings: [MonsterSetting!]!
+  "Every tag the compendium's monsters use, sorted, for filters and suggestions."
+  tags: [String!]!
+}
+
+"Namespace for the logged-in user's custom monsters."
+type MonsterMutation {
+  "Adds a monster to the logged-in user's bestiary."
+  createCustom(input: MonsterInput!): Monster!
+  "Deletes one of the logged-in user's custom monsters. Copies already in play keep their stat block."
+  deleteCustom(id: ID!): Boolean!
+  "Replaces one of the logged-in user's custom monsters' stat block."
+  updateCustom(id: ID!, input: MonsterInput!): Monster!
+}
+
+"A monster's attack, as entered."
+input MonsterAttackInput {
+  "A dice expression of d4 to d20, at most 10 dice, e.g. 'd8+1' or 'b[2d10]'."
+  damage: String!
+  ignoresArmor: Boolean! = false
+  "1 to 60 characters."
+  name: String!
+  "0 to 10."
+  piercing: Int! = 0
+  tags: [String!]! = []
+}
+
+"A custom monster's stat block, as entered. Only the name is required. Lists hold at most 20 entries of up to 200 characters."
+input MonsterInput {
+  "0 to 10."
+  armor: Int
+  attack: MonsterAttackInput
+  "Up to 2,000 characters."
+  description: String! = ""
+  "1 to 999."
+  hp: Int
+  "Up to 200 characters."
+  instinct: String! = ""
+  moves: [String!]! = []
+  "1 to 60 characters."
+  name: String!
+  "The compendium monster it was copied from, if any."
+  sourceKey: ID
+  specialQualities: [String!]! = []
+  tags: [String!]! = []
+}
+
+"A monster the GM has in play in a campaign: a snapshot of a stat block, with its own HP."
+type CampaignMonster {
+  createdAt: Time!
+  "Current HP, from 0 (defeated) to maxHp."
+  hp: Int!
+  id: ID!
+  maxHp: Int!
+  "e.g. 'Goblin 3'."
+  name: String!
+  "The stat block as it was when the monster was added."
+  statBlock: Monster!
+}
+
+"Monsters to add to play. Give compendiumKey or customMonsterId, not both."
+input AddMonstersInput {
+  compendiumKey: ID
+  "How many to add, 1 to 20. Several are numbered ('Goblin 1', 'Goblin 2', ...)."
+  count: Int! = 1
+  "One of the GM's custom monsters."
+  customMonsterId: ID
+  "Each monster's max HP, 1 to 999. Defaults to the stat block's HP, and is required when it has none."
+  maxHp: Int
+}
+
+extend type Query {
+  "Queries for the monster compendium and custom monsters."
+  monsters: MonsterQuery!
+}
+
+extend type Mutation {
+  "Mutations for the logged-in user's custom monsters."
+  monsters: MonsterMutation!
+}
+
+extend type Campaign {
+  "The monsters in play, oldest first. GM only: anyone else gets an error."
+  monsters: [CampaignMonster!]!
+}
+
+extend type CampaignMutation {
+  "Adds monsters to play (GM only) and returns them."
+  addMonsters(id: ID!, input: AddMonstersInput!): [CampaignMonster!]!
+  "Deals damage to a monster in play (GM only): it loses the damage minus its armor (reduced by piercing, or ignored), down to 0 HP."
+  damageMonster(input: TakeDamageInput!, monsterId: ID!): CampaignMonster!
+  "Heals a monster in play (GM only), up to its max HP."
+  healMonster(amount: Int!, monsterId: ID!): CampaignMonster!
+  "Posts a monster's damage roll to the chat (GM only), under the monster's name. It doesn't change anyone's HP."
+  postMonsterDamage(input: DamageRollInput!, monsterId: ID!): Message!
+  "Removes a monster from play (GM only). It can't be undone."
+  removeMonster(monsterId: ID!): Boolean!
+  "Renames a monster in play (GM only). 1 to 60 characters."
+  renameMonster(monsterId: ID!, name: String!): CampaignMonster!
+}

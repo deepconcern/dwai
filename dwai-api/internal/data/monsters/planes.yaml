@@ -1,6 +1,11 @@
+# Monster compendium: Planar Powers.
+# Keys are stable IDs stored in the database; don't rename them.
+# attack.damage is a dice expression (d8, 2d6+1, b[2d10] best of, w[2d8] worst of).
+key: planes
 name: Planar Powers
 monsters:
-- name: Angel
+- key: angel
+  name: Angel
   tags:
   - Solitary
   - Terrifying
@@ -9,10 +14,13 @@ monsters:
   - Organized
   hp: 18
   armor: 4
-  attack: Sword of Flames (b[2d10]+4 damage, ignores armor)
-  attack_tags:
-  - Close
-  - Forceful
+  attack:
+    name: Sword of Flames
+    damage: b[2d10]+4
+    ignores_armor: true
+    tags:
+    - Close
+    - Forceful
   description: “So was it written that the heavens opened up to Avra’hal and did an
     angel from the clouds emerge to speak unto her and so did it appear to her as
     her firstborn daughter—beautiful, of ebon skin and golden eyes—and did Avra’hal
@@ -28,7 +36,8 @@ monsters:
   - Deliver visions and prophecy
   - Stir mortals to action
   - Expose sin and injustice
-- name: Barbed Devil
+- key: barbed_devil
+  name: Barbed Devil
   tags:
   - Solitary
   - Large
@@ -36,11 +45,14 @@ monsters:
   - Terrifying
   hp: 16
   armor: 3
-  attack: Spines (d10+3 damage, 3 piercing)
-  attack_tags:
-  - Close
-  - Reach
-  - Messy
+  attack:
+    name: Spines
+    damage: d10+3
+    piercing: 3
+    tags:
+    - Close
+    - Reach
+    - Messy
   description: There are a thousand forms of devil, maybe more. Some common and some
     unique. Each time the Inquisitors discover a new one they write it into the Tormentors
     Codex and the knowledge is shared among the abbeys in the hope that atrocities
@@ -57,16 +69,20 @@ monsters:
   moves:
   - Impale someone
   - Kill indiscriminately
-- name: Chain Devil
+- key: chain_devil
+  name: Chain Devil
   tags:
   - Solitary
   - Planar
   hp: 12
   armor: 3
-  attack: Crush (d10 damage, ignores armor)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Crush
+    damage: d10
+    ignores_armor: true
+    tags:
+    - Close
+    - Reach
   description: 'Do you think the phrase “drag him to hell” means nothing? It is unfortunately
     literal, in the case of the chain devil. Appearing differently to each victim,
     this summoned creature has but a single purpose: to wrap its victim up in binding
@@ -79,7 +95,8 @@ monsters:
   - Take a captive
   - Return to whence it came
   - Torture with glee
-- name: Concept Elemental
+- key: concept_elemental
+  name: Concept Elemental
   tags:
   - Solitary
   - Devious
@@ -97,7 +114,8 @@ monsters:
   - Ideal form
   moves:
   - Demonstrate its concept in its purest form
-- name: Corrupter
+- key: corrupter
+  name: Corrupter
   tags:
   - Solitary
   - Devious
@@ -105,9 +123,11 @@ monsters:
   - Hoarder
   hp: 12
   armor: 0
-  attack: Secret dagger (w[2d8] damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Secret dagger
+    damage: w[2d8]
+    tags:
+    - Close
   description: “Surely, my good man, you must know why I am here. Must know who I
     am. You said the words. You spilled the blood and followed the instructions almost
     to the letter. Your pronunciation was a bit off but that’s to be expected. I’ve
@@ -120,17 +140,21 @@ monsters:
   - Offer a deal with horrible consequences
   - Plumb the vaults of hell for a bargaining chip
   - Make a show of power
-- name: Djinn
+- key: djinn
+  name: Djinn
   tags:
   - Group
   - Large
   - Magical
   hp: 14
   armor: 4
-  attack: Flame (d8+1 damage, ignores armor)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Flame
+    damage: d8+1
+    ignores_armor: true
+    tags:
+    - Close
+    - Reach
   description: “Stop rubbing that lamp, you idiot. I do not care what you have read,
     it will not grant you wishes. I brought you here to show you something real, something
     true. See this mural? It shows the ancient city. The true city that came before.
@@ -148,16 +172,19 @@ monsters:
   moves:
   - Grant power for a price
   - Summon the forces of the City of Brass
-- name: Hell Hound
+- key: hell_hound
+  name: Hell Hound
   tags:
   - Group
   - Planar
   - Organized
   hp: 10
   armor: 1
-  attack: Fiery Bite (d8 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Fiery Bite
+    damage: d8
+    tags:
+    - Close
   description: When one reneges on a deal, does not the debtor come for payment? Does
     the owed party not send someone to collect what is due? So too with the Powers
     Below. They only want what is theirs. A howling pack of shadows, flame and jagged
@@ -169,7 +196,8 @@ monsters:
   - Follow despite all obstacles
   - Spew fire
   - Summon the forces of hell on their target
-- name: Imp
+- key: imp
+  name: Imp
   tags:
   - Horde
   - Planar
@@ -177,11 +205,14 @@ monsters:
   - Organized
   hp: 7
   armor: 1
-  attack: Flame gout (d6 damage, ignores armor)
-  attack_tags:
-  - Close
-  - Near
-  - Far
+  attack:
+    name: Flame gout
+    damage: d6
+    ignores_armor: true
+    tags:
+    - Close
+    - Near
+    - Far
   description: These tiny observer-demons often act as a first-time binding subject
     by neophyte warlocks. They can be found infesting arcane cabals, drinking potions
     when no one watches, and chasing pets and servants with tiny pitchforks. A caricature
@@ -191,7 +222,8 @@ monsters:
   moves:
   - Send information back to hell
   - Cause mischief
-- name: Inevitable
+- key: inevitable
+  name: Inevitable
   tags:
   - Group
   - Large
@@ -201,10 +233,12 @@ monsters:
   - Planar
   hp: 21
   armor: 5
-  attack: Hammer (d10+1 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Hammer
+    damage: d10+1
+    tags:
+    - Close
+    - Reach
   description: All things come to an end. Reality bleeds from the cut of entropy’s
     knife. At the edge of time itself stand the inevitable. Massive, powerful and
     seemingly carved from star-stuff themselves, the inevitable intervene only where
@@ -220,7 +254,8 @@ monsters:
   - End a spell or effect
   - Enforce a law of nature or man
   - Give a glimpse of destiny
-- name: Larvae
+- key: larvae
+  name: Larvae
   tags:
   - Horde
   - Devious
@@ -228,9 +263,11 @@ monsters:
   - Intelligent
   hp: 10
   armor: 0
-  attack: Slime (w[2d4] damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Slime
+    damage: w[2d4]
+    tags:
+    - Close
   description: Those who have seen visions of the Planes Below, and survived with
     their sanity intact, speak of masses of these writhing wretches. Maggots with
     the faces of men and women, crying out for salvation in a nest of flames. Sometimes,
@@ -243,7 +280,8 @@ monsters:
   - Fill them with despair
   - Beg for mercy
   - Draw evil attention
-- name: Nightmare
+- key: nightmare
+  name: Nightmare
   tags:
   - Horde
   - Large
@@ -252,10 +290,12 @@ monsters:
   - Planar
   hp: 7
   armor: 4
-  attack: Trample (d6+1 damage)
-  attack_tags:
-  - Close
-  - Reach
+  attack:
+    name: Trample
+    damage: d6+1
+    tags:
+    - Close
+    - Reach
   description: 'The herd came from a pact made in the days when folk still inhabited
     the Blasted Steppes. Horselords, they were, who travelled those lands. Born in
     the saddle, it was said. One of theirs, in a bid to dominate his peers, made a
@@ -269,15 +309,18 @@ monsters:
   moves:
   - Sheath a rider in hellish flame
   - Drive them away
-- name: Quasit
+- key: quasit
+  name: Quasit
   tags:
   - Horde
   - Planar
   hp: 7
   armor: 2
-  attack: Hellish weaponry (d6 damage)
-  attack_tags:
-  - Close
+  attack:
+    name: Hellish weaponry
+    damage: d6
+    tags:
+    - Close
   description: An imp with some ambition. A quasit is a kind of foot soldier in the
     demon realm. A commoner, armed with fangs or claws or wings or some other thing
     to give it just a little edge over its hellish peers. Commonly bound by warlocks
@@ -289,7 +332,8 @@ monsters:
   moves:
   - Attack with abandon
   - Inflict pain
-- name: The Tarrasque
+- key: the_tarrasque
+  name: The Tarrasque
   tags:
   - Solitary
   - Huge
@@ -308,7 +352,8 @@ monsters:
   moves:
   - Swallow a person, group, or place whole
   - Release a remnant of a long-eaten place from its gullet
-- name: Word Demon
+- key: word_demon
+  name: Word Demon
   tags:
   - Solitary
   - Planar

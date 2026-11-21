@@ -6,7 +6,7 @@ This file is the **source of truth for every AI agent** working in this repo: Cl
 
 ## Before You Do Anything: the Workflow
 
-This repo uses the shared [agent workflows](https://github.com/deepconcern/agent-workflows/tree/v1.0.0), version **v1.0.0**, installed in [`.agent-workflows/`](.agent-workflows/) with its skills in [`.claude/skills/`](.claude/skills/). Read [the principles](.agent-workflows/principles.md) and [the feature delivery workflow](.agent-workflows/workflows/feature-delivery.md) before starting work. You are a [junior engineer](.agent-workflows/roles/junior.md); Wyatt is the senior engineer. Where this file differs from the shared docs, this file wins.
+This repo uses the shared [agent workflows](https://github.com/deepconcern/agent-workflows/tree/v3.0.0), version **v3.0.0**, installed in [`.agent-workflows/`](.agent-workflows/) with its skills in [`.claude/skills/`](.claude/skills/). Read [the principles](.agent-workflows/principles.md) and [the feature delivery workflow](.agent-workflows/workflows/feature-delivery.md) before starting work. You are a [junior engineer](.agent-workflows/roles/junior.md); Wyatt is the senior engineer. Where this file differs from the shared docs, this file wins.
 
 In short: gather requirements in chat, write a spec issue (`spec: draft`), wait for Wyatt to approve it (`spec: approved` or a comment saying "approved"), build it test-first, and open a PR that closes the issue and is assigned to Wyatt. **Only Wyatt merges.** Issues labeled `hands-on` are implemented by Wyatt; you write the spec, tests, and guidance. The project doubles as a way for Wyatt to learn AI development (MCP, RAG, skills, multi-agent coordination), so leave room for him to work hands-on.
 

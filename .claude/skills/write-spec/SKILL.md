@@ -18,8 +18,9 @@ Step 2 of the feature delivery workflow. The output is an issue in the project's
    - **Task Breakdown**: how the work splits. If it needs more than one agent, plan one sub-issue per independent slice that doesn't edit the same files as another.
    - **Acceptance Criteria**: one Given/When/Then scenario per behavior that matters (the happy path, the edge cases the domain makes real, the errors a user can hit), concrete enough that each becomes a test. Leave out cases nobody needs.
    - Any project sections in the template (such as domain rules), with links to the project's docs. If you found a gap or error in those docs, add fixing it to the breakdown.
-3. **Create sub-issues** only if the breakdown needs more than one agent. Link them to the parent, which stays the spec of record.
-4. **Tell the maintainer** the spec is ready, with the link, and that you're waiting for approval.
+3. **Attribute the published issue** according to the shared identity and attribution rule in the installed `.agent-workflows/principles.md`. The initial issue body must identify its AI author when published through a human account; reuse an adequate existing footer instead of duplicating it.
+4. **Create sub-issues** only if the breakdown needs more than one agent. Link them to the parent, which stays the spec of record.
+5. **Tell the maintainer** the spec is ready, with the link, and that you're waiting for approval.
 
 ## While Waiting
 

@@ -12,7 +12,7 @@ How every feature, enhancement, bug fix, or roadmap milestone gets built. The ma
 | ---- | --- | ------ | ----- |
 | 1. Gather requirements | Agent asks, maintainer answers | Questions and a summary of understanding, in chat | [`gather-requirements`](../skills/gather-requirements/SKILL.md) |
 | 2. Write spec | Agent | An issue labeled `spec: draft` | [`write-spec`](../skills/write-spec/SKILL.md) |
-| 3. Approve | **Maintainer only** | The label changes to `spec: approved`, or the maintainer comments "approved" | — |
+| 3. Approve | **Maintainer only**, optionally helped by review agents | The label changes to `spec: approved`, or the maintainer comments "approved" | [`review-pr`](../skills/review-pr/SKILL.md) (to review the spec) |
 | 4. Implement | One or more agents | Branch(es) with tests and commits | [`implement-spec`](../skills/implement-spec/SKILL.md), [`write-tests`](../skills/write-tests/SKILL.md) |
 | 5. Open PR | Agent | A PR that closes the spec issue, assigned to the maintainer | [`implement-spec`](../skills/implement-spec/SKILL.md) |
 | 6. Review and merge | Maintainer, optionally helped by review agents | The merged PR | [`review-pr`](../skills/review-pr/SKILL.md) |

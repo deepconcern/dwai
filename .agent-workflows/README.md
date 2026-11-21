@@ -24,7 +24,7 @@ Everything here is plain Markdown, so any agent can follow it: Claude Code, GitH
 | [`write-spec`](skills/write-spec/SKILL.md) | Requirements are agreed and a spec issue is needed |
 | [`implement-spec`](skills/implement-spec/SKILL.md) | A spec is approved (or is `hands-on`) |
 | [`write-tests`](skills/write-tests/SKILL.md) | Writing or changing any test |
-| [`review-pr`](skills/review-pr/SKILL.md) | Reviewing a PR, or self-reviewing before asking for review |
+| [`review-pr`](skills/review-pr/SKILL.md) | Reviewing a spec or PR, or self-reviewing before asking for review |
 
 ## How a Project Adopts It
 

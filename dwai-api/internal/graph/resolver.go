@@ -18,6 +18,7 @@ type Resolver struct {
 	// Broker delivers new chat messages to subscriptions.
 	Broker           *realtime.Broker
 	CharacterClasses *models.CharacterClassMap
+	DangerTemplate   *models.DangerTemplate
 	DbPool           *pgxpool.Pool
 	ItemTemplates    *models.ItemTemplateMap
 	LookTypes        *models.LookTypeMap
@@ -26,4 +27,6 @@ type Resolver struct {
 	Sessions         *auth.Sessions
 	Spells           *models.SpellMap
 	TagDefinitions   *models.TagDefinitionMap
+	// ThreatSignals announces changes to campaigns' known threats.
+	ThreatSignals *realtime.Signals
 }

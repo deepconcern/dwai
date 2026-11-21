@@ -23,7 +23,7 @@ What dwai deliberately doesn't copy: a marketplace or paywalled content (the SRD
 
 ## Status
 
-See [`ROADMAP.md`](../../ROADMAP.md) for the authoritative status. In short, as of November 2026: character creation, the test foundation, the stateful character sheet, accounts, and campaigns (Milestones 1 to 5) are done, and table chat and rolls (Milestone 6) are next.
+See [`ROADMAP.md`](../../ROADMAP.md) for the authoritative status. In short, as of November 2026: Phase 1 (human play, Milestones 1 to 8: character creation through table chat, monsters, and fronts) is done, and the AI foundation (Milestone 9) is next.
 
 ## Guiding Principles
 

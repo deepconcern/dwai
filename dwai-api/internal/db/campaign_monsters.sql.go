@@ -22,14 +22,15 @@ func (q *Queries) DeleteCampaignMonster(ctx context.Context, id pgtype.UUID) err
 }
 
 const insertCampaignMonster = `-- name: InsertCampaignMonster :one
-INSERT INTO campaign_monsters (campaign_id, custom_monster_id, hp, max_hp, name, source_key, stat_block)
-VALUES ($1, $2, $3, $3, $4, $5, $6)
-RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block
+INSERT INTO campaign_monsters (campaign_id, custom_monster_id, encounter_id, hp, max_hp, name, source_key, stat_block)
+VALUES ($1, $2, $3, $4, $4, $5, $6, $7)
+RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block, encounter_id
 `
 
 type InsertCampaignMonsterParams struct {
 	CampaignID      pgtype.UUID
 	CustomMonsterID pgtype.UUID
+	EncounterID     pgtype.UUID
 	Hp              int32
 	Name            string
 	SourceKey       pgtype.Text
@@ -40,6 +41,7 @@ func (q *Queries) InsertCampaignMonster(ctx context.Context, arg InsertCampaignM
 	row := q.db.QueryRow(ctx, insertCampaignMonster,
 		arg.CampaignID,
 		arg.CustomMonsterID,
+		arg.EncounterID,
 		arg.Hp,
 		arg.Name,
 		arg.SourceKey,
@@ -56,12 +58,13 @@ func (q *Queries) InsertCampaignMonster(ctx context.Context, arg InsertCampaignM
 		&i.Name,
 		&i.SourceKey,
 		&i.StatBlock,
+		&i.EncounterID,
 	)
 	return i, err
 }
 
 const selectCampaignMonster = `-- name: SelectCampaignMonster :one
-SELECT campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block
+SELECT campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block, encounter_id
 FROM campaign_monsters
 WHERE id = $1
 `
@@ -79,6 +82,7 @@ func (q *Queries) SelectCampaignMonster(ctx context.Context, id pgtype.UUID) (Ca
 		&i.Name,
 		&i.SourceKey,
 		&i.StatBlock,
+		&i.EncounterID,
 	)
 	return i, err
 }
@@ -110,7 +114,7 @@ func (q *Queries) SelectCampaignMonsterNames(ctx context.Context, campaignID pgt
 }
 
 const selectCampaignMonsters = `-- name: SelectCampaignMonsters :many
-SELECT campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block
+SELECT campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block, encounter_id
 FROM campaign_monsters
 WHERE campaign_id = $1
 ORDER BY id
@@ -135,6 +139,7 @@ func (q *Queries) SelectCampaignMonsters(ctx context.Context, campaignID pgtype.
 			&i.Name,
 			&i.SourceKey,
 			&i.StatBlock,
+			&i.EncounterID,
 		); err != nil {
 			return nil, err
 		}
@@ -150,7 +155,7 @@ const updateCampaignMonsterHP = `-- name: UpdateCampaignMonsterHP :one
 UPDATE campaign_monsters
 SET hp = $2
 WHERE id = $1
-RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block
+RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block, encounter_id
 `
 
 type UpdateCampaignMonsterHPParams struct {
@@ -171,6 +176,7 @@ func (q *Queries) UpdateCampaignMonsterHP(ctx context.Context, arg UpdateCampaig
 		&i.Name,
 		&i.SourceKey,
 		&i.StatBlock,
+		&i.EncounterID,
 	)
 	return i, err
 }
@@ -179,7 +185,7 @@ const updateCampaignMonsterName = `-- name: UpdateCampaignMonsterName :one
 UPDATE campaign_monsters
 SET name = $2
 WHERE id = $1
-RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block
+RETURNING campaign_id, created_at, custom_monster_id, hp, id, max_hp, name, source_key, stat_block, encounter_id
 `
 
 type UpdateCampaignMonsterNameParams struct {
@@ -200,6 +206,7 @@ func (q *Queries) UpdateCampaignMonsterName(ctx context.Context, arg UpdateCampa
 		&i.Name,
 		&i.SourceKey,
 		&i.StatBlock,
+		&i.EncounterID,
 	)
 	return i, err
 }

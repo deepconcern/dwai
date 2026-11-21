@@ -80,23 +80,31 @@ func (r *Resolver) campaignMonsterObject(row *db.CampaignMonster) (*model.Campai
 		return nil, err
 	}
 
+	return &model.CampaignMonster{
+		CreatedAt:   row.CreatedAt.Time,
+		EncounterID: uuidPtr(row.EncounterID),
+		Hp:          row.Hp,
+		ID:          row.ID.String(),
+		MaxHp:       row.MaxHp,
+		Name:        row.Name,
+		StatBlock:   r.snapshotObject(row.ID.String(), row.CustomMonsterID, row.SourceKey, stats),
+	}, nil
+}
+
+// snapshotObject converts a stat block snapshot (a monster in play or in an
+// encounter) to a GraphQL object. It counts as a compendium monster when it
+// was taken from one directly.
+func (r *Resolver) snapshotObject(id string, customMonsterID pgtype.UUID, sourceKey pgtype.Text, stats *models.MonsterStatBlock) *model.Monster {
 	source := model.MonsterSourceCustom
 	var setting *models.MonsterSetting
-	if !row.CustomMonsterID.Valid && row.SourceKey.Valid {
-		if m := r.Monsters.Find(row.SourceKey.String); m != nil {
+	if !customMonsterID.Valid && sourceKey.Valid {
+		if m := r.Monsters.Find(sourceKey.String); m != nil {
 			source = model.MonsterSourceCompendium
 			setting = r.Monsters.Setting(m.SettingKey)
 		}
 	}
 
-	return &model.CampaignMonster{
-		CreatedAt: row.CreatedAt.Time,
-		Hp:        row.Hp,
-		ID:        row.ID.String(),
-		MaxHp:     row.MaxHp,
-		Name:      row.Name,
-		StatBlock: monsterObject(row.ID.String(), source, row.SourceKey.String, setting, stats),
-	}, nil
+	return monsterObject(id, source, sourceKey.String, setting, stats)
 }
 
 // campaignMonsterStats reads a monster in play's stat block.

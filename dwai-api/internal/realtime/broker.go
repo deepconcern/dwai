@@ -1,4 +1,5 @@
-// Package realtime delivers new campaign chat messages to subscribers.
+// Package realtime delivers new campaign chat messages to subscribers
+// (Broker), and signals that other campaign data changed (Signals).
 //
 // It's publish/subscribe over Postgres LISTEN/NOTIFY: inserting a row into
 // campaign_messages fires a trigger that sends the message's ID on the
@@ -12,10 +13,8 @@ package realtime
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"sync"
-	"time"
 
 	"github.com/deepconcern/dwai/dwai-api/internal/db"
 	"github.com/jackc/pgx/v5"
@@ -129,55 +128,9 @@ func (b *Broker) startListener() *listener {
 	return l
 }
 
-// listen holds a connection listening on Channel until ctx ends,
-// reconnecting with backoff if the connection fails.
+// listen runs the LISTEN loop on Channel until ctx ends.
 func (b *Broker) listen(ctx context.Context, l *listener) {
-	readyOnce := sync.OnceFunc(func() { close(l.ready) })
-	defer readyOnce()
-
-	backoff := 100 * time.Millisecond
-	for ctx.Err() == nil {
-		err := b.listenOnce(ctx, readyOnce)
-		if ctx.Err() != nil {
-			return
-		}
-
-		slog.ErrorContext(ctx, "chat listener failed; reconnecting", "error", err, "backoff", backoff)
-		select {
-		case <-time.After(backoff):
-		case <-ctx.Done():
-			return
-		}
-		backoff = min(backoff*2, 10*time.Second)
-	}
-}
-
-// listenOnce runs LISTEN on a dedicated connection and delivers
-// notifications until the connection fails or ctx ends.
-func (b *Broker) listenOnce(ctx context.Context, ready func()) error {
-	pooled, err := b.pool.Acquire(ctx)
-	if err != nil {
-		return fmt.Errorf("acquire connection: %w", err)
-	}
-
-	// The connection leaves the pool: waiting is interrupted by canceling
-	// ctx, which can leave it unusable.
-	conn := pooled.Hijack()
-	defer func() { _ = conn.Close(context.Background()) }()
-
-	if _, err := conn.Exec(ctx, "LISTEN "+pgx.Identifier{Channel}.Sanitize()); err != nil {
-		return fmt.Errorf("listen: %w", err)
-	}
-	ready()
-
-	for {
-		n, err := conn.WaitForNotification(ctx)
-		if err != nil {
-			return fmt.Errorf("wait for notification: %w", err)
-		}
-
-		b.deliver(ctx, n.Payload)
-	}
+	listenLoop(ctx, b.pool, Channel, l, b.deliver)
 }
 
 // deliver loads an announced message and sends it to its campaign's

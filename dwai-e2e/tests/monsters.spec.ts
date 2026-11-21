@@ -44,7 +44,7 @@ test("a GM copies a monster, runs three in play, and rolls its damage", async ({
   await addForm.getByLabel("How many").fill("3");
   await addForm.getByRole("button", { name: "Add to Play" }).click();
 
-  const inPlay = gm.getByRole("list", { name: "Monsters in play" });
+  const inPlay = gm.getByRole("list", { name: "Other monsters" });
   for (const name of [
     "Tunnel Goblin 1",
     "Tunnel Goblin 2",

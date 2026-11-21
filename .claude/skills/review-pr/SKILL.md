@@ -20,6 +20,7 @@ The maintainer merges every PR. A review is **advice to the maintainer**: don't 
 
 ## How to Comment
 
+- Attribute AI-authored review bodies, inline comments, and replies posted through a human account, following the identity and attribution rule in the installed `.agent-workflows/principles.md`. Each standalone comment should clearly identify the AI author; reuse an adequate existing attribution instead of adding a duplicate.
 - Point to a file and line, say what's wrong and why it matters. Suggest a fix when it's small.
 - Separate **must fix** (bugs, rule errors, missing tests, spec gaps) from **suggestions** (style, naming, optional refactors).
 - Don't restate what the code does, and don't comment on what the linters already enforce.

@@ -44,8 +44,17 @@ The shared files say *how* to work. Each project's own `AGENTS.md` says *who* an
 
 4. **Point other agents at it.** `CLAUDE.md` can be the single line `@AGENTS.md`. `.github/copilot-instructions.md` should only point to `AGENTS.md`. For a chat assistant without the repo, share the links to the tagged files.
 
-To change a shared rule, change it here, tag a release, and re-run the installer in each project when you choose. Don't edit the installed copies: the next install overwrites them. A project rule that differs from a shared one goes in the project's `AGENTS.md`, which wins.
+To change a shared rule, merge a classified PR here. After a new release is published, re-run the installer in each project when you choose. Don't edit the installed copies: the next install overwrites them. A project rule that differs from a shared one goes in the project's `AGENTS.md`, which wins.
 
 ## Versioning
 
-Releases are tagged `vMAJOR.MINOR.PATCH`. A major version changes what agents are asked to do in a way a project should read before updating (a new required step, a renamed skill or label). A minor version adds a skill, stack, or template. A patch clarifies wording. See [`CHANGELOG.md`](CHANGELOG.md).
+Releases are tagged `vMAJOR.MINOR.PATCH`. Each PR targeting `main` needs exactly one release label. The author proposes the label and the maintainer reviews it before merging.
+
+| Label | When to use it |
+| --- | --- |
+| `release: major` | Changes required agent behavior or compatibility, such as adding a required step or renaming a skill. Describe the compatibility impact in the PR. |
+| `release: minor` | Adds a backward-compatible skill, stack, or template. |
+| `release: patch` | Fixes or clarifies the distribution without changing required behavior. |
+| `release: none` | Changes repository maintenance only, with no effect on installed files or installer behavior. |
+
+For a release, include a **Release notes** section in the PR. GitHub Actions tags the merged revision and publishes its notes after the maintainer merges. Projects stay on the tag they already installed until they explicitly update it. See the [changelog](CHANGELOG.md) and the [activation and recovery guide](https://github.com/deepconcern/agent-workflows/blob/main/docs/releases.md).
